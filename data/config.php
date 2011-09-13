@@ -1,39 +1,39 @@
 <?php
-$qf_config = array();
+$config = array();
 
-$qf_config['website_title'] = 'QF Website';
-$qf_config['meta_description'] = 'Default meta description.';
-
-
-$qf_config['theme'] = ''; //no theme
-$qf_config['template'] = 'default';
-$qf_config['default_format'] = 'html';
+$config['website_title'] = 'QF Website';
+$config['meta_description'] = 'Default meta description.';
 
 
-$qf_config['home_route'] = 'home';
-$qf_config['base_url'] = '/'; //http://example.com;
+$config['theme'] = ''; //no theme
+$config['template'] = 'default';
+$config['default_format'] = 'html';
+
+
+$config['home_route'] = 'home';
+$config['base_url'] = '/'; //http://example.com;
 //$qf_config['static_url'] = 'http://static.example.com/';
 
-$qf_config['error404_route'] = 'error404';
+$config['error404_route'] = 'error404';
 
 
 //some fallback values
-$qf_config['current_route'] = $qf_config['current_module'] = $qf_config['current_page'] = false;
+$config['current_route'] = $config['current_module'] = $config['current_page'] = false;
 
 
 //autoloading
-$qf_config['autoload_paths'] = array(QF_BASEPATH, QF_BASEPATH.'lib');
+$config['autoload_paths'] = array(QF_BASEPATH, QF_BASEPATH.'lib');
 
 //i18n
 
-$qf_config['languages'] = array('en', 'de');
-$qf_config['default_language'] = $qf_config['languages'][0];
+$config['languages'] = array('en', 'de');
+$config['default_language'] = $config['languages'][0];
 
 //fallback for current_language
-$qf_config['current_language'] = $qf_config['default_language'];
+$config['current_language'] = $config['default_language'];
 
 
-$qf_config['roles'] = array(
+$config['roles'] = array(
     'guest' => array('GUEST'),
     'user' => array('USER'),
     'admin' => array('ADMIN', 'USER')
@@ -48,3 +48,19 @@ $qf_config['dbconnection'] = array(
     'options' => array() //A key=>value array of driver-specific connection options. (optional)
 );
  */
+
+//add module config
+//.. either as subkey
+$config['my_module'] = $this->load(__DIR__.'/../modules/MyModule/data/config.php');
+//.. or merge with global config
+$this->merge(__DIR__.'/../modules/MyModule/data/config.php', $config);
+
+//import other config files
+//.. as subkeys
+$config['routes'] = $this->load(__DIR__.'/routes.php');
+$config['tasks'] = $this->load(__DIR__.'/tasks.php');
+//.. merge
+$this->merge(__DIR__.'/additionalConfig.php', $config);
+
+
+return $config;

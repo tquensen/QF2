@@ -1,7 +1,7 @@
 <?php
-$qf_config['routes'] = array();
+$config['routes'] = array();
 
-$qf_config['routes']['home'] = array(
+$config['routes']['home'] = array(
     'url' => 'home',
     'module' => 'default',
     'page' => 'home'
@@ -19,7 +19,7 @@ $qf_config['routes']['projects'] = array(
 */
 
 //default static pages / fallback (this must be the LAST route!)
-$qf_config['routes']['static'] = array(
+$config['routes']['static'] = array(
     'url' => '',
     'module' => 'default',
     'page' => 'staticPage',

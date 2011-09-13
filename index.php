@@ -12,12 +12,11 @@ if (in_array(@$_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))) {
 ini_set('display_errors', QF_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
 
-define('QF_BASEPATH', dirname(__FILE__).'/');
-set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__).'/lib' . PATH_SEPARATOR . dirname(__FILE__).'/modules');
+define('QF_BASEPATH', __DIR__.'/');
+set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__.'/lib' . PATH_SEPARATOR . __DIR__.'/modules');
 
 try {
 
-    require_once(QF_BASEPATH.'data/config.php');
     require_once(QF_BASEPATH.'lib/SplClassLoader.php');
     //require_once(QF_BASEPATH.'lib/functions.php');
 
@@ -26,7 +25,7 @@ try {
     $classLoader->register();   
 
     //configuration
-    $config = new QF\Config($qf_config);
+    $config = new QF\Config(QF_BASEPATH.'data/config.php');
     $config->format = isset($_GET['format']) ? $_GET['format'] : null;
 
     //routing

@@ -173,13 +173,13 @@ class Routing
     }
 
     /**
-     * builds an url to a static file (js, css, images, ...)
+     * builds an url to a public file (js, css, images, ...)
      *
      * @param string $file path to the file (relative from the baseurl or the given module)
      * @param string $module the module containing the file
      * @return string returns the url to the file including base_url (if available)
      */
-    public function getStaticUrl($file, $module = null)
+    public function getAsset($file, $module = null)
     {
         $theme = $this->getConfig('theme', null);
         $themeString = $theme ? 'themes/'.$theme . '/' : '';
@@ -188,20 +188,20 @@ class Routing
             $baseurl = $this->qf->getConfig('base_url', '/');
         }
         if ($module) {
-            if ($theme && file_exists(\QF_BASEPATH . 'templates/' . $themeString . 'modules/static/'.$file)) {
-                return $baseurl . 'templates/' . $themeString . 'modules/static/'.$file;
-            } elseif (file_exists(\QF_BASEPATH . 'templates/modules/static/'.$file)) {
-                return $baseurl . 'templates/modules/static/'.$file;
+            if ($theme && file_exists(\QF_BASEPATH . 'templates/' . $themeString . 'modules/'.$module.'/public/'.$file)) {
+                return $baseurl . 'templates/' . $themeString . 'modules/'.$module.'/public/'.$file;
+            } elseif (file_exists(\QF_BASEPATH . 'templates/modules/'.$module.'/public/'.$file)) {
+                return $baseurl . 'templates/modules/'.$module.'/public/'.$file;
             } else {
-                return $baseurl . 'modules/'.$file;
+                return $baseurl . 'modules/'.$module.'/public/'.$file;
             }
         } else {
-            if ($theme && file_exists(\QF_BASEPATH . 'templates/' . $themeString . 'static/'.$file)) {
-                return $baseurl . 'templates/' . $themeString . 'static/'.$file;
-            } elseif (file_exists(\QF_BASEPATH . 'templates/static/'.$file)) {
-                return $baseurl . 'templates/static/'.$file;
+            if ($theme && file_exists(\QF_BASEPATH . 'templates/' . $themeString . 'public/'.$file)) {
+                return $baseurl . 'templates/' . $themeString . 'public/'.$file;
+            } elseif (file_exists(\QF_BASEPATH . 'templates/public/'.$file)) {
+                return $baseurl . 'templates/public/'.$file;
             } else {
-                return $baseurl . 'static/' . $file;
+                return $baseurl . 'public/' . $file;
             }
         }
     }

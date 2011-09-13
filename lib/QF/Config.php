@@ -5,9 +5,28 @@ class Config
 {
     private $data = array();
 
-    public function __construct($data = array())
+    public function __construct($configFile = null)
     {
-        $this->data = $data;
+        if ($configFile) {
+            $this->data = (array) $this->load($configFile);
+        }
+    }
+    
+    public function merge($file, &$previous)
+    {
+        if (file_exists($file)) {
+            $newData = include $file;
+            $previous = array_merge((array) $previous, (array) $newData);
+        }
+        return $previous;
+    }
+    
+    public function load($file)
+    {
+        if (file_exists($file)) {
+            $newData = include $file;
+            return (array) $newData;
+        }
     }
 
     public function __get($key)

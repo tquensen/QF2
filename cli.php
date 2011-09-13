@@ -20,7 +20,6 @@ set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__).'/lib' 
 
 try {
 
-    require_once(QF_BASEPATH.'data/config.php');
     require_once(QF_BASEPATH.'lib/SplClassLoader.php');
     //require_once(QF_BASEPATH.'lib/functions.php');
 
@@ -29,7 +28,7 @@ try {
     $classLoader->register();   
 
     //configuration
-    $config = new QF\Config($qf_config);
+    $config = new QF\Config(QF_BASEPATH.'data/config.php');
 
     //routing
     $qf = new QF\Core($config); // or new qfCoreI18n($config); to add i18n-capability to getUrl/redirectRoute methods
