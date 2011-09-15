@@ -14,21 +14,21 @@ class Cli
     }
 
     /**
-     * calls the task defined by $module and $task and returns the output
+     * calls the task defined by $class and $task and returns the output
      *
-     * @param string $controller the controller containing the task
+     * @param string $class the class containing the task
      * @param string $task the task name
      * @param array $parameter parameters for the task
      * @return string the parsed output of the task
      */
-    public function callTask($controller, $task, $parameter = array())
+    public function callTask($class, $task, $parameter = array())
     {
-        if (!class_exists($controller) || !method_exists($controller, $task)) {
+        if (!class_exists($class) || !method_exists($class, $task)) {
             throw new Exception('Task not found');
         }
         
-        $controller = new $controller($qf);
-        return $controller->$action($parameter);
+        $class = new $class($qf);
+        return $class->$action($parameter);
     }
 
     /**

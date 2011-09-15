@@ -30,8 +30,9 @@ try {
     //configuration
     $config = new QF\Config(QF_BASEPATH.'data/config.php');
 
-    //routing
-    $qf = new QF\Core($config); // or new qfCoreI18n($config); to add i18n-capability to getUrl/redirectRoute methods
+    $qf = new QF\Core($config); 
+    
+    $qf->setConfig('format', 'text');
     
     //database
     /*
@@ -41,7 +42,7 @@ try {
     $cli = new QF\Cli($qf);
     $taskData = $cli->parseArgs($argv);
     if ($taskData) {
-        if ($output = $cli->callTask($taskData['controller'], $taskData['task'], $taskData['parameter'])) {
+        if ($output = $cli->callTask($taskData['class'], $taskData['task'], $taskData['parameter'])) {
             echo $output;
         } else {
             '[no output]'."\n";

@@ -1,0 +1,1 @@
+<h2><?php echo $t->page_about_title; ?></h2>

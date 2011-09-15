@@ -41,7 +41,7 @@ $config['roles'] = array(
 
 //database connection
 /*
-$qf_config['dbconnection'] = array(
+$config['db']['default'] = array(
     'driver' => 'mysql:host=localhost;dbname=qfdb', //A valid PDO dsn. @see http://de3.php.net/manual/de/pdo.construct.php
     'username' => 'root', //The user name for the DSN string. This parameter is optional for some PDO drivers.
     'password' => '', //The password for the DSN string. This parameter is optional for some PDO drivers.
@@ -51,16 +51,16 @@ $qf_config['dbconnection'] = array(
 
 //add module config
 //.. either as subkey
-$config['my_module'] = $this->load(__DIR__.'/../modules/MyModule/data/config.php');
+//$config['exampleModule'] = $this->load(__DIR__.'/../modules/ExampleModule/data/config.php');
 //.. or merge with global config
-$this->merge(__DIR__.'/../modules/MyModule/data/config.php', $config);
+//$this->merge(__DIR__.'/../modules/ExampleModule/data/config.php', $config);
 
 //import other config files
 //.. as subkeys
 $config['routes'] = $this->load(__DIR__.'/routes.php');
 $config['tasks'] = $this->load(__DIR__.'/tasks.php');
 //.. merge
-$this->merge(__DIR__.'/additionalConfig.php', $config);
+//$this->merge(__DIR__.'/additionalConfig.php', $config);
 
 
 return $config;

@@ -1,0 +1,1 @@
+<h2><?php echo $t->home_title; ?></h2>

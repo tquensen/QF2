@@ -1,29 +1,27 @@
 <?php
-$config['routes'] = array();
+$routes = array();
 
-$config['routes']['home'] = array(
+$routes['home'] = array(
     'url' => 'home',
-    'module' => 'default',
-    'page' => 'home'
+    'controller' => '\\ExampleModule\\Controller\\Example',
+    'action' => 'home'
 );
 
 /* examples
-$qf_config['routes']['projects'] = array(
-    'url' => 'projects',
-    'module' => 'default',
-    'page' => 'projects',
-    'parameter' => array(
-        'selectedProject' => false
-    )
+$routes['projects'] = array(
+    'url' => 'projects/:project:',
+    'controller' => '\\ExampleModule\\Controller\\Example',
+    'action' => 'projects'
 );
 */
 
-//default static pages / fallback (this must be the LAST route!)
-$config['routes']['static'] = array(
-    'url' => '',
-    'module' => 'default',
-    'page' => 'staticPage',
-    'parameter' => array(
-        'page' => false
-    )
-);
+//load error routes
+$this->merge(__DIR__.'/../modules/DefaultModule/data/errorRoutes.php', $routes);
+
+
+//load routes from Example module
+$this->merge(__DIR__.'/../modules/ExampleModule/data/routes.php', $routes);
+
+
+
+return $routes;

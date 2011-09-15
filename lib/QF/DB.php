@@ -36,7 +36,7 @@ class DB
                 $this->connections[$connection] = new PDO(
                     $db['driver'],
                     isset($db['username']) ? $db['username'] : '',
-                    isset($db['username']) ? $db['password'] : '',
+                    isset($db['password']) ? $db['password'] : '',
                     isset($db['options']) ? $db['options'] : array()
                 );
 

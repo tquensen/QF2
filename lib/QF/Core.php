@@ -177,7 +177,7 @@ class Core
      *
      * @param string $errorCode the error page name (default error pages are 401, 403, 404, 500)
      * @param string $message a message to show on the error page
-     * @param Exception $exception an exception to display (only if errorCode = 500 and QF_DEBUG = true)
+     * @param Exception $exception an exception to display (only if QF_DEBUG = true)
      * @return string the parsed output of the error page
      */
     public function callError($errorCode = 404, $message = '', $exception = null)

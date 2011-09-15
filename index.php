@@ -28,25 +28,22 @@ try {
     $config = new QF\Config(QF_BASEPATH.'data/config.php');
     $config->format = isset($_GET['format']) ? $_GET['format'] : null;
 
-    //routing
     $qf = new QF\Core($config); // or new qfCoreI18n($config); to add i18n-capability to getUrl/redirectRoute methods
+
+    //routing
     $qf->routing = new QF\Routing($qf);
     $route = isset($_GET['route']) ? $_GET['route'] : '';
     $routeData = $qf->routing->parseRoute($route, true);
     
     //i18n
-    /*
     $language = isset($_GET['language']) ? $_GET['language'] : '';
-    if ($language && in_array($language, $qf->getConfig('languages'))) {
-        $qf->setConfig('current_language', $language);
-    }
     $qf->i18n = new QF\I18n($qf, QF_BASEPATH . ' data/i18n',  $language);
     $qf->t = $qf->i18n->get();
 
     //set i18n title/description
     $qf->setConfig('website_title') = $qf->t->website_title;
     $qf->setConfig('meta_description') = $qf->t->meta_description;
-    */
+    
     
     //database
     /*

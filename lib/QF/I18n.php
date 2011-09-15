@@ -13,6 +13,8 @@ class I18n
      */
     protected $translations = null;
     
+    protected $currentLanguage = null;
+    
     protected $data = array();
 
     /**
@@ -32,20 +34,28 @@ class I18n
         }
 
         $qf->setConfig('current_language', $language);
-
-        $i18n = array();
+        $this->currentLanguage = $language;
+        
         if (file_exists($translationDir . '/' .$language . '.php')) {
-            include($translationDir . '/' .$language . '.php');
+            $i18n = include($translationDir . '/' .$language . '.php');
         }
-        $this->data = $i18n;
+        $this->data = (array) $i18n;
         $this->translations['default'] = new Translation(!empty($i18n['default']) ? $i18n['default'] : array());
+    }
+    
+    public function loadModule($module)
+    {
+        if (file_exists(\QF_BASEPATH . 'modules/'.$module.'/data/i18n/'.$this->currentLanguage)) {
+            $newData = include \QF_BASEPATH . 'modules/'.$module.'/data/i18n/'.$this->currentLanguage;
+            return (array) $newData;
+        }
     }
 
     /**
      *
-     * @return qfTranslation
+     * @return \QF\Translation
      */
-    function get($ns = 'default')
+    public function get($ns = 'default')
     {
         if (empty($this->translations[$ns])) {
             $this->translations[$ns] = new Translation(!empty($i18n[$ns]) ? $i18n[$ns] : array());

@@ -1,8 +1,8 @@
 <?php
-$config['tasks'] = array();
+$tasks = array();
 
-$config['tasks']['example'] = array(
-    'module' => 'default',
+$tasks['example'] = array(
+    'class' => '\\ExampleModule\\Task\\Example',
     'task' => 'exampleTask',
     'parameter' => array(
         'foo' => 'defaultFoo',
@@ -11,3 +11,5 @@ $config['tasks']['example'] = array(
     ),
     'assign' => array('bar', 'baz')
 );
+
+return $tasks;

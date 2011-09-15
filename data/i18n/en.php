@@ -1,10 +1,9 @@
 <?php
-$i18n['website_title'] = 'QF Website';
-$i18n['meta_description'] = 'Default meta description.';
+$i18n = array();
 
-$i18n['page_example_title'] = 'Example page';
-$i18n['page_example_description'] = 'This is an example page.';
-$i18n['page_about_title'] = 'About us';
-$i18n['page_about_description'] = 'Some information about us';
+$i18n['default']['website_title'] = 'QF Website';
+$i18n['default']['meta_description'] = 'Default meta description.';
 
-$i18n['example'] = 'Example';
+$i18n['ExampleModule'] = $this->loadModule('ExampleModule');
+
+return $i18n;
