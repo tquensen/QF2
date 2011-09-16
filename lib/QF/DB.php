@@ -26,7 +26,7 @@ class DB
 
     /**
      * initializes and returns a db connection as configured in $qf_config['db'][$connection]
-     * @return PDO the database instance
+     * @return \PDO the database instance
      */
     public function get($connection = 'default')
     {
@@ -48,15 +48,72 @@ class DB
         return $this->connections[$connection];
     }
     
-    public function buildEntities(\PDOStatement $statement, $entities, $return = null)
+    /**
+     * builds entities from a PDOStatement as defined by $entities and returns the first entity
+     * 
+     * example for $entities:
+     *  - $entities must contain either a single entity or an array of multiple entity definitions with prefix as keys
+     *  - an single entity is defined either by
+     *    - the name of an entity class as string (e.g. "\Foo\Model\User" or just "stdClass") - ("id" as index and no relations implied)
+     *    - or by an array(classname (e.g. "\Foo\Model\User" or just "stdClass"), index-field (default is "id"), relations-array (optional))
+     *  - the relations-array consists of one or more "relationname" => $relation pairs, where
+     *    - relationname is the name of the property where the related entry is stored, and
+     *    - $relation is either the prefix of the related entity as string (1:n) or an array("prefix", true) (1:1)
+     * 
+     * examples:
+     *   - "stdClass" (this is the default)
+     *   - "\Foo\Model\User"
+     *   - array('\Foo\Model\User', 'id')
+     *   - array('a' => array('\Foo\Model\User', 'id', array('addresses' => 'b')), 'b' => '\Foo\Model\Addresses');
+     *   - array('a' => array('\Foo\Model\User', 'id', array('profile' => array('b', true))), 'b' => array('\Foo\Model\Profile', 'id'));
+     * 
+     * @param \PDOStatement $statement the pdo statement
+     * @param mixed $entities a definition of the entities to return (default is "stdClass")
+     * @return Object the resulting entity 
+     */
+    public function buildEntity(\PDOStatement $statement, $entities = "stdClass") {
+        $return = $this->buildEntities($statement, $entities, null);
+        return reset($return);
+    }
+    
+    /**
+     * builds entities from a PDOStatement as defined by $entities
+     * 
+     * example for $entities:
+     *  - $entities must contain either a single entity or an array of multiple entity definitions with prefix as keys
+     *  - an single entity is defined either by
+     *    - the name of an entity class as string (e.g. "\Foo\Model\User" or just "stdClass") - ("id" as index and no relations implied)
+     *    - or by an array(classname (e.g. "\Foo\Model\User" or just "stdClass"), index-field (default is "id"), relations-array (optional))
+     *  - the relations-array consists of one or more "relationname" => $relation pairs, where
+     *    - relationname is the name of the property where the related entry is stored, and
+     *    - $relation is either the prefix of the related entity as string (1:n) or an array("prefix", true) (1:1)
+     * 
+     * examples:
+     *   - "stdClass" (this is the default)
+     *   - "\Foo\Model\User"
+     *   - array('\Foo\Model\User', 'id')
+     *   - array('a' => array('\Foo\Model\User', 'id', array('addresses' => 'b')), 'b' => '\Foo\Model\Addresses');
+     *   - array('a' => array('\Foo\Model\User', 'id', array('profile' => array('b', true))), 'b' => array('\Foo\Model\Profile', 'id'));
+     * 
+     * @param \PDOStatement $statement the pdo statement
+     * @param mixed $entities a definition of the entities to return  (default is "stdClass")
+     * @param mixed $return if multiple entities are definded: true to return an array of all fetched entities or the prefix of an entity, null for the first defined entity
+     * @return array the resulting entities 
+     */
+    public function buildEntities(\PDOStatement $statement, $entities = "stdClass", $return = null)
     {
         if (is_string ($entities)) {
             $entities = array(0 => array($entities));
+        } elseif(!empty($entities[0])) {
+            $entities = array(0 => $entities);
         }
         foreach ($entities as $k => $v) {
             if (!is_array($v)) {
                 $entities[$k] = array($v, 'id', array());
             } else {
+                if (substr($v[0], 0, 1) !== '\\') {
+                    $v[0] = '\\'.$v[0];
+                }
                 $entities[$k] = array($v[0], isset($v[1]) ? $v[1] : 'id', isset($v[2]) ? $v[2] : array());
             }
         }
