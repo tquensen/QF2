@@ -12,20 +12,22 @@ if (in_array(@$_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))) {
 ini_set('display_errors', QF_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
 
-define('QF_BASEPATH', __DIR__.'/');
-set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__.'/lib' . PATH_SEPARATOR . __DIR__.'/modules');
+define('QF_BASEPATH', __DIR__);
 
 try {
 
-    require_once(QF_BASEPATH.'lib/SplClassLoader.php');
-    //require_once(QF_BASEPATH.'lib/functions.php');
-
-    require_once('SplClassLoader/SplClassLoader.php');
-    $classLoader = new SplClassLoader();
-    $classLoader->register();   
+    require_once(QF_BASEPATH.'/lib/Symfony/Component/ClassLoader/UniversalClassLoader.php');
+    $loader = new Symfony\Component\ClassLoader\UniversalClassLoader();
+    //autoload all namespaced classes inside the lib and modules folder
+    $loader->registerNamespaceFallbacks(array(__DIR__.'/lib', __DIR__.'/modules'));
+    //autoload all classes with PEAR-like class names inside the lib folder
+    $loader->registerPrefixFallbacks(array(__DIR__.'/lib'));
+    $loader->register();
+    
+    //require_once(QF_BASEPATH.'/lib/functions.php');
 
     //configuration
-    $config = new QF\Config(QF_BASEPATH.'data/config.php');
+    $config = new QF\Config(QF_BASEPATH.'/data/config.php');
     $config->format = isset($_GET['format']) ? $_GET['format'] : null;
 
     $qf = new QF\Core($config); // or new qfCoreI18n($config); to add i18n-capability to getUrl/redirectRoute methods
@@ -74,6 +76,6 @@ try {
     } catch (Exception $e) {
         //seems like the error was inside the template or error page
         //display a fallback page
-        require(QF_BASEPATH.'web/error.php');  
+        require(QF_BASEPATH.'/web/error.php');  
     }     
 }

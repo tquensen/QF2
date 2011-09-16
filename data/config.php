@@ -20,12 +20,7 @@ $config['error404_route'] = 'error404';
 //some fallback values
 $config['current_route'] = $config['current_module'] = $config['current_page'] = false;
 
-
-//autoloading
-$config['autoload_paths'] = array(QF_BASEPATH, QF_BASEPATH.'lib');
-
 //i18n
-
 $config['languages'] = array('en', 'de');
 $config['default_language'] = $config['languages'][0];
 

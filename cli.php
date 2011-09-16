@@ -15,20 +15,22 @@ define('QF_DEBUG', true);
 ini_set('display_errors', '1');
 ini_set('log_errors', '1');
 
-define('QF_BASEPATH', dirname(__FILE__).'/');
-set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__FILE__).'/lib' . PATH_SEPARATOR . dirname(__FILE__).'/modules');
+define('QF_BASEPATH', __DIR__);
 
 try {
 
-    require_once(QF_BASEPATH.'lib/SplClassLoader.php');
-    //require_once(QF_BASEPATH.'lib/functions.php');
-
-    require_once('SplClassLoader/SplClassLoader.php');
-    $classLoader = new SplClassLoader();
-    $classLoader->register();   
+    require_once(QF_BASEPATH.'/lib/Symfony/Component/ClassLoader/UniversalClassLoader.php');
+    $loader = new Symfony\Component\ClassLoader\UniversalClassLoader();
+    //autoload all namespaced classes inside the lib and modules folder
+    $loader->registerNamespaceFallbacks(array(__DIR__.'/lib', __DIR__.'/modules'));
+    //autoload all classes with PEAR-like class names inside the lib folder
+    $loader->registerPrefixFallbacks(array(__DIR__.'/lib'));
+    $loader->register();
+    
+    //require_once(QF_BASEPATH.'/lib/functions.php');
 
     //configuration
-    $config = new QF\Config(QF_BASEPATH.'data/config.php');
+    $config = new QF\Config(QF_BASEPATH.'/data/config.php');
 
     $qf = new QF\Core($config); 
     
