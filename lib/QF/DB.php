@@ -41,8 +41,10 @@ class DB
                 );
 
                 if ($this->connections[$connection] && $this->connections[$connection]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql') {
-                    $this->connection->exec('SET CHARACTER SET utf8');
+                    $this->connections[$connection]->exec('SET CHARACTER SET utf8');
                 }
+            } else {
+                $this->connections[$connection] = null;
             }
         }
         return $this->connections[$connection];
@@ -86,14 +88,14 @@ class DB
      *    - or by an array(classname (e.g. "\Foo\Model\User" or just "stdClass"), index-field (default is "id"), relations-array (optional))
      *  - the relations-array consists of one or more "relationname" => $relation pairs, where
      *    - relationname is the name of the property where the related entry is stored, and
-     *    - $relation is either the prefix of the related entity as string (1:n) or an array("prefix", true) (1:1)
+     *    - $relation is either the prefix of the related entity as string "prefix" (1:1) or as array("prefix") (1:n)
      * 
      * examples:
      *   - "stdClass" (this is the default)
      *   - "\Foo\Model\User"
      *   - array('\Foo\Model\User', 'id')
-     *   - array('a' => array('\Foo\Model\User', 'id', array('addresses' => 'b')), 'b' => '\Foo\Model\Addresses');
-     *   - array('a' => array('\Foo\Model\User', 'id', array('profile' => array('b', true))), 'b' => array('\Foo\Model\Profile', 'id'));
+     *   - array('a' => array('\Foo\Model\User', 'id', array('addresses' => array('b'))), 'b' => '\Foo\Model\Addresses');
+     *   - array('a' => array('\Foo\Model\User', 'id', array('profile' => 'b')), 'b' => array('\Foo\Model\Profile', 'id'));
      * 
      * @param \PDOStatement $statement the pdo statement
      * @param mixed $entities a definition of the entities to return  (default is "stdClass")
@@ -147,7 +149,7 @@ class DB
                 }
                 foreach ($entity[2] as $relKey => $relData) {
                     if (is_string($relData)) {
-                        $relData = array($relData, false);
+                        $relData = array($relData, true);
                     }
                     if (isset($entities[$relData[0]])) {
                         $relations[] = array($k, $relData[0], $relKey, !empty($relData[1]));
@@ -167,10 +169,10 @@ class DB
                 }
                 foreach ($relations as $relation) {
                     if ($row[$identifiers[$relation[0]]] && $row[$identifiers[$relation[1]]]) {
-                        if (!empty($relation[3])) {
-                            $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]} = $returnData[$relation[1]][$row[$identifiers[$relation[1]]]];
-                        } else {
+                        if (empty($relation[3])) {
                             $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]}[$row[$identifiers[$relation[1]]]] =  $returnData[$relation[1]][$row[$identifiers[$relation[1]]]];
+                        } else {
+                            $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]} = $returnData[$relation[1]][$row[$identifiers[$relation[1]]]];
                         }
                     }
                 }
