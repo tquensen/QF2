@@ -38,7 +38,7 @@ try {
     
     //database
     /*
-    $qf->db = new QF\DB($qf);
+    $qf->db = new QF\DB\DB($qf);
     */
     
     $cli = new QF\Cli($qf);

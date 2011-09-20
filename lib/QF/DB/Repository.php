@@ -1,53 +1,107 @@
 <?php
-namespace QF;
+namespace QF\DB;
 
-class DB
+class Repository
 {
-    /**
-     * @var \QF\Core
-     */
-    protected $qf = null;
-    protected $connections = array();
-
-    /**
-     * initializes a PDO object as configured in $qf_config['db']
-     *
-     * $qf_config['db'] must be an array of arrays with the following elements:
-     * 'driver' => 'mysql:host=localhost;dbname=qfdb', //a valid PDO dsn. @see http://de3.php.net/manual/de/pdo.construct.php
-     * 'username' => 'root', //The user name for the DSN string. This parameter is optional for some PDO drivers.
-     * 'password' => '', //The password for the DSN string. This parameter is optional for some PDO drivers.
-     * 'options' => array() //A key=>value array of driver-specific connection options. (optional)
-     *
-     */
-    public function __construct(qfCore $qf)
+    protected $db;
+    
+    public function __construct(\PDO $db)
     {
-        $this->qf = $qf;
+        $this->db = $db;
     }
-
-    /**
-     * initializes and returns a db connection as configured in $qf_config['db'][$connection]
-     * @return \PDO the database instance
-     */
-    public function get($connection = 'default')
+    
+    public function saveEntity(Entity $entity, $insert = null)
     {
-        if (!isset($this->connections[$connection])) {
-            $db = $this->qf->getConfig('db');
-            if (is_array($db) && isset($db[$connection])) {
-                $this->connections[$connection] = new PDO(
-                    $db['driver'],
-                    isset($db['username']) ? $db['username'] : '',
-                    isset($db['password']) ? $db['password'] : '',
-                    isset($db['options']) ? $db['options'] : array()
-                );
-
-                if ($this->connections[$connection] && $this->connections[$connection]->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql') {
-                    $this->connections[$connection]->exec('SET CHARACTER SET utf8');
-                }
+        $entityClass = get_class($entity);
+        $properties = $entityClass::$properties;
+        $identifier = $entityClass::$identifier;
+        
+        if ($insert === null) {
+            $insert = $entity->$identifier === null ? true : false;
+        }
+        if ($insert) {
+            unset($properties[$identifier]);
+            $query = 'INSERT INTO '.$entityClass::$table.' ('.implode(',',array_keys($properties)).') VALUES ('.implode(',', array_fill(0, count($properties), '?')).')';
+        } else {
+            $idType = $properties[$identifier];
+            unset($properties[$identifier]);
+            $query = 'UPDATE '.$entityClass::$table.' SET '.implode('=?, ',array_keys($properties)).'=? WHERE '.$identifier.' = ?';
+            $properties[$identifier] = $idType;
+        }
+        
+        $stmt = $this->db->prepare($query);
+        
+        $values = array();
+        foreach ($properties as $prop => $type) {
+            $values[] = $entity->$property;
+        }
+        
+        $result = $stmt->execute();
+        if ($result && $insert) {
+            $entity->$identifier = $this->db->lastInsertId();
+        } 
+        return $result;
+    }
+    
+    /**
+     *
+     * @param mixed $entity an \QF\DB\Entity instance or classname
+     * @param array|string $conditions the where conditions
+     * @param array $values values for ?-placeholders in the conditions
+     * @param string $order an order by clause (id ASC, foo DESC)
+     * @return Entity
+     */
+    public function loadEntity($entity, $conditions = array(), $values = array(), $order = null)
+    {
+        $entities = $this->loadEntities($entity, $conditions, $values, $order, 1, 0, true);
+        return reset($entities);
+    }
+    
+    /**
+     *
+     * @param mixed $entity an \QF\DB\Entity instance or classname
+     * @param array|string $conditions the where conditions
+     * @param array $values values for ?-placeholders in the conditions
+     * @param string $order an order by clause (id ASC, foo DESC)
+     * @param int $limit
+     * @param int $offset
+     * @param bool $build true to build the entities, false to return the statement
+     * @return array|\PDOStatement
+     */
+    public function loadEntities($entity, $conditions = array(), $values = array(), $order = null, $limit = null, $offset = null, $build = true)
+    {
+        if (is_object($entity)) {
+            $entity = get_class($entity);
+        }
+        if (!is_subclass_of($entity, '\\QF\\DB\\Entity')) {
+            throw new \InvalidArgumentException('$entity must be an \QF\DB\Entity instance or classname');
+        }
+        $query = 'SELECT '.implode(', ', $entity::$properties).' FROM '.$entity::$table;
+        $where = '';
+        foreach ((array) $conditions as $k => $v) {
+            if (is_numeric($k)) {
+                $where .= ' '.$v;
             } else {
-                $this->connections[$connection] = null;
+                $where .= ' '.$k.'='.$this->db->quote($v);
             }
         }
-        return $this->connections[$connection];
+        if ($where) {
+            $query .= ' WHERE'.$where;
+        }
+        if ($order) {
+            $query .= ' ORDER BY '.$order;
+        }
+        if ($limit || $offset) {
+            $query .= ' LIMIT '.(int)$limit.((int)$offset ? ' OFFSET '.(int)$offset : '');
+        }
+        $stmt = $this->db->prepare($query);
+        $stmt->execute(array_values((array) $values));
+        
+        if ($build) {
+            return $this->buildEntities($stmt, array($entity, $entity::$identifier));
+        } else {
+            return $stmt;
+        }     
     }
     
     /**

@@ -1,5 +1,5 @@
 <?php
-namespace QF;
+namespace QF\DB;
 
 abstract class Entity implements \ArrayAccess, \Serializable
 {
@@ -7,12 +7,13 @@ abstract class Entity implements \ArrayAccess, \Serializable
     protected static $properties = array(); //array('id' => 'integer, 'name' => 'string', 'user_id' => 'integer')
     protected static $relations = array(); //array('user' => '\\Example\\\\Model\\User', 'comments' => array('\\Example\\\\Model\\Comment'))
     protected static $table = '';
+    protected static $identifier = 'id';
 
     public function toArray($includeRelations = false)
     {
         $return = array();
         foreach (static::$properties as $prop => $type) {
-            $property = $this->__get($prop);
+            $property = $this->get($prop);
             if (is_object($property) && method_exists($property, 'toArray')) {
                 $property = $property->toArray();
             }
@@ -20,7 +21,7 @@ abstract class Entity implements \ArrayAccess, \Serializable
         }
         if ($includeRelations) {
             foreach (static::$relations as $rel => $type) {
-                $property = $this->__get($rel);
+                $property = $this->get($rel);
                 if (is_array($property)) {
                     foreach ($property as $k => $v) {
                         if (is_object($v) && method_exists($v, 'toArray')) {
