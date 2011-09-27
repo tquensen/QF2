@@ -3,7 +3,7 @@ namespace QF\DB;
 
 abstract class Entity implements \ArrayAccess, \Serializable
 {
-    protected final static $types = array('boolean' => true, 'bool' => true, 'integer' => true, 'int' => true, 'float' => true, 'double' => true, 'string' => true, 'array' => true);
+    protected static $types = array('boolean' => true, 'bool' => true, 'integer' => true, 'int' => true, 'float' => true, 'double' => true, 'string' => true, 'array' => true);
     public static $properties = array(); //array('id' => 'integer, 'name' => 'string', 'user_id' => 'integer')
     public static $relations = array(); //array('user' => '\\Example\\\\Model\\User', 'comments' => array('\\Example\\\\Model\\Comment'))
     public static $table = '';

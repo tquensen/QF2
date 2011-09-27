@@ -20,7 +20,9 @@ class Repository
             $insert = $entity->$identifier === null ? true : false;
         }
         if ($insert) {
-            unset($properties[$identifier]);
+            if ($entity->$identifier === null) {
+                unset($properties[$identifier]);
+            }
             $query = 'INSERT INTO '.$entityClass::$table.' ('.implode(',',array_keys($properties)).') VALUES ('.implode(',', array_fill(0, count($properties), '?')).')';
         } else {
             $idType = $properties[$identifier];
@@ -37,7 +39,7 @@ class Repository
         }
         
         $result = $stmt->execute();
-        if ($result && $insert) {
+        if ($result && $insert && $entity->$identifier === null) {
             $entity->$identifier = $this->db->lastInsertId();
         } 
         return $result;
@@ -139,7 +141,7 @@ class Repository
      *  - $entities must contain either a single entity or an array of multiple entity definitions with prefix as keys
      *  - an single entity is defined either by
      *    - the name of an entity class as string (e.g. "\Foo\Model\User" or just "stdClass") - ("id" as index and no relations implied)
-     *    - or by an array(classname (e.g. "\Foo\Model\User" or just "stdClass"), index-field (default is "id"), relations-array (optional))
+     *    - or by an array(classname, index-field (default is "id"), relations-array (optional))
      *  - the relations-array consists of one or more "relationname" => $relation pairs, where
      *    - relationname is the name of the property where the related entry is stored, and
      *    - $relation is either the prefix of the related entity as string "prefix" (1:1) or as array("prefix") (1:n)
