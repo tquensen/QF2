@@ -4,17 +4,20 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
 {
     protected static $_types = array('boolean' => true, 'bool' => true, 'integer' => true, 'int' => true, 'float' => true, 'double' => true, 'string' => true, 'array' => true);
     protected static $_properties = array(
+        /* example
         'property' => array(
             'type' => 'string', //a scalar type or a classname, true to allow any type, default = true
             'container' => 'data', //the parent-property containing the property ($this->container[$property]) or false ($this->$property), default = false
             'readonly' => false, //only allow read access (get, has, is)
-            'collection' => true, //stores multiple values, activates addTo and removeFrom methods, true to store values in an array, name of a class that implements ArrayAccess to store values in that class, default = false (single value),
+            'required' => false, //disallow unset(), clear(), and set(null), default = false (unset(), clear(), and set(null) is allowed regardles of type) - the property can still be null if not initialized!
+            'collection' => true, //stores multiple values, activates add and remove methods, true to store values in an array, name of a class that implements ArrayAccess to store values in that class, default = false (single value),
             'collectionUnique' => true, //do not allow dublicate entries when using as collection, when type = array or an object and collectionUnique is a string, that property/key will be used as index of the collection
             'collectionRemoveByValue' => true, //true to remove entries from a collection by value, false to remove by key, default = false, this only works if collection is an array or an object implementing Traversable
             'collectionSingleName' => false, //alternative property name to use for add/remove actions, default=false (e.g. if property = "Children" and collectionSingleName = "Child", you can use addChild/removeChild instead of addChildren/removeChildren)
             'exclude' => true, //set to true to exclude this property on toArray() and foreach(), default = false
             'default' => null // the default value to return by get if null, and to set by clear, default = null
         )
+         */
     );
     
     public function get($property) {
@@ -43,6 +46,10 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     }
     
     public function set($property, $value) {
+        if ($value === null) {
+            return $this->clear($property);
+        }
+        
         $method = 'set'.ucfirst($property);
         if (method_exists($this, $method)) {
             return $this->$method($value);
@@ -57,9 +64,6 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             throw new Exception('Trying to set readonly property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
-        }
-        if ($value === null) {
-            return $this->clear($property);
         }
         
         if (!empty(static::$_properties[$property]['collection'])) {
@@ -270,25 +274,35 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                 }
             }
         }
-        
-        
-        
-        
+    }
+    
+    public function _unset($property)
+    {
+        return $this->clear($property);
     }
     
     public function clear($property) {
+        $method = 'unset'.ucfirst($property);
+        if (method_exists($this, $method)) {
+            return $this->$method();
+        }
         $method = 'clear'.ucfirst($property);
         if (method_exists($this, $method)) {
             return $this->$method();
         }
         if (empty(static::$_properties[$property])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to clear undefined property: '.get_class($this).'::$'.$property .
+            throw new Exception('Trying to unset undefined property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         } elseif (!empty(static::$_properties[$property]['readonly'])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to clear readonly property: '.get_class($this).'::$'.$property .
+            throw new Exception('Trying to unset readonly property: '.get_class($this).'::$'.$property .
+                ' in ' . $trace[0]['file'] .
+                ' on line ' . $trace[0]['line']);
+        } elseif (!empty(static::$_properties[$property]['required'])) {
+            $trace = debug_backtrace();
+            throw new Exception('Trying to unset required property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         }
@@ -408,11 +422,13 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     
     public function __call($method, $args)
     {
-        if (preg_match('/^(get|set|clear|has|is|add|remove)(.+)$/', $method, $matches)) {
+        if (preg_match('/^(get|set|clear|unset|has|is|add|remove)(.+)$/', $method, $matches)) {
             $action = $matches[1];
             $property = lcfirst($matches[2]);
             if ($action == 'set' || $action == 'add' || $action == 'remove') {
                 return $this->$action($property, isset($args[0]) ? $args[0] : null);
+            } elseif ($action == 'unset') {
+                return $this->clear($property);
             } else {
                 return $this->$action($property);
             }
