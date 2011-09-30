@@ -25,16 +25,20 @@ $b->property2 = 'WOOT';
 
 $c = new TestEntity;
 $c->id = 4;
-$c->addChildren($b);
+$c->addChild($b);
 
-$a->addChildren($b);
-$a->addChildren($c);
+$a->addChild($b);
+$a->addChild($c);
 
 foreach ($a as $k => $v) {
     echo $k.': ';
     var_dump($v);
 }
 
+$d = new TestEntity;
+$d->id = 555;
+$a->addChild($d);
+//$a->removeChild($b->id);
 var_dump($a->toArray());
 
 var_dump($a->hasId());

@@ -8,9 +8,10 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             'type' => 'string', //a scalar type or a classname, true to allow any type, default = true
             'container' => 'data', //the parent-property containing the property ($this->container[$property]) or false ($this->$property), default = false
             'readonly' => false, //only allow read access (get, has, is)
-            'collection' => true, //stores multiple values, activates add and remove methods, true to store values in an array, name of a class that implements ArrayAccess to store values in that class, default = false (single value),
+            'collection' => true, //stores multiple values, activates addTo and removeFrom methods, true to store values in an array, name of a class that implements ArrayAccess to store values in that class, default = false (single value),
             'collectionUnique' => true, //do not allow dublicate entries when using as collection, when type = array or an object and collectionUnique is a string, that property/key will be used as index of the collection
             'collectionRemoveByValue' => true, //true to remove entries from a collection by value, false to remove by key, default = false, this only works if collection is an array or an object implementing Traversable
+            'collectionSingleName' => false, //alternative property name to use for add/remove actions, default=false (e.g. if property = "Children" and collectionSingleName = "Child", you can use addChild/removeChild instead of addChildren/removeChildren)
             'exclude' => true, //set to true to exclude this property on toArray() and foreach(), default = false
             'default' => null // the default value to return by get if null, and to set by clear, default = null
         )
@@ -70,10 +71,10 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                         ' on line ' . $trace[0]['line']);
                 }
             } else {
-                if (!is_array($value) && (!is_object($value) || !($value instanceof ArrayAccess))) {
+                if (!is_array($value)) {
                     $trace = debug_backtrace();
                     throw new UnexpectedValueException('Error setting property: '.get_class($this).'::$' . $property .
-                        ' must be of type array or ArrayAccess, '.(is_object($value) ? get_class($value) : gettype($value)).' given in ' . $trace[0]['file'] .
+                        ' must be of type array, '.(is_object($value) ? get_class($value) : gettype($value)).' given in ' . $trace[0]['file'] .
                         ' on line ' . $trace[0]['line']);
                 }
             }
@@ -99,10 +100,20 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     }
     
     public function add($property, $value) {
+        if (empty(static::$_properties[$property])) {
+            foreach (static::$_properties as $prop => $data) {
+                if (!empty($data['collectionSingleName']) && $data['collectionSingleName'] == $property) {
+                    $property = $prop;
+                    break;
+                }
+            }
+        }
+        
         $method = 'add'.ucfirst($property);
         if (method_exists($this, $method)) {
             return $this->$method($value);
         }
+        
         if (empty(static::$_properties[$property])) {
             $trace = debug_backtrace();
             throw new Exception('Trying to add to undefined property: '.get_class($this).'::$'.$property .
@@ -188,6 +199,15 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     }
     
     public function remove($property, $value) {
+        if (empty(static::$_properties[$property])) {
+            foreach (static::$_properties as $prop => $data) {
+                if (!empty($data['collectionSingleName']) && $data['collectionSingleName'] == $property) {
+                    $property = $prop;
+                    break;
+                }
+            }
+        }
+        
         $method = 'remove'.ucfirst($property);
         if (method_exists($this, $method)) {
             return $this->$method($value);
