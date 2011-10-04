@@ -40,6 +40,20 @@ class DB
         }
         return isset(self::$connections[$connection]) ?self::$connections[$connection] : null;
     }
+    
+    public static function getRepository($entityClass, $connection = null)
+    {
+        if (is_object($entityClass)) {
+            $entityClass = get_class($entityClass);
+        }
+            
+        if (!is_subclass_of($this->entityClass, '\\Mongo\\Entity')) {
+            throw new \InvalidArgumentException('$entityClass must be an \\Mongo\\Entity instance or classname');
+        }
+        
+        $repositoryName = $entityClass::getRepositoryClass();
+        return new $repositoryName($connection, $entityClass);
+    }
 
     
 }

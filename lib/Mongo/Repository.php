@@ -6,7 +6,7 @@ class Repository
 
     /**
      *
-     * @var MongoDB
+     * @var \MongoDB
      */
     protected $db = null;
     
@@ -14,18 +14,20 @@ class Repository
 
     protected $connection = null;
 
-    public function __construct($entity, $connection = null)
+    public function __construct($connection = null, $entityClass = null)
     {
         $this->connection = $connection;
 
-        if (is_object($entity)) {
-            $entity = get_class($entity);
+        if ($entityClass) { 
+            if (is_object($entityClass)) {
+                $entityClass = get_class($entityClass);
+            }
+            
+            $this->entityClass = $entityClass;
         }
-        if (!is_subclass_of($entity, '\\Mongo\\Entity')) {
-            throw new \InvalidArgumentException('$entity must be an \\Mongo\\Entity instance or classname');
+        if (!is_subclass_of($this->entityClass, '\\Mongo\\Entity')) {
+            throw new \InvalidArgumentException('$entityClass must be an \\Mongo\\Entity instance or classname');
         }
-        
-        $this->entityClass = $entity;
     }
 
     /**
@@ -42,7 +44,7 @@ class Repository
 
     /**
      *
-     * @return MongoCollection
+     * @return \MongoCollection
      */
     public function getCollection()
     {
@@ -100,7 +102,7 @@ class Repository
         
         foreach ($data as $current) {
             $model = $this->create($current);
-            foreach (array_keys($entityClass::getColumns()) as $col) {
+            foreach ($entityClass::getColumns() as $col) {
                 if (isset($current[$col]))
                 $model->setDatabaseProperty($col, $current[$col]);
             }
@@ -117,15 +119,15 @@ class Repository
      *
      * @param mixed $query an array of fields for which to search or the _id as string or MongoId
      * @param bool $build (default true) set to false to return the raw MongoCursor
-     * @return Mongo_Model the matching record or null
+     * @return Entity the matching record or null
      */
     public function findOne($query, $build = true)
     {
         $entityClass = $this->entityClass;
         
         if (is_string($query)) {
-            $query = array('_id' => $entityClass::isAutoId() ? new MongoId($query) : $query);
-        } elseif ($query instanceof MongoId) {
+            $query = array('_id' => $entityClass::isAutoId() ? new \MongoId($query) : $query);
+        } elseif ($query instanceof \MongoId) {
             $query = array('_id' => $query);
         }
         $data = $this->getCollection()->findOne($query);
@@ -139,7 +141,7 @@ class Repository
      * @param array $query Associative array or object with fields to match.
      * @param int $limit Specifies an upper limit to the number returned.
      * @param int $skip Specifies a number of results to skip before starting the count.
-     * @return int Returns the number of documents matching the query.
+     * @return int returns the number of documents matching the query.
      */
     public function count($query = array(), $limit = null, $skip = null)
     {
@@ -150,7 +152,7 @@ class Repository
      *
      * @param array $sort The fields by which to sort.
      * @param bool $build (default true) set to false to return the raw MongoCursor
-     * @return MongoCursor|array Returns an array or a cursor for the search results.
+     * @return \MongoCursor|array Returns an array or a cursor for the search results.
      */
     public function findAll($sort = array(), $build = true)
     {
@@ -183,7 +185,7 @@ class Repository
     }
     
     /**
-     * creates a Mongo_MapReduce object for this collection
+     * creates a Mongo\MapReduce object for this collection
      * 
      * @param MongoCode|string $map the map function as MongoCode or string
      * @param MongoCode|string $reduce the reduce function as MongoCode or string
@@ -226,7 +228,7 @@ class Repository
      *
      * @param Entity $entity the model to save
      * @param bool|integer $safe @see php.net/manual/en/mongocollection.update.php
-     * @return bool Returns if the update was successfully sent to the database.
+     * @return bool returns if the update was successfully sent to the database.
      */
     public function save(Entity $entity, $safe = true)
     {
@@ -239,7 +241,7 @@ class Repository
             $data = $entity->getData();
             if ($entity->isNew()) {
                 $insert = array();
-                foreach (array_keys($entityClass::getColumns()) as $column) {
+                foreach ($entityClass::getColumns() as $column) {
                     if ($entity->$column !== null) {
                         $insert[$column] = $entity->$column;
                     }
@@ -257,7 +259,7 @@ class Repository
                 return false;
             } else {
                 $query = array();
-                foreach (array_keys($entityClass::getColumns()) as $column) {
+                foreach ($entityClass::getColumns() as $column) {
                     if ($entity->$column !== $entity->getDatabaseProperty($column)) {
                         if ($entity->$column === null) {
                             $query['$unset'][$column] = 1;
@@ -285,7 +287,7 @@ class Repository
                 }
                 return false;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             //var_dump($e->getMessage());
             throw $e;
         }
@@ -297,7 +299,7 @@ class Repository
      * @param bool|integer $safe @see php.net/manual/en/mongocollection.remove.php
      * @return mixed If "safe" is set, returns an associative array with the status of the remove ("ok"), the number of items removed ("n"), and any error that may have occured ("err"). Otherwise, returns TRUE if the remove was successfully sent, FALSE otherwise.
      */
-    public function remove($entity, $safe = true)
+    public function remove(Entity $entity, $safe = true)
     {
         if (!$entity->_id) {
             return false;
@@ -336,13 +338,13 @@ class Repository
 //    }
 
     /**
-     * @param string|Entity $entity
      * @param string $connection the database connection to use (null for the default connection)
+     * @param string|Entity $entityClass
      * @return Mongo_Repository
      */
-    public static function get($entity, $connection = null)
+    public static function get($connection = null, $entityClass = null)
     {
-        return new static($entity, $connection);
+        return new static($connection, $entityClass);
     }
 
 }

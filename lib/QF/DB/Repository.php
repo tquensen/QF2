@@ -3,35 +3,63 @@ namespace QF\DB;
 
 class Repository
 {
-    protected $db;
+    /**
+     *
+     * @var \PDO
+     */
+    protected $db = null;
     
-    public function __construct(\PDO $db)
+    protected $entityClass = null;
+
+    protected $connection = null;
+    
+    public function __construct($connection = null, $entityClass = null)
     {
-        $this->db = $db;
+        $this->connection = $connection;
+
+        if ($entityClass) { 
+            if (is_object($entityClass)) {
+                $entityClass = get_class($entityClass);
+            }
+            
+            $this->entityClass = $entityClass;
+        }
+        if (!is_subclass_of($this->entityClass, '\\QF\\DB\\Entity')) {
+            throw new \InvalidArgumentException('$entityClass must be an \\QF\\DB\\Entity instance or classname');
+        }
     }
     
-    public function saveEntity(Entity $entity, $insert = null)
+    /**
+     *
+     * @return MongoDB
+     */
+    public function getDB()
+    {
+        if ($this->db === null) {
+            $this->db = DB::get($this->connection);
+        }
+        return $this->db;
+    }
+    
+    public function save(Entity $entity)
     {
         $entityClass = get_class($entity);
-        $properties = $entityClass::$properties;
-        $identifier = $entityClass::$identifier;
+        $properties = $entityClass::getColumns();
+        $identifier = $entityClass::getIdentifier();
         
-        if ($insert === null) {
-            $insert = $entity->$identifier === null ? true : false;
-        }
-        if ($insert) {
+        if ($entity->isNew()) {
             if ($entity->$identifier === null) {
                 unset($properties[$identifier]);
             }
-            $query = 'INSERT INTO '.$entityClass::$table.' ('.implode(',',array_keys($properties)).') VALUES ('.implode(',', array_fill(0, count($properties), '?')).')';
+            $query = 'INSERT INTO '.$entityClass::getTablename().' ('.implode(',',$properties).') VALUES ('.implode(',', array_fill(0, count($properties), '?')).')';
         } else {
             $idType = $properties[$identifier];
             unset($properties[$identifier]);
-            $query = 'UPDATE '.$entityClass::$table.' SET '.implode('=?, ',array_keys($properties)).'=? WHERE '.$identifier.' = ?';
+            $query = 'UPDATE '.$entityClass::getTablename().' SET '.implode('=?, ',$properties).'=? WHERE '.$identifier.' = ?';
             $properties[$identifier] = $idType;
         }
         
-        $stmt = $this->db->prepare($query);
+        $stmt = $this->getDB()->prepare($query);
         
         $values = array();
         foreach ($properties as $prop => $type) {
@@ -40,7 +68,7 @@ class Repository
         
         $result = $stmt->execute();
         if ($result && $insert && $entity->$identifier === null) {
-            $entity->$identifier = $this->db->lastInsertId();
+            $entity->$identifier = $this->getDB()->lastInsertId();
         } 
         return $result;
     }
@@ -53,7 +81,7 @@ class Repository
      * @param string $order an order by clause (id ASC, foo DESC)
      * @return Entity
      */
-    public function loadEntity($entity, $conditions = array(), $values = array(), $order = null)
+    public function load($entity, $conditions = array(), $values = array(), $order = null)
     {
         $entities = $this->loadEntities($entity, $conditions, $values, $order, 1, 0, true);
         return reset($entities);
@@ -76,15 +104,15 @@ class Repository
             $entity = get_class($entity);
         }
         if (!is_subclass_of($entity, '\\QF\\DB\\Entity')) {
-            throw new \InvalidArgumentException('$entity must be an \QF\DB\Entity instance or classname');
+            throw new \InvalidArgumentException('$entity must be an \\QF\\DB\\Entity instance or classname');
         }
-        $query = 'SELECT '.implode(', ', $entity::$properties).' FROM '.$entity::$table;
+        $query = 'SELECT '.implode(', ', $entity::getColumns()).' FROM '.$entity::getTablename();
         $where = '';
         foreach ((array) $conditions as $k => $v) {
             if (is_numeric($k)) {
                 $where .= ' '.$v;
             } else {
-                $where .= ' '.$k.'='.$this->db->quote($v);
+                $where .= ' '.$k.'='.$this->getDB()->quote($v);
             }
         }
         if ($where) {
@@ -96,11 +124,11 @@ class Repository
         if ($limit || $offset) {
             $query .= ' LIMIT '.(int)$limit.((int)$offset ? ' OFFSET '.(int)$offset : '');
         }
-        $stmt = $this->db->prepare($query);
+        $stmt = $this->getDB()->prepare($query);
         $stmt->execute(array_values((array) $values));
         
         if ($build) {
-            return $this->buildEntities($stmt, array($entity, $entity::$identifier));
+            return $this->buildEntities($stmt, array($entity, $entity::getIdentifier()));
         } else {
             return $stmt;
         }     
@@ -226,7 +254,9 @@ class Repository
                 foreach ($relations as $relation) {
                     if ($row[$identifiers[$relation[0]]] && $row[$identifiers[$relation[1]]]) {
                         if (empty($relation[3])) {
-                            $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]}[$row[$identifiers[$relation[1]]]] =  $returnData[$relation[1]][$row[$identifiers[$relation[1]]]];
+                            $data = $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]};
+                            $data[$row[$identifiers[$relation[1]]]] =  $returnData[$relation[1]][$row[$identifiers[$relation[1]]]];
+                            $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]} = $data;
                         } else {
                             $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]} = $returnData[$relation[1]][$row[$identifiers[$relation[1]]]];
                         }

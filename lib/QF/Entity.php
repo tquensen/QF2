@@ -1,4 +1,8 @@
 <?php
+namespace QF;
+use \ArrayAccess;
+use \Serializable;
+use \IteratorAggregate;
 
 abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
 {
@@ -70,14 +74,14 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             if (is_string(static::$_properties[$property]['collection'])) {
                 if (!is_object($value) || !($value instanceof static::$_properties[$property]['collection'])) {
                     $trace = debug_backtrace();
-                    throw new UnexpectedValueException('Error setting property: '.get_class($this).'::$' . $property .
+                    throw new \UnexpectedValueException('Error setting property: '.get_class($this).'::$' . $property .
                         ' must be of type '.static::$_properties[$property]['type'] .', '.(is_object($value) ? get_class($value) : gettype($value)).' given in ' . $trace[0]['file'] .
                         ' on line ' . $trace[0]['line']);
                 }
             } else {
                 if (!is_array($value)) {
                     $trace = debug_backtrace();
-                    throw new UnexpectedValueException('Error setting property: '.get_class($this).'::$' . $property .
+                    throw new \UnexpectedValueException('Error setting property: '.get_class($this).'::$' . $property .
                         ' must be of type array, '.(is_object($value) ? get_class($value) : gettype($value)).' given in ' . $trace[0]['file'] .
                         ' on line ' . $trace[0]['line']);
                 }
@@ -88,7 +92,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                     settype($value, static::$_properties[$property]['type']);
                 } elseif (!is_object($value) || !($value instanceof static::$_properties[$property]['type'])) {
                     $trace = debug_backtrace();
-                    throw new UnexpectedValueException('Error setting property: '.get_class($this).'::$' . $property .
+                    throw new \UnexpectedValueException('Error setting property: '.get_class($this).'::$' . $property .
                         ' must be of type '.static::$_properties[$property]['type'] .', '.(is_object($value) ? get_class($value) : gettype($value)).' given in ' . $trace[0]['file'] .
                         ' on line ' . $trace[0]['line']);
                 }
@@ -120,17 +124,17 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
         
         if (empty(static::$_properties[$property])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to add to undefined property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to add to undefined property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         } elseif (empty(static::$_properties[$property]['collection'])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to add to non-collection property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to add to non-collection property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         } elseif (!empty(static::$_properties[$property]['readonly'])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to add to readonly property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to add to readonly property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         }
@@ -140,7 +144,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                 settype($value, static::$_properties[$property]['type']);
             } elseif (!is_object($value) || !($value instanceof static::$_properties[$property]['type'])) {
                 $trace = debug_backtrace();
-                throw new UnexpectedValueException('Error adding to property: '.get_class($this).'::$' . $property .
+                throw new \UnexpectedValueException('Error adding to property: '.get_class($this).'::$' . $property .
                     ' must be of type '.static::$_properties[$property]['type'] .', '.(is_object($value) ? get_class($value) : gettype($value)).' given in ' . $trace[0]['file'] .
                     ' on line ' . $trace[0]['line']);
             }
@@ -218,7 +222,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
         }
         if (empty(static::$_properties[$property])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to remove from undefined property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to remove from undefined property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         } elseif (empty(static::$_properties[$property]['collection'])) {
@@ -228,7 +232,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                 ' on line ' . $trace[0]['line']);
         } elseif (!empty(static::$_properties[$property]['readonly'])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to remove from readonly property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to remove from readonly property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         }
@@ -292,17 +296,17 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
         }
         if (empty(static::$_properties[$property])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to unset undefined property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to unset undefined property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         } elseif (!empty(static::$_properties[$property]['readonly'])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to unset readonly property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to unset readonly property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         } elseif (!empty(static::$_properties[$property]['required'])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to unset required property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to unset required property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         }
@@ -362,7 +366,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     }
     
     public function getIterator() {
-        return new ArrayIterator($this->toArray(array(), false));
+        return new \ArrayIterator($this->toArray(array(), false));
     }
     
     public function serialize()
@@ -435,7 +439,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             
         } else {
             $trace = debug_backtrace();
-            throw new Exception('Call to undefined method: '.get_class($this).'::'.$method.'()' .
+            throw new \Exception('Call to undefined method: '.get_class($this).'::'.$method.'()' .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         }

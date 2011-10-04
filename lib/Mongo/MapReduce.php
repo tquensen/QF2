@@ -241,8 +241,8 @@ class MapReduce
         
         if ($this->outEntity) {
             $entityName = $this->outEntity;
-            $repositoryName = $entityName::GetRepositoryClass();
-            $repository = new $repositoryName($entityName, $this->connection);
+            $repositoryName = $entityName::getRepositoryClass();
+            $repository = new $repositoryName($this->connection, $entityName);
             return $repository->find($query, $sort, $limit, $skip, $build);
         }
         
@@ -269,19 +269,19 @@ class MapReduce
     protected function check()
     {
         if (!$this->collection) {
-            throw new Exception('Missing collection to use for map/reduce.');
+            throw new \Exception('Missing collection to use for map/reduce.');
         }
         
         if (!$this->map) {
-            throw new Exception('Missing map function.');
+            throw new \Exception('Missing map function.');
         }
         
         if (!$this->reduce) {
-            throw new Exception('Missing reduce function.');
+            throw new \Exception('Missing reduce function.');
         }
         
         if (!$this->outCollection) {
-            throw new Exception('Missing out collection.');
+            throw new \Exception('Missing out collection.');
         }
     }
 }
