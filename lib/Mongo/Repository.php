@@ -101,7 +101,7 @@ class Repository
         $entityClass = $this->entityClass;
         
         foreach ($data as $current) {
-            $model = $this->create($current);
+            $model = $this->create($current, false);
             foreach ($entityClass::getColumns() as $col) {
                 if (isset($current[$col]))
                 $model->setDatabaseProperty($col, $current[$col]);
