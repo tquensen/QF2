@@ -1,4 +1,5 @@
 <?php
+
 error_reporting(E_ALL | E_STRICT);
 define('QF_CLI', false);
 
@@ -8,7 +9,9 @@ define('QF_DEBUG', in_array(@$_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1'))
 require_once __DIR__.'/bootstrap.php';
 
 try {
-
+    
+    $route = isset($_GET['route']) ? $_GET['route'] : '';
+    
     //throws 404 QF\Exception\HttpException for invalid routes
     $routeData = $qf->routing->parseRoute($route);
     $pageContent = $qf->callRoute($routeData['route'], $routeData['parameter'], true);

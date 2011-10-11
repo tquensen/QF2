@@ -6,18 +6,19 @@ class DB
     protected static $connections = array();
     protected static $settings = array();
     
-    /**
-     *
-     * @return null
-     */
+    public function __construct($settings = array())
+    {
+        static::init($settings);
+    }
+    
     public static function init($settings = array())
     {
-        self::$settings = $settings;
+        static::$settings = $settings;
     }
     
     /**
      *
-     * @return MongoDB
+     * @return \PDO
      */
     public static function get($connection = null)
     {
@@ -25,25 +26,25 @@ class DB
             $connection = 'default';
         }
         
-        if (!isset(self::$connections[$connection])) {
-            if (!isset(self::$settings[$connection])) {
+        if (!isset(static::$connections[$connection])) {
+            if (!isset(static::$settings[$connection])) {
                 return;
             }
 
             $pdo = new PDO(
-                self::$connections[$connection]['driver'],
-                isset(self::$connections[$connection]['username']) ? self::$connections[$connection]['username'] : '',
-                isset(self::$connections[$connection]['password']) ? self::$connections[$connection]['password'] : '',
-                isset(self::$connections[$connection]['options']) ? self::$connections[$connection]['options'] : array()
+                static::$settings[$connection]['driver'],
+                isset(static::$settings[$connection]['username']) ? static::$settings[$connection]['username'] : '',
+                isset(static::$settings[$connection]['password']) ? static::$settings[$connection]['password'] : '',
+                isset(static::$settings[$connection]['options']) ? static::$settings[$connection]['options'] : array()
             );
             
             if ($pdo && $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql') {
                 $pdo->exec('SET CHARACTER SET utf8');
             }
             
-            self::$connections[$connection] = $pdo;
+            static::$connections[$connection] = $pdo;
         }
-        return isset(self::$connections[$connection]) ? self::$connections[$connection] : null;
+        return isset(static::$connections[$connection]) ? static::$connections[$connection] : null;
     }
     
     public static function getRepository($entityClass, $connection = null)

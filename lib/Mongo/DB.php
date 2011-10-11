@@ -6,18 +6,19 @@ class DB
     protected static $connections = array();
     protected static $settings = array();
     
-    /**
-     *
-     * @return null
-     */
+    public function __construct($settings = array())
+    {
+        static::init($settings);
+    }
+    
     public static function init($settings = array())
     {
-        self::$settings = $settings;
+        static::$settings = $settings;
     }
 
     /**
      *
-     * @return MongoDB
+     * @return \MongoDB
      */
     public static function get($connection = null)
     {
@@ -25,20 +26,20 @@ class DB
             $connection = 'default';
         }
         
-        if (!isset(self::$connections[$connection])) {
-            if (!isset(self::$settings[$connection])) {
+        if (!isset(static::$connections[$connection])) {
+            if (!isset(static::$settings[$connection])) {
                 return;
             }
 
-            if (!empty(self::$settings[$connection]['server'])) {
-                $mongo = new Mongo(self::$settings[$connection]['server'], !empty(self::$settings[$connection]['options']) ? self::$settings[$connection]['options'] : array());
+            if (!empty(static::$settings[$connection]['server'])) {
+                $mongo = new Mongo(static::$settings[$connection]['server'], !empty(static::$settings[$connection]['options']) ? static::$settings[$connection]['options'] : array());
             } else {
                 $mongo = new Mongo();
             }
-            $database = !empty(self::$settings[$connection]['database']) ? self::$settings[$connection]['database'] : $connection;
+            $database = !empty(static::$settings[$connection]['database']) ? static::$settings[$connection]['database'] : $connection;
             self::$connections[$connection] = $mongo->$database;
         }
-        return isset(self::$connections[$connection]) ?self::$connections[$connection] : null;
+        return isset(static::$connections[$connection]) ? static::$connections[$connection] : null;
     }
     
     public static function getRepository($entityClass, $connection = null)

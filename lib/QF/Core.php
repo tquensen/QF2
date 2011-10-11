@@ -84,6 +84,10 @@ class Core
      */
     public function callRoute($route, $parameter = array(), $setAsMainRoute = false)
     {
+        if (empty($this->routing) || !($this->routing instanceof Routing)) {
+            throw new \Exception('Routing is not available');
+        }
+        
         $routeData = $this->routing->getRoute($route);
         if (!$routeData || empty($routeData['controller']) || empty($routeData['action'])) {
             throw new HttpException('page not found', 404);
