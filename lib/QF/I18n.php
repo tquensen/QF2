@@ -36,18 +36,21 @@ class I18n
         $qf->setConfig('current_language', $language);
         $this->currentLanguage = $language;
         
+        $i18n = &$this->data;
         if (file_exists($translationDir . '/' .$language . '.php')) {
-            $i18n = include($translationDir . '/' .$language . '.php');
+            include($translationDir . '/' .$language . '.php');
         }
-        $this->data = (array) $i18n;
-        $this->translations['default'] = new Translation(!empty($i18n['default']) ? $i18n['default'] : array());
+        $this->translations['default'] = new Translation(!empty($this->data['default']) ? $this->data['default'] : array());
     }
     
     public function loadModule($module)
     {
-        if (file_exists(\QF_BASEPATH . 'modules/'.$module.'/data/i18n/'.$this->currentLanguage)) {
-            $newData = include \QF_BASEPATH . 'modules/'.$module.'/data/i18n/'.$this->currentLanguage;
-            return (array) $newData;
+        if (file_exists(\QF_BASEPATH . 'modules/'.$module.'/data/i18n/'.$this->currentLanguage . '.php')) {
+            if (!isset($this->data[$module])) {
+                $this->data[$module] = array();
+            }
+            $i18n = &$this->data[$module];
+            include \QF_BASEPATH . 'modules/'.$module.'/data/i18n/'.$this->currentLanguage . '.php';
         }
     }
 

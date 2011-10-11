@@ -50,21 +50,66 @@ class Core
      * @param string $controller the controller
      * @param string $action the action
      * @param array $parameter parameters for the page
-     * @param bool $isMainRoute whether this page call is the main call (used as main content in the template) or not
      * @return string the parsed output of the page
      */
-    public function callAction($controller, $action, $parameter = array(), $isMainRoute = false)
+    public function callAction($controller, $action, $parameter = array())
     {
         if (!class_exists($controller) || !method_exists($controller, $action)) {
+            throw new HttpException('action not found', 404);
+        }
+        
+        $controller = new $controller($this);
+        return $controller->$action($parameter);
+    }
+    
+    /**
+     * calls the error page defined by $errorCode and shows $message
+     *
+     * @param string $errorCode the error page name (default error pages are 401, 403, 404, 500)
+     * @param string $message a message to show on the error page, leave empty for default message depending on error code
+     * @param Exception $exception an exception to display (only if QF_DEBUG = true)
+     * @return string the parsed output of the error page
+     */
+    public function callError($errorCode = 404, $message = '', $exception = null)
+    {
+        return $this->callRoute('error'.$errorCode, array('message' => $message, 'exception' => $exception));
+    }
+    
+    /**
+     *
+     * @param string $route the key of the route to get
+     * @param array $parameter parameters for the page
+     * @param bool $setAsMainRoute whether this route is the main call (set format, current_route and current_route_parameter config values) or not
+     * @return @return string the parsed output of the page
+     */
+    public function callRoute($route, $parameter = array(), $setAsMainRoute = false)
+    {
+        $routeData = $this->routing->getRoute($route);
+        if (!$routeData || empty($routeData['controller']) || empty($routeData['action'])) {
             throw new HttpException('page not found', 404);
         }
         
-        if ($isMainRoute) {
-            $this->setConfig('current_module', $module);
-            $this->setConfig('current_page', $page);
+        if (!empty($routeData['rights']) && !$this->user->userHasRight($routeData['rights'])) {
+            if ($this->user->getRole() === 'GUEST') {
+                throw new Exception\HttpException('login required', 401);
+            } else {
+                throw new Exception\HttpException('permission denied', 403);
+            }
         }
-        $controller = new $controller($this);
-        return $controller->$action($parameter);
+
+
+        if (!empty($routeData['parameter'])) {
+            $parameter = array_merge($routeData['parameter'], $parameter);
+        }
+        
+        if ($setAsMainRoute) {
+            $this->setConfig('current_route', $route);
+            $this->setConfig('current_route_parameter', $parameter);
+            if (!empty($parameter['_format'])) {
+                $this->setConfig('format', $parameter['_format']);
+            }
+        }
+        return $this->callAction($routeData['controller'], $routeData['action'], $parameter);       
     }
 
     /**
@@ -97,11 +142,11 @@ class Core
         } elseif (!$_format && file_exists(\QF_BASEPATH . 'modules/' . $module . '/views/' . $page . '.' . $this->getConfig('default_format') . '.php')) {
             $_file = \QF_BASEPATH . 'modules/' . $module . '/views/' . $page . '.' . $this->getConfig('default_format') . '.php';
         } else {
-            throw new HttpException('page not found', 404);
+            throw new Exception\HttpException('view not found', 404);
         }
 
         $qf = $this;
-        extract($parameter, EXTR_OVERWRITE);
+        extract($parameter, \EXTR_OVERWRITE);
         ob_start();
         require($_file);
         return ob_get_clean();
@@ -163,30 +208,13 @@ class Core
         }
 
         if (!$_file) {
-            throw new HttpException('page not found', 404);
+            throw new Exception\HttpException('template not found', 404);
         }
 
         $qf = $this;
         ob_start();
         require($_file);
         return ob_get_clean();
-    }
-
-    /**
-     * calls the error page defined by $errorCode and shows $message
-     *
-     * @param string $errorCode the error page name (default error pages are 401, 403, 404, 500)
-     * @param string $message a message to show on the error page
-     * @param Exception $exception an exception to display (only if QF_DEBUG = true)
-     * @return string the parsed output of the error page
-     */
-    public function callError($errorCode = 404, $message = '', $exception = null)
-    {
-        $route = $this->routing->getRoute('error'.$errorCode.'_route');
-        if (!$route) {
-            $route = $this->routing->getRoute('error500_route');
-        }
-        return $this->callAction($route['controller'], $route['action'], array('message' => $message, 'exception' => $exception));
     }
 
 }

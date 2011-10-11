@@ -22,7 +22,7 @@ class Routing
      * @param bool $isMainRoute whether this route is the main call (used as main content in the template) or not
      * @return array an array containing the route data
      */
-    public function parseRoute($route, $isMainRoute = false)
+    public function parseRoute($route)
     {
         $method = isset($_REQUEST['REQUEST_METHOD']) ? strtoupper($_REQUEST['REQUEST_METHOD']) : (!empty($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET');
         
@@ -44,7 +44,7 @@ class Routing
                 $routePattern = $this->generateRoutePattern($routeData);
                 
                 if (preg_match($this->generateRoutePattern($routeData), $route, $matches)) {
-                    $params = (isset($routeData['parameter'])) ? $routeData['parameter'] : array();
+                    $routeParameters = array();
                     foreach ($matches as $paramKey => $paramValue) {
                         if (!is_numeric($paramKey)) {
                             if (trim($paramValue)) {
@@ -53,26 +53,12 @@ class Routing
                         }
                     }
 
-                    $routeName = $currentRoute;
-                    $routeData['parameter'] = $params;
-                    $found = true;
-                    break;
+                    return array('route' => $currentRoute, 'parameter' => $routeParameters);
                 }
             }
         }
 
-        if (!$found || empty($routeData['controller']) || empty($routeData['action'])) {
-            throw new HttpException;
-        }
-
-        if ($isMainRoute) {
-            $this->setConfig('current_route', $routeName);
-            if (!empty($routeData['parameter']['_format'])) {
-                $this->qf->setConfig('format', $routeData['parameter']['_format']);
-            }
-        }
-
-        return $routeData;
+        throw new HttpException('page not found', 404);
     }
 
     /**
@@ -87,7 +73,7 @@ class Routing
             return $routes;
         }
         return isset($routes[$route]) ? $routes[$route] : null;
-    }
+    }  
 
     /**
      * redirects to the given url (by setting a location http header)

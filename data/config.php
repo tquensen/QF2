@@ -1,6 +1,4 @@
 <?php
-$config = array();
-
 $config['website_title'] = 'QF Website';
 $config['meta_description'] = 'Default meta description.';
 
@@ -13,12 +11,6 @@ $config['default_format'] = 'html';
 $config['home_route'] = 'home';
 $config['base_url'] = '/'; //http://example.com;
 //$qf_config['static_url'] = 'http://static.example.com/';
-
-$config['error404_route'] = 'error404';
-
-
-//some fallback values
-$config['current_route'] = $config['current_module'] = $config['current_page'] = false;
 
 //i18n
 $config['languages'] = array('en', 'de');
@@ -44,18 +36,21 @@ $config['db']['default'] = array(
 );
  */
 
-//add module config
-//.. either as subkey
-//$config['exampleModule'] = $this->load(__DIR__.'/../modules/ExampleModule/data/config.php');
-//.. or merge with global config
-//$this->merge(__DIR__.'/../modules/ExampleModule/data/config.php', $config);
+//import config files
+//syntax:
+//$this->load->(file)
+//where file is the full path to the file to include
 
-//import other config files
-//.. as subkeys
-$config['routes'] = $this->load(__DIR__.'/routes.php');
-$config['tasks'] = $this->load(__DIR__.'/tasks.php');
-//.. merge
-//$this->merge(__DIR__.'/additionalConfig.php', $config);
+//import routes, task and any other general config files
+$this->load(__DIR__.'/routes.php');
+$this->load(__DIR__.'/tasks.php');
 
+//add module config files
+//$this->load(__DIR__.'/../modules/ExampleModule/data/config.php');
 
-return $config;
+//load environment specific config
+if (QF_DEBUG === true) {
+    $this->load(__DIR__.'/config_dev.php');
+} else {
+    $this->load(__DIR__.'/config_prod.php');
+}

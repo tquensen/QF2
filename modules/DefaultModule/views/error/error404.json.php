@@ -1,1 +1,1 @@
-<?php echo json_encode(array('success' => false, 'errorCode' => 404, 'message' => $message));
+<?php echo json_encode(array('success' => false, 'errorCode' => 404, 'message' => $t->get($message)));

@@ -13,6 +13,10 @@ class Error extends Controller
         
         $this->qf->config->page_title = $t->error401Title;
         
+        if (empty($parameter['message'])) {
+            $parameter['message'] = 'login required';
+        }
+        
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
         return $this->qf->parse('DefaultModule', 'error/error401'.$debugStr, $parameter);
@@ -25,6 +29,10 @@ class Error extends Controller
         $t = $this->qf->i18n->get('DefaultModule');
         
         $this->qf->config->page_title = $t->error403Title;
+        
+        if (empty($parameter['message'])) {
+            $parameter['message'] = 'permission denied';
+        }
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
@@ -39,6 +47,10 @@ class Error extends Controller
         
         $this->qf->config->page_title = $t->error404Title;
         
+        if (empty($parameter['message'])) {
+            $parameter['message'] = 'page not found';
+        }
+        
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
         return $this->qf->parse('DefaultModule', 'error/error404'.$debugStr, $parameter);
@@ -51,6 +63,10 @@ class Error extends Controller
         $t = $this->qf->i18n->get('DefaultModule');
         
         $this->qf->config->page_title = $t->error500Title;
+        
+        if (empty($parameter['message'])) {
+            $parameter['message'] = 'server error';
+        }
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;

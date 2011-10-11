@@ -24,11 +24,11 @@ class Cli
     public function callTask($class, $task, $parameter = array())
     {
         if (!class_exists($class) || !method_exists($class, $task)) {
-            throw new Exception('Task not found');
+            throw new \Exception('task '.$class.'->'.$task.' not found');
         }
         
         $class = new $class($qf);
-        return $class->$action($parameter);
+        return $class->$task($parameter);
     }
 
     /**
@@ -44,10 +44,10 @@ class Cli
         $task = array_shift($argv);
 
         if (!$task || !$taskData = $this->getTask($task)) {
-            throw new Exception('Task not found');
+            throw new \Exception('task '.$task.' not found');
         }
-        if (empty($taskData['controller']) || empty($taskData['task'])) {
-            throw new Exception('Task not found');
+        if (empty($taskData['class']) || empty($taskData['task'])) {
+            throw new \Exception('task '.$taskData['class'].'->'.$taskData['task'].' not found');
         }
 
         foreach ($argv as $arg) {
@@ -105,7 +105,7 @@ class Cli
         }
 
         return array(
-            'controller' => $taskData['controller'],
+            'class' => $taskData['class'],
             'task' => $taskData['task'],
             'parameter' => $this->prepareParameters(
                 isset($taskData['parameter']) ? (array)$taskData['parameter'] : array(),

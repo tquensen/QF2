@@ -8,24 +8,15 @@ class Config
     public function __construct($configFile = null)
     {
         if ($configFile) {
-            $this->data = (array) $this->load($configFile);
+            $this->load($configFile);
         }
     }
-    
-    public function merge($file, &$previous)
-    {
-        if (file_exists($file)) {
-            $newData = include $file;
-            $previous = array_merge((array) $previous, (array) $newData);
-        }
-        return $previous;
-    }
-    
+
     public function load($file)
     {
         if (file_exists($file)) {
-            $newData = include $file;
-            return (array) $newData;
+            $config = &$this->data;
+            include $file;
         }
     }
 

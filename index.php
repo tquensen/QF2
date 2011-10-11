@@ -19,6 +19,7 @@ try {
     require_once(QF_BASEPATH.'/lib/Symfony/Component/ClassLoader/UniversalClassLoader.php');
     $loader = new Symfony\Component\ClassLoader\UniversalClassLoader();
     //autoload all namespaced classes inside the lib and modules folder
+    $loader->registerNamespace('QF', __DIR__.'/lib');
     $loader->registerNamespaceFallbacks(array(__DIR__.'/lib', __DIR__.'/modules'));
     //autoload all classes with PEAR-like class names inside the lib folder
     $loader->registerPrefixFallbacks(array(__DIR__.'/lib'));
@@ -35,43 +36,39 @@ try {
     //routing
     $qf->routing = new QF\Routing($qf);
     $route = isset($_GET['route']) ? $_GET['route'] : '';
-    $routeData = $qf->routing->parseRoute($route, true);
     
     //i18n
     $language = isset($_GET['language']) ? $_GET['language'] : '';
-    $qf->i18n = new QF\I18n($qf, QF_BASEPATH . ' data/i18n',  $language);
+    $qf->i18n = new QF\I18n($qf, QF_BASEPATH . '/data/i18n',  $language);
     $qf->t = $qf->i18n->get();
 
     //set i18n title/description
     $qf->setConfig('website_title') = $qf->t->website_title;
-    $qf->setConfig('meta_description') = $qf->t->meta_description;
-    
+    $qf->setConfig('meta_description') = $qf->t->meta_description;    
     
     //database
     /*
     $qf->db = new QF\DB\DB($qf);
-    */
-    
-    
-    
+    */   
+       
     //user handling
     session_name('your_session_name');
     session_start();
     $qf->user = new QF\User($qf);
-    if (!empty($routeData['rights']) && !$qf->user->userHasRight($routeData['rights'])) {
-        throw new QF\Exception\HttpException('permission denied', 403);
-    }
-    
-    $pageContent = $qf->callAction($routeData['controller'], $routeData['action'], $routeData['parameter'], true);
+
+    //throws 404 QF\Exception\HttpException for invalid routes
+    $routeData = $qf->routing->parseRoute($route);
+
+    $pageContent = $qf->callRoute($routeData['route'], $routeData['parameter'], true);
     echo $qf->parseTemplate($pageContent);
 
-} catch (Exception $e) {
-    
+} catch (Exception $e) {    
     try {
+        //401, 403, 404, 500 ...
         if ($e instanceof \QF\Exception\HttpException) {
             echo $qf->parseTemplate($qf->callError($e->getCode(), $e->getMessage(), $e));        
         } else {
-            echo $qf->parseTemplate($qf->callError(500, '', $e)); 
+            echo $qf->parseTemplate($qf->callError(500, 'server error', $e)); 
         }
     } catch (Exception $e) {
         //seems like the error was inside the template or error page

@@ -1,7 +1,5 @@
 <?php
-$tasks = array();
-
-$tasks['example'] = array(
+$config['tasks']['example'] = array(
     'class' => '\\ExampleModule\\Task\\Example',
     'task' => 'exampleTask',
     'parameter' => array(
@@ -12,4 +10,3 @@ $tasks['example'] = array(
     'assign' => array('bar', 'baz')
 );
 
-return $tasks;

@@ -1,7 +1,7 @@
 <?php
 	header('Content-Type: text/html; charset=utf-8');
 ?><!DOCTYPE html>
-<html class="no-js <?php echo 'module-' . $qf->getConfig('current_module', 'unknown') . ' page-' . $qf->getConfig('current_module', 'unknown') . '-' . $qf->getConfig('current_page', 'unknown'); ?>">
+<html class="no-js">
     <head>
         <script>(function(H){H.className=H.className.replace(/\bnojs\b/,'js')})(document.documentElement)</script>
         <meta charset="UTF-8">
