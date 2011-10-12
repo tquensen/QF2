@@ -3,5 +3,5 @@
 <p><?php echo $t->get($message); ?></p>
 <?php endif; ?>
 <pre>
-<?php echo $e; ?>
+<?php echo $exception; ?>
 </pre>
