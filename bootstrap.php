@@ -59,8 +59,8 @@ if (QF_CLI === true) {
     $qf->t = $qf->i18n->get();
 
     //set i18n title/description
-    $qf->setConfig('website_title') = $qf->t->website_title;
-    $qf->setConfig('meta_description') = $qf->t->meta_description;    
+    $qf->setConfig('website_title', $qf->t->website_title);
+    $qf->setConfig('meta_description', $qf->t->meta_description);    
 
     //user handling
     session_name('your_session_name');
