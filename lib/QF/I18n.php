@@ -45,12 +45,12 @@ class I18n
     
     public function loadModule($module)
     {
-        if (file_exists(\QF_BASEPATH . 'modules/'.$module.'/data/i18n/'.$this->currentLanguage . '.php')) {
+        if (file_exists(\QF_BASEPATH . '/modules/'.$module.'/data/i18n/'.$this->currentLanguage . '.php')) {
             if (!isset($this->data[$module])) {
                 $this->data[$module] = array();
             }
             $i18n = &$this->data[$module];
-            include \QF_BASEPATH . 'modules/'.$module.'/data/i18n/'.$this->currentLanguage . '.php';
+            include \QF_BASEPATH . '/modules/'.$module.'/data/i18n/'.$this->currentLanguage . '.php';
         }
     }
 

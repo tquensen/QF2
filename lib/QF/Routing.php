@@ -174,17 +174,17 @@ class Routing
             $baseurl = $this->qf->getConfig('base_url', '/');
         }
         if ($module) {
-            if ($theme && file_exists(\QF_BASEPATH . 'templates/' . $themeString . 'modules/'.$module.'/public/'.$file)) {
+            if ($theme && file_exists(\QF_BASEPATH . '/templates/' . $themeString . 'modules/'.$module.'/public/'.$file)) {
                 return $baseurl . 'templates/' . $themeString . 'modules/'.$module.'/public/'.$file;
-            } elseif (file_exists(\QF_BASEPATH . 'templates/modules/'.$module.'/public/'.$file)) {
+            } elseif (file_exists(\QF_BASEPATH . '/templates/modules/'.$module.'/public/'.$file)) {
                 return $baseurl . 'templates/modules/'.$module.'/public/'.$file;
             } else {
                 return $baseurl . 'modules/'.$module.'/public/'.$file;
             }
         } else {
-            if ($theme && file_exists(\QF_BASEPATH . 'templates/' . $themeString . 'public/'.$file)) {
+            if ($theme && file_exists(\QF_BASEPATH . '/templates/' . $themeString . 'public/'.$file)) {
                 return $baseurl . 'templates/' . $themeString . 'public/'.$file;
-            } elseif (file_exists(\QF_BASEPATH . 'templates/public/'.$file)) {
+            } elseif (file_exists(\QF_BASEPATH . '/templates/public/'.$file)) {
                 return $baseurl . 'templates/public/'.$file;
             } else {
                 return $baseurl . 'public/' . $file;

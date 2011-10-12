@@ -33,6 +33,6 @@ try {
     } catch (Exception $e) {
         //seems like the error was inside the template or error page
         //display a fallback page
-        require(QF_BASEPATH.'/web/error.php');  
+        require(QF_BASEPATH.'/templates/error.php');  
     }     
 }
