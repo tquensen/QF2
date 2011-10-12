@@ -61,7 +61,7 @@ class I18n
     public function get($ns = 'default')
     {
         if (empty($this->translations[$ns])) {
-            $this->translations[$ns] = new Translation(!empty($i18n[$ns]) ? $i18n[$ns] : array());
+            $this->translations[$ns] = new Translation(!empty($this->data[$ns]) ? $this->data[$ns] : array());
         }
         return $this->translations[$ns];
     }
