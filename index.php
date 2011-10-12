@@ -1,10 +1,14 @@
 <?php
-
-error_reporting(E_ALL | E_STRICT);
-define('QF_CLI', false);
-
-//enable debug/dev mode for localhost
-define('QF_DEBUG', in_array(@$_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1')) ? true : false);
+//define your environment (dev, test, prod, whatever) 
+//either by using different index.php files on different systems with a hardcoded value
+//or by checking the $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_HOST'] or other appropriate environment variables
+if ((isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'localhost') || (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] === '127.0.0.1')) {
+    define('QF_ENV', 'dev');
+} elseif (isset($_SERVER['SERVER_ADDR']) && $_SERVER['SERVER_ADDR'] == '123.45.56.890' /* ip of test server */) {
+    define('QF_ENV', 'test');    
+} else {
+    define('QF_ENV', 'prod');
+}
 
 require_once __DIR__.'/bootstrap.php';
 

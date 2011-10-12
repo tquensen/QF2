@@ -9,7 +9,7 @@ $config['default_format'] = 'html';
 
 
 $config['home_route'] = 'home';
-$config['base_url'] = '/'; //http://example.com;
+$config['base_url'] = '/'; //http://example.com/;
 //$qf_config['static_url'] = 'http://static.example.com/';
 
 //i18n
@@ -49,8 +49,6 @@ $this->load(__DIR__.'/tasks.php');
 //$this->load(__DIR__.'/../modules/ExampleModule/data/config.php');
 
 //load environment specific config
-if (QF_DEBUG === true) {
-    $this->load(__DIR__.'/config_dev.php');
-} else {
-    $this->load(__DIR__.'/config_prod.php');
+if (file_exists(__DIR__.'/config_'.QF_ENV.'.php')) {
+    $this->load(__DIR__.'/config_'.QF_ENV.'.php');
 }

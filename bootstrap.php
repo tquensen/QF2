@@ -1,8 +1,11 @@
 <?php
+define('QF_CLI', QF_ENV === 'cli' ? true : false);
+define('QF_DEBUG', QF_CLI || QF_ENV === 'dev' ? true : false);
+define('QF_BASEPATH', __DIR__);
+
+error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', QF_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
-
-define('QF_BASEPATH', __DIR__);
 
 require_once(QF_BASEPATH.'/lib/Symfony/Component/ClassLoader/UniversalClassLoader.php');
 $loader = new Symfony\Component\ClassLoader\UniversalClassLoader();
@@ -32,14 +35,13 @@ if (QF_CLI === true) {
 
     chdir(__DIR__);
     
-    //init routing (not required, but useful as it allows $qf->callRoute() and $qf->routing->getUrl() calls)
+    //init routing (not required for cli, but useful as it allows $qf->callRoute() and $qf->routing->getUrl() calls)
     $qf->routing = new QF\Routing($qf);
 
     //init cli
     $qf->cli = new QF\Cli($qf);
     
-    $qf->setConfig('format', 'plain'); //use the plain format for views
-    
+    $qf->setConfig('format', 'plain'); //use the plain format for views  
     
     //init i18n with default language
     $qf->i18n = new QF\I18n($qf, QF_BASEPATH . '/data/i18n');
