@@ -133,18 +133,18 @@ class Core
         $_format = $this->getConfig('format');
         $_formatString = $_format ? '.' . $_format : '';
 
-        if ($_theme && file_exists(\QF_BASEPATH . 'templates/' .$_themeString. 'modules/' . $module . '/views/' . $page . $_formatString . '.php')) {
-            $_file = \QF_BASEPATH . 'templates/' .$_themeString. 'modules/' . $module . '/views/' . $page . $_formatString . '.php';
-        } elseif ($_theme && !$_format && file_exists(\QF_BASEPATH . 'templates/' .$_themeString. 'modules/' . $module . '/views/' . $page . '.' . $this->getConfig('default_format') . '.php')) {
-            $_file = \QF_BASEPATH . 'templates/' .$_themeString. 'modules/' . $module . '/views/' . $page . '.' . $this->getConfig('default_format') . '.php';
-        } elseif (file_exists(\QF_BASEPATH . 'templates/modules/' . $module . '/views/' . $page . $_formatString . '.php')) {
-            $_file = \QF_BASEPATH . 'templates/modules/' . $module . '/views/' . $page . $_formatString . '.php';
-        } elseif (!$_format && file_exists(\QF_BASEPATH . 'templates/modules/' . $module . '/views/' . $page . '.' . $this->getConfig('default_format') . '.php')) {
-            $_file = \QF_BASEPATH . 'templates/modules/' . $module . '/views/' . $page . '.' . $this->getConfig('default_format') . '.php';
-        } elseif (file_exists(\QF_BASEPATH . 'modules/' . $module . '/views/' . $page . $_formatString . '.php')) {
-            $_file = \QF_BASEPATH . 'modules/' . $module . '/views/' . $page . $_formatString . '.php';
-        } elseif (!$_format && file_exists(\QF_BASEPATH . 'modules/' . $module . '/views/' . $page . '.' . $this->getConfig('default_format') . '.php')) {
-            $_file = \QF_BASEPATH . 'modules/' . $module . '/views/' . $page . '.' . $this->getConfig('default_format') . '.php';
+        if ($_theme && file_exists(\QF_BASEPATH . 'templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
+            $_file = \QF_BASEPATH . 'templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php';
+        } elseif ($_theme && !$_format && file_exists(\QF_BASEPATH . 'templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->getConfig('default_format') . '.php')) {
+            $_file = \QF_BASEPATH . 'templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->getConfig('default_format') . '.php';
+        } elseif (file_exists(\QF_BASEPATH . 'templates/modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
+            $_file = \QF_BASEPATH . 'templates/modules/' . $module . '/views/' . $view . $_formatString . '.php';
+        } elseif (!$_format && file_exists(\QF_BASEPATH . 'templates/modules/' . $module . '/views/' . $view . '.' . $this->getConfig('default_format') . '.php')) {
+            $_file = \QF_BASEPATH . 'templates/modules/' . $module . '/views/' . $view . '.' . $this->getConfig('default_format') . '.php';
+        } elseif (file_exists(\QF_BASEPATH . 'modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
+            $_file = \QF_BASEPATH . 'modules/' . $module . '/views/' . $view . $_formatString . '.php';
+        } elseif (!$_format && file_exists(\QF_BASEPATH . 'modules/' . $module . '/views/' . $view . '.' . $this->getConfig('default_format') . '.php')) {
+            $_file = \QF_BASEPATH . 'modules/' . $module . '/views/' . $view . '.' . $this->getConfig('default_format') . '.php';
         } else {
             throw new Exception\HttpException('view not found', 404);
         }
