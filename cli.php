@@ -13,7 +13,7 @@ require_once __DIR__.'/bootstrap.php';
 try {
 
     $taskData = $qf->cli->parseArgs($argv);    
-    $output = $cli->callTask($taskData['class'], $taskData['task'], $taskData['parameter']);
+    $output = $qf->cli->callTask($taskData['class'], $taskData['task'], $taskData['parameter']);
     echo $output ? $output : '[no output]'."\n";
     
 } catch (Exception $e) {

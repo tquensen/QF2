@@ -29,7 +29,7 @@ class Routing
         $found = false;
         $routeParameters = '';
 
-        if (empty($route) && ($homeRoute = $this->getConfig('home_route')) && $routeData = $this->getRoute($homeRoute)) {
+        if (empty($route) && ($homeRoute = $this->qf->getConfig('home_route')) && $routeData = $this->getRoute($homeRoute)) {
             $routeName = $homeRoute;
             $found = true;
         } else {

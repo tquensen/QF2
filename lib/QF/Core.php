@@ -84,7 +84,7 @@ class Core
      */
     public function callRoute($route, $parameter = array(), $setAsMainRoute = false)
     {
-        if (empty($this->routing) || !($this->routing instanceof Routing)) {
+        if (!$this->routing || !($this->routing instanceof Routing)) {
             throw new \Exception('Routing is not available');
         }
         
