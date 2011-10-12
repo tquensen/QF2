@@ -111,15 +111,15 @@ class Routing
     public function getUrl($route, $params = array(), $language = null)
     {
         $baseurl = $this->qf->getConfig('base_url', '/');
-        $currentLanguage = $this->getConfig('current_language');
-        $defaultLanguage = $this->getConfig('default_language');
+        $currentLanguage = $this->qf->getConfig('current_language');
+        $defaultLanguage = $this->qf->getConfig('default_language');
         if ($language === null) {
             if ($currentLanguage && $currentLanguage != $defaultLanguage) {
                 if ($baseurlI18n = $this->qf->getConfig('base_url_i18n')) {
                     $baseurl = str_replace(':lang:', $currentLanguage, $baseurlI18n);
                 }
             }
-        } elseif ($language && in_array($language, $this->getConfig('languages', array())) && $language != $defaultLanguage) {
+        } elseif ($language && in_array($language, $this->qf->getConfig('languages', array())) && $language != $defaultLanguage) {
             if ($baseurlI18n = $this->qf->getConfig('base_url_i18n')) {
                     $baseurl = str_replace(':lang:', $language, $baseurlI18n);
                 }
@@ -166,7 +166,7 @@ class Routing
      */
     public function getAsset($file, $module = null)
     {
-        $theme = $this->getConfig('theme', null);
+        $theme = $this->qf->getConfig('theme', null);
         $themeString = $theme ? 'themes/'.$theme . '/' : '';
         
         if (!$baseurl = $this->qf->getConfig('static_url')) {
