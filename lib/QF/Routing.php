@@ -30,8 +30,7 @@ class Routing
         $routeParameters = '';
 
         if (empty($route) && ($homeRoute = $this->qf->getConfig('home_route')) && $routeData = $this->getRoute($homeRoute)) {
-            $routeName = $homeRoute;
-            $found = true;
+            return array('route' => $homeRoute, 'parameter' => array());
         } else {
             foreach ((array)$this->getRoute() as $routeName => $routeData) {
                 if (!isset($routeData['url'])) {
