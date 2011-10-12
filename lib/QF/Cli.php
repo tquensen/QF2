@@ -47,7 +47,7 @@ class Cli
             throw new \Exception('task '.$task.' not found');
         }
         if (empty($taskData['class']) || empty($taskData['task'])) {
-            throw new \Exception('task '.$taskData['class'].'->'.$taskData['task'].' not found');
+            throw new \Exception('task not found');
         }
 
         foreach ($argv as $arg) {
