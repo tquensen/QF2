@@ -5,6 +5,10 @@ Allow from All
 Deny from All
 </Files>
 
+#one possible way to determine the current environment (local dev system, production server, ..)
+#use getenv('qf_env') in your index/bootstrap script to read this value
+#SetEnv qf_env "prod"
+
 RewriteEngine on
 
 #i18n

@@ -1,7 +1,8 @@
 <?php
 //define your environment (dev, test, prod, whatever) 
 //either by using different index.php files on different systems with a hardcoded value
-//or by checking the $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_HOST'] or other appropriate environment variables
+//or by checking the $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_HOST'], getenv('qf_env') or other appropriate environment variables
+//the following is an example, change it as needed:
 if ((isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'localhost') || (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] === '127.0.0.1')) {
     define('QF_ENV', 'dev');
 } elseif (isset($_SERVER['SERVER_ADDR']) && $_SERVER['SERVER_ADDR'] == '123.45.56.890' /* ip of test server */) {
