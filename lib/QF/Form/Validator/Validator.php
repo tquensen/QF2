@@ -1,7 +1,7 @@
 <?php
 namespace QF\Form\Validator;
 
-use \QF\Form;
+use \QF\Form\Form;
 use \QF\Form\Element\Element;
 
 class Validator

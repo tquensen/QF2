@@ -1,7 +1,7 @@
 <?php
 namespace QF\Form\Element;
 
-use \QF\Form;
+use \QF\Form\Form;
 
 class Element
 {
