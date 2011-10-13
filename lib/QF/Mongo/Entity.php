@@ -1,5 +1,5 @@
 <?php
-namespace Mongo;
+namespace QF\Mongo;
 
 abstract class Entity extends \QF\Entity
 {
@@ -8,9 +8,9 @@ abstract class Entity extends \QF\Entity
     
     protected static $collectionName = null;
     protected static $autoId = false;
-    protected static $columns = array();
-    protected static $relations = array();
-    protected static $repositoryClass = '\\Mongo\\Repository';
+    protected static $columns = array(); //array('_id', 'name', 'user_id')
+    protected static $relations = array(); //array of array(ForeignClassName, local_column, foreign_column, [true=foreign is single (for m:1 or 1:1), leave blank/false=foreign is multiple (for 1:m or n:m)])
+    protected static $repositoryClass = '\\QF\\Mongo\\Repository';
 
     public function __construct($data = array(), $connection = null)
     {
@@ -136,7 +136,7 @@ abstract class Entity extends \QF\Entity
     public function loadRelated($relation, $query = array(), $sort = array(), $limit = null, $skip = null)
     {
         if (!$relationInfo = static::getRelation($relation)) {
-            throw new Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
+            throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
         }
         $repositoryName = $relationInfo[0]::GetRepositoryClass();
         $repository = new $repositoryName($this->getConnection(), $relationInfo[0]);
@@ -169,7 +169,7 @@ abstract class Entity extends \QF\Entity
     public function linkRelated($relation, $related, $save = true, $multiple = false)
     {
         if (!$relationInfo = static::getRelation($relation)) {
-            throw new Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
+            throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
         }
         if (is_array($related)) {
             foreach ($related as $rel) {
@@ -182,16 +182,16 @@ abstract class Entity extends \QF\Entity
             $repository = new $repositoryName($this->getConnection(), $relationInfo[0]);
             $related = $repository->findOne($related);
             if (!$related) {
-                throw new InvalidArgumentException('Could not find valid '.$relationInfo[0]);
+                throw new \InvalidArgumentException('Could not find valid '.$relationInfo[0]);
             }
         }
         if (!empty($relationInfo[3])) {
             if ($relationInfo[1] == '_id') {
                 if (!$this->{$relationInfo[1]}) {
                     if (!static::isAutoId()) {
-                        throw new Exception('Counld not link realted '.$relationInfo[0].' - '.$relationInfo[1].' not set!');
+                        throw new \Exception('Counld not link realted '.$relationInfo[0].' - '.$relationInfo[1].' not set!');
                     }
-                    $this->{$relationInfo[1]} = new MongoId();
+                    $this->{$relationInfo[1]} = new \MongoId();
                     if ($save !== null) {
                         $this->save($save);
                     }
@@ -202,9 +202,9 @@ abstract class Entity extends \QF\Entity
             } elseif ($relationInfo[2] == '_id') {
                 if (!$related->{$relationInfo[2]}) {
                     if (!$relationInfo[0]::isAutoId()) {
-                        throw new Exception('Counld not link realted '.$relationInfo[0].' - '.$relationInfo[2].' not set!');
+                        throw new \Exception('Counld not link realted '.$relationInfo[0].' - '.$relationInfo[2].' not set!');
                     }
-                    $related->{$relationInfo[2]} = new MongoId();
+                    $related->{$relationInfo[2]} = new \MongoId();
                     if ($save !== null) {
                         $related->save($save);
                     }
@@ -215,17 +215,17 @@ abstract class Entity extends \QF\Entity
         } else {
             if ($relationInfo[1] == '_id' && !$this->{$relationInfo[1]}) {
                 if (!static::isAutoId()) {
-                    throw new Exception('Couldnt not link realted '.$relationInfo[0].' - '.$relationInfo[1].' not set!');
+                    throw new \Exception('Couldnt not link realted '.$relationInfo[0].' - '.$relationInfo[1].' not set!');
                 }
-                $this->{$relationInfo[1]} = new MongoId();
+                $this->{$relationInfo[1]} = new \MongoId();
                 if ($save !== null) {
                     $this->save($save);
                 }
             } elseif ($relationInfo[2] == '_id' && !$related->{$relationInfo[2]}) {
                 if (!$relationInfo[0]::isAutoId()) {
-                    throw new Exception('Couldnt not link realted '.$relationInfo[0].' - '.$relationInfo[2].' not set!');
+                    throw new \Exception('Couldnt not link realted '.$relationInfo[0].' - '.$relationInfo[2].' not set!');
                 }
-                $related->{$relationInfo[2]} = new MongoId();
+                $related->{$relationInfo[2]} = new \MongoId();
                 if ($save !== null) {
                     $related->save($save);
                 }
@@ -269,7 +269,7 @@ abstract class Entity extends \QF\Entity
     public function unlinkRelated($relation, $related = true, $delete = false, $save = true)
     {
         if (!$relationInfo = static::getRelation($relation)) {
-            throw new Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
+            throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
         }
         if (is_array($related)) {
             foreach ($related as $rel) {

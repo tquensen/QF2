@@ -1,5 +1,5 @@
 <?php
-namespace Mongo;
+namespace QF\Mongo;
 
 class Repository
 {

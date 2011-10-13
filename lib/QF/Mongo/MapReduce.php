@@ -1,5 +1,5 @@
 <?php
-namespace Mongo;
+namespace QF\Mongo;
 
 class MapReduce
 {
@@ -68,7 +68,7 @@ class MapReduce
             $map = new \MongoCode($map);
         }
         if (!is_object($map) || !($map instanceof \MongoCode)) {
-            throw new Exception('string, or \\MongoCode expected for $map, ' . get_class($map) . ' given!');
+            throw new \Exception('string, or \\MongoCode expected for $map, ' . get_class($map) . ' given!');
         }
         $this->map = $map;
         return $this;
@@ -96,7 +96,7 @@ class MapReduce
             $reduce = new \MongoCode($reduce);
         }
         if (!is_object($reduce) || !($reduce instanceof \MongoCode)) {
-            throw new Exception('string, or \\MongoCode expected for $reduce, ' . get_class($reduce) . ' given!');
+            throw new \Exception('string, or \\MongoCode expected for $reduce, ' . get_class($reduce) . ' given!');
         }
         $this->reduce = $reduce;
         return $this;
@@ -117,7 +117,7 @@ class MapReduce
             $finalize = new \MongoCode($finalize);
         }
         if (!is_object($finalize) || !($finalize instanceof \MongoCode)) {
-            throw new Exception('string, or \\MongoCode expected for $finalize, ' . get_class($finalize) . ' given!');
+            throw new \Exception('string, or \\MongoCode expected for $finalize, ' . get_class($finalize) . ' given!');
         }
         $this->finalize = $finalize;
         return $this;

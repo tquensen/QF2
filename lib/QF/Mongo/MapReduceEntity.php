@@ -1,5 +1,5 @@
 <?php
-namespace Mongo;
+namespace QF\Mongo;
 
 abstract class MapReduceEntity extends Entity
 {

@@ -1,5 +1,5 @@
 <?php
-namespace Mongo;
+namespace QF\Mongo;
 
 class DB
 {
@@ -32,9 +32,9 @@ class DB
             }
 
             if (!empty(static::$settings[$connection]['server'])) {
-                $mongo = new Mongo(static::$settings[$connection]['server'], !empty(static::$settings[$connection]['options']) ? static::$settings[$connection]['options'] : array());
+                $mongo = new \Mongo(static::$settings[$connection]['server'], !empty(static::$settings[$connection]['options']) ? static::$settings[$connection]['options'] : array());
             } else {
-                $mongo = new Mongo();
+                $mongo = new \Mongo();
             }
             $database = !empty(static::$settings[$connection]['database']) ? static::$settings[$connection]['database'] : $connection;
             self::$connections[$connection] = $mongo->$database;

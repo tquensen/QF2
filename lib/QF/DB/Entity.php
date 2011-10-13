@@ -10,7 +10,7 @@ abstract class Entity extends \QF\Entity
     protected static $tableName = '';
     protected static $autoIncrement = false;
     protected static $columns = array('id'); //array('id', 'name', 'user_id')
-    protected static $relations = array();
+    protected static $relations = array(); //array of array(ForeignClassName, local_column, foreign_column, [true=foreign is single (for m:1 or 1:1), string = name of ref table (for m:n), leave blank=foreign is multiple (for 1:m)])
     protected static $identifier = 'id';
     protected static $repositoryClass = '\\QF\\DB\\Repository';
 
