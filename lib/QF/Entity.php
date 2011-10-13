@@ -17,7 +17,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             'collection' => true, //stores multiple values, activates add and remove methods, true to store values in an array, name of a class that implements ArrayAccess to store values in that class, default = false (single value),
             'collectionUnique' => true, //do not allow dublicate entries when using as collection, when type = array or an object and collectionUnique is a string, that property/key will be used as index of the collection
             'collectionRemoveByValue' => true, //true to remove entries from a collection by value, false to remove by key, default = false, this only works if collection is an array or an object implementing Traversable
-            'collectionSingleName' => false, //alternative property name to use for add/remove actions, default=false (e.g. if property = "Children" and collectionSingleName = "Child", you can use addChild/removeChild instead of addChildren/removeChildren)
+            'collectionSingleName' => false, //alternative property name to use for add/remove actions, default=false (e.g. if property = "children" and collectionSingleName = "child", you can use addChild/removeChild instead of addChildren/removeChildren)
             'exclude' => true, //set to true to exclude this property on toArray() and foreach(), default = false
             'default' => null // the default value to return by get if null, and to set by clear, default = null
         )

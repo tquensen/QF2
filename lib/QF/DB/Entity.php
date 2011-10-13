@@ -24,13 +24,13 @@ abstract class Entity extends \QF\Entity
             'collection' => true, //stores multiple values, activates add and remove methods, true to store values in an array, name of a class that implements ArrayAccess to store values in that class, default = false (single value),
             'collectionUnique' => true, //do not allow dublicate entries when using as collection, when type = array or an object and collectionUnique is a string, that property/key will be used as index of the collection
             'collectionRemoveByValue' => true, //true to remove entries from a collection by value, false to remove by key, default = false, this only works if collection is an array or an object implementing Traversable
-            'collectionSingleName' => false, //alternative property name to use for add/remove actions, default=false (e.g. if property = "Children" and collectionSingleName = "Child", you can use addChild/removeChild instead of addChildren/removeChildren)
+            'collectionSingleName' => false, //alternative property name to use for add/remove actions, default=false (e.g. if property = "children" and collectionSingleName = "child", you can use addChild/removeChild instead of addChildren/removeChildren)
             'exclude' => true, //set to true to exclude this property on toArray() and foreach(), default = false
             'default' => null, // the default value to return by get if null, and to set by clear, default = null
     
             'column' => true, //true if this property is a database column (default false)
             'relation' => array(ForeignClassName, local_column, foreign_column), //database relation or false for no relation, default = false
-                          //assumes n:1 relation if collection is set, 1: or 1:n otherwise
+                          //assumes 1:n relation if collection is set, n:1 or 1:n otherwise
             'refTable' => 'tablename' //for n:m relations - the name of the ref table, default = false
         )
          */
@@ -432,8 +432,8 @@ abstract class Entity extends \QF\Entity
         if (static::$relations === null) {
             $rels = array();          
             foreach (static::$_properties as $prop => $data) {
-                if (!empty($data['relation'])) {
-                    $rel = $data['relation'];
+                if (!empty($data['relation']) && !empty($data['type']) && !empty($data['relation'][0]) && !empty($data['relation'][1])) {
+                    $rel = array($data['type'], $data['relation'][0], $data['relation'][1]);
                     if (!empty($data['refTable'])) {
                         $rel[3] = $data['refTable'];
                     } elseif (empty($data['collection'])) {
