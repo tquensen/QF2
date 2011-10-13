@@ -26,6 +26,8 @@ class Routing
     {
         $method = isset($_REQUEST['REQUEST_METHOD']) ? strtoupper($_REQUEST['REQUEST_METHOD']) : (!empty($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET');
         
+        $this->qf->setConfig('request_method', $method);
+        
         $found = false;
         $routeParameters = '';
 
@@ -52,7 +54,7 @@ class Routing
                         }
                     }
 
-                    return array('route' => $currentRoute, 'parameter' => $routeParameters);
+                    return array('route' => $routeName, 'parameter' => $routeParameters);
                 }
             }
         }
