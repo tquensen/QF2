@@ -130,7 +130,7 @@ class Core
     {
         $_theme = $this->getConfig('theme', null);
         $_themeString = $_theme ? 'themes/'.$_theme . '/' : '';
-        $_format = $this->getConfig('format');
+        $_format = isset($parameter['_format']) ? $parameter['_format'] : $this->getConfig('format');
         $_formatString = $_format ? '.' . $_format : '';
 
         if ($_theme && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php')) {

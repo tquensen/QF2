@@ -369,9 +369,7 @@ class Repository
                 foreach ($relations as $relation) {
                     if ($row[$identifiers[$relation[0]]] && $row[$identifiers[$relation[1]]]) {
                         if (empty($relation[3])) {
-                            $data = $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]};
-                            $data[$row[$identifiers[$relation[1]]]] =  $returnData[$relation[1]][$row[$identifiers[$relation[1]]]];
-                            $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]} = $data;
+                            $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{'add'.ucfirst($relation[2])}($data);
                         } else {
                             $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]} = $returnData[$relation[1]][$row[$identifiers[$relation[1]]]];
                         }
