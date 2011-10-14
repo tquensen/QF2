@@ -57,7 +57,7 @@ class Element
             } else {
                 if ($this->getOption('useModel') !== false && $model = $this->getForm()->getModel()) {
                     $property = $this->getOption('modelProperty') ? $this->getOption('modelProperty') : $this->name;
-                    $this->value = $model->$property;
+                    $this->value = isset($model->$property) ? $model->$property : null;
                 }
             }
         }
