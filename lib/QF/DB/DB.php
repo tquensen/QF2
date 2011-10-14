@@ -47,6 +47,12 @@ class DB
         return isset(static::$connections[$connection]) ? static::$connections[$connection] : null;
     }
     
+    /**
+     *
+     * @param string|\QF\DB\Entity $entityClass (name of) an entity class
+     * @param string|null $connection name of a connection
+     * @return \QF\DB\Repository 
+     */
     public static function getRepository($entityClass, $connection = null)
     {
         if (is_object($entityClass)) {

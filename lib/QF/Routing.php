@@ -129,7 +129,7 @@ class Routing
         if ((!$route || $route == $this->qf->getConfig('home_route')) && empty($params)) {
             return $baseurl;
         }
-        if (!$routeData = $this->getRoute($route) || empty($routeData['url'])) {
+        if (!($routeData = $this->getRoute($route)) || empty($routeData['url'])) {
             return $baseurl;
         }
         
