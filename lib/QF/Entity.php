@@ -31,7 +31,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
         }
         if (empty(static::$_properties[$property])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to get undefined property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to get undefined property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         }
@@ -60,12 +60,12 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
         }
         if (empty(static::$_properties[$property])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to set undefined property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to set undefined property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         } elseif (!empty(static::$_properties[$property]['readonly'])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to set readonly property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to set readonly property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         }
@@ -227,7 +227,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                 ' on line ' . $trace[0]['line']);
         } elseif (empty(static::$_properties[$property]['collection'])) {
             $trace = debug_backtrace();
-            throw new Exception('Trying to remove from non-collection property: '.get_class($this).'::$'.$property .
+            throw new \Exception('Trying to remove from non-collection property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         } elseif (!empty(static::$_properties[$property]['readonly'])) {
