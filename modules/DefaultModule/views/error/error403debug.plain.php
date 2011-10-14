@@ -5,4 +5,4 @@
 <?php endif; ?>
 
 
-<?php echo $e; ?>
+<?php echo $exception; ?>
