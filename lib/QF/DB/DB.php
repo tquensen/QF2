@@ -31,14 +31,14 @@ class DB
                 return;
             }
 
-            $pdo = new PDO(
+            $pdo = new \PDO(
                 static::$settings[$connection]['driver'],
                 isset(static::$settings[$connection]['username']) ? static::$settings[$connection]['username'] : '',
                 isset(static::$settings[$connection]['password']) ? static::$settings[$connection]['password'] : '',
                 isset(static::$settings[$connection]['options']) ? static::$settings[$connection]['options'] : array()
             );
             
-            if ($pdo && $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) == 'mysql') {
+            if ($pdo && $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME) == 'mysql') {
                 $pdo->exec('SET CHARACTER SET utf8');
             }
             
