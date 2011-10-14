@@ -188,13 +188,12 @@ class Form
             $this->bindValues($values);
         }
         
-        if (!$this->isValid || !$this->wasSubmitted()) {
+        if (!$this->wasSubmitted()) {
             return false;
         }
 
         if ($this->getOption('useFormToken') && !$this->checkFormToken()) {
             $this->setError($this->getOption('formTokenErrorMessage'));
-            return false;
         }
         
         foreach ($this->elements as $element) {
