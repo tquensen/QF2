@@ -59,7 +59,7 @@ class DB
             $entityClass = get_class($entityClass);
         }
             
-        if (!is_subclass_of($this->entityClass, '\\QF\\DB\\Entity')) {
+        if (!is_subclass_of($entityClass, '\\QF\\DB\\Entity')) {
             throw new \InvalidArgumentException('$entityClass must be an \\QF\\DB\\Entity instance or classname');
         }
         
