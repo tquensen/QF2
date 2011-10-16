@@ -388,28 +388,28 @@ abstract class Entity extends \QF\Entity
     
     public static function getColumns($prefix = null)
     {
-        if (static::$columns === null) {
+        if (static::$columns[static::$tableName] === null) {
             $cols = array();        
             foreach (static::$_properties as $prop => $data) {
                 if (!empty($data['column'])) {
                     $cols[] = $prop;
                 }
             }
-            static::$columns = $cols;
+            static::$columns[static::$tableName] = $cols;
         }
         if ($prefix) {
             $cols = array();
-            foreach (static::$columns as $col) {
+            foreach (static::$columns[static::$tableName] as $col) {
                 $cols[] = $prefix.'.'.$col.' '.$prefix.'_'.$col;
             }
             return $cols;
         }
-        return static::$columns;
+        return static::$columns[static::$tableName];
     }
     
     public static function getRelation($rel)
     {
-        if (static::$relations === null) {
+        if (static::$relations[static::$tableName] === null) {
             $rels = array();          
             foreach (static::$_properties as $prop => $data) {
                 if (!empty($data['relation'])) {
@@ -422,14 +422,14 @@ abstract class Entity extends \QF\Entity
                     $rels[] = $rel;
                 }
             }
-            static::$relations = $rels;
+            static::$relations[static::$tableName] = $rels;
         }
-        return !empty(static::$relations[$rel]) ? static::$relations[$rel] : false;
+        return !empty(static::$relations[static::$tableName][$rel]) ? static::$relations[static::$tableName][$rel] : false;
     }
     
     public static function getRelations()
     {
-        if (static::$relations === null) {
+        if (static::$relations[static::$tableName] === null) {
             $rels = array();          
             foreach (static::$_properties as $prop => $data) {
                 if (!empty($data['relation']) && !empty($data['type']) && !empty($data['relation'][0]) && !empty($data['relation'][1])) {
@@ -442,9 +442,9 @@ abstract class Entity extends \QF\Entity
                     $rels[] = $rel;
                 }
             }
-            static::$relations = $rels;
+            static::$relations[static::$tableName] = $rels;
         }
-        return static::$relations;
+        return static::$relations[static::$tableName];
     }
     
     public static function getRepositoryClass()
