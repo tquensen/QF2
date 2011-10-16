@@ -7,8 +7,8 @@ abstract class Entity extends \QF\Entity
     protected $_databaseProperties = array();
     protected $_connection = null;
     
-    protected static $columns = null;
-    protected static $relations = null;
+    protected static $columns = array();
+    protected static $relations = array();
 
     protected static $tableName = '';
     protected static $autoIncrement = false;
@@ -388,7 +388,7 @@ abstract class Entity extends \QF\Entity
     
     public static function getColumns($prefix = null)
     {
-        if (static::$columns[static::$tableName] === null) {
+        if (!isset(static::$columns[static::$tableName])) {
             $cols = array();        
             foreach (static::$_properties as $prop => $data) {
                 if (!empty($data['column'])) {
@@ -409,7 +409,7 @@ abstract class Entity extends \QF\Entity
     
     public static function getRelation($rel)
     {
-        if (static::$relations[static::$tableName] === null) {
+        if (!isset(static::$relations[static::$tableName])) {
             $rels = array();          
             foreach (static::$_properties as $prop => $data) {
                 if (!empty($data['relation'])) {
@@ -429,7 +429,7 @@ abstract class Entity extends \QF\Entity
     
     public static function getRelations()
     {
-        if (static::$relations[static::$tableName] === null) {
+        if (!isset(static::$relations[static::$tableName])) {
             $rels = array();          
             foreach (static::$_properties as $prop => $data) {
                 if (!empty($data['relation']) && !empty($data['type']) && !empty($data['relation'][0]) && !empty($data['relation'][1])) {
