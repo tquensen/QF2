@@ -328,6 +328,7 @@ class Repository
                 $entity = new $entities[0][0]();
                 foreach ($row as $k => $v) {
                     $entity->$k = $v;
+                    $entity->setDatabaseProperty($k, $v);
                 }
                 $returnData[$entity->$key] = $entity;
                 $return = true;
