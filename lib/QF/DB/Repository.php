@@ -323,10 +323,9 @@ class Repository
         $results = $statement->fetchAll(\PDO::FETCH_ASSOC);
         $returnData = array();
         if (count($entities) === 1 && !empty($entities[0])) {
-            $key = $entities[0][1]::getIdentifier();
+            $key = $entities[0][0]::getIdentifier();
             foreach ($results as $row) {
-                $entity = $entities[0][0];
-                $entity = new $entityName();
+                $entity = new $entities[0][0]();
                 foreach ($row as $k => $v) {
                     $entity->$k = $v;
                 }
