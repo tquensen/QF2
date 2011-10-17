@@ -186,21 +186,21 @@ class Repository
 		return $result;
 	}
     
-    public function removeBy($condition, $values, $cleanRefTable = false)
+    public function removeBy($conditions, $values, $cleanRefTable = false)
 	{
         $entityClass = $this->entityClass;
         $query = 'DELETE FROM '.$entityClass::getTableName();
                 
-        $where = '';
+        $where = array();
         foreach ((array) $conditions as $k => $v) {
             if (is_numeric($k)) {
-                $where .= ' '.$v;
+                $where[] = ' '.$v;
             } else {
-                $where .= ' '.$k.'='.$this->getDB()->quote($v);
+                $where[] = ' '.$k.'='.$this->getDB()->quote($v);
             }
         }
         if ($where) {
-            $query .= ' WHERE'.$where;
+            $query .= ' WHERE'.implode(' AND ', $where);
         }
         $stmt = $this->getDB()->prepare($query);
         $result = $stmt->execute($values);
@@ -259,16 +259,16 @@ class Repository
             throw new \InvalidArgumentException('$entity must be an \\QF\\DB\\Entity instance or classname');
         }
         $query = 'SELECT '.implode(', ', $entity::getColumns()).' FROM '.$entity::getTableName();
-        $where = '';
+        $where = array();
         foreach ((array) $conditions as $k => $v) {
             if (is_numeric($k)) {
-                $where .= ' '.$v;
+                $where[] = ' '.$v;
             } else {
-                $where .= ' '.$k.'='.$this->getDB()->quote($v);
+                $where[] = ' '.$k.'='.$this->getDB()->quote($v);
             }
         }
         if ($where) {
-            $query .= ' WHERE'.$where;
+            $query .= ' WHERE'.implode(' AND ', $where);
         }
         if ($order) {
             $query .= ' ORDER BY '.$order;
