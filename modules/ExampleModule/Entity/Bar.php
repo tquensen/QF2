@@ -51,12 +51,12 @@ class Bar extends Entity
     protected $foos = array();
 
 
-    public function preSave()
+    public function preSave(\PDO $db)
     {
 
     }
 
-    public function preRemove()
+    public function preRemove(\PDO $db)
     {
         
     }

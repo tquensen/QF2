@@ -55,12 +55,12 @@ class Foo extends Entity
     protected $bar;
 
 
-    public function preSave()
+    public function preSave(\PDO $db)
     {
 
     }
 
-    public function preRemove()
+    public function preRemove(\PDO $db)
     {
         
     }

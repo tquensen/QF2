@@ -352,12 +352,12 @@ abstract class Entity extends \QF\Entity
         }
     }
 
-    public function preSave()
+    public function preSave(\PDO $db)
     {
 
     }
 
-    public function preRemove()
+    public function preRemove(\PDO $db)
     {
         
     }
