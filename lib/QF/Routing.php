@@ -143,7 +143,7 @@ class Routing
 		foreach ($allParameter as $param=>$value)
 		{
             //remove optional parameters if -it is set to false, -it is the default value or -it doesn't match the parameter pattern
-            if (!$value || empty($parameter[$param]) || (isset($routeData['parameter'][$param]) && $value == $routeData['parameter'][$param]) || (isset($routeData['patterns'][$param]) && !preg_match('#^'.$routeData['patterns'][$param].'$#', $value))) {
+            if (!$value || empty($params[$param]) || (isset($routeData['parameter'][$param]) && $value == $routeData['parameter'][$param]) || (isset($routeData['patterns'][$param]) && !preg_match('#^'.$routeData['patterns'][$param].'$#', $value))) {
                 $regexSearch[] = '#\([^:\)]*:'.$param.':[^\)]*\)#U';
             }
             $currentSearch = ':'.$param.':';

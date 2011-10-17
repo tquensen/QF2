@@ -10,12 +10,10 @@ class Repository
     protected $db = null;
     
     protected $entityClass = null;
-
-    protected $connection = null;
     
-    public function __construct($connection = null, $entityClass = null)
+    public function __construct($db = null, $entityClass = null)
     {
-        $this->connection = $connection;
+        $this->db = $db;
 
         if ($entityClass) { 
             if (is_object($entityClass)) {
@@ -35,10 +33,12 @@ class Repository
      */
     public function getDB()
     {
-        if ($this->db === null) {
-            $this->db = DB::get($this->connection);
-        }
         return $this->db;
+    }
+    
+    public function setDB($db)
+    {
+        $this->db = $db;
     }
     
     /**
@@ -53,7 +53,7 @@ class Repository
         if ($entityClass === null) {
             $entityClass = $this->entityClass;
         }
-        $entity = new $entityClass($data, $this->connection);
+        $entity = new $entityClass($this->getDB());
         $isNew ? $entity->postCreate() : $entity->postLoad();
         return $entity;
     }
@@ -63,7 +63,7 @@ class Repository
         $entityClass = get_class($entity);
         try
         {
-            if ($entity->preSave() === false) {
+            if ($entity->preSave($this->getDB()) === false) {
                 return false;
             }
             if ($entity->isNew()) {
@@ -142,7 +142,7 @@ class Repository
         {
             if (is_object($entry))
             {
-                if ($entity->preRemove() === false) {
+                if ($entity->preRemove($this->getDB()) === false) {
                     return false;
                 }
             
@@ -325,11 +325,7 @@ class Repository
         if (count($entities) === 1 && !empty($entities[0])) {
             $key = $entities[0][0]::getIdentifier();
             foreach ($results as $row) {
-                $entity = new $entities[0][0]();
-                foreach ($row as $k => $v) {
-                    $entity->$k = $v;
-                    $entity->setDatabaseProperty($k, $v);
-                }
+                $entity = $this->create($row, false, $entities[0][0]);
                 $returnData[$entity->$key] = $entity;
                 $return = true;
             }

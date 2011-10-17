@@ -5,7 +5,7 @@ namespace QF\DB;
 abstract class Entity extends \QF\Entity
 {
     protected $_databaseProperties = array();
-    protected $_connection = null;
+    protected $_db = null;
     
     protected static $columns = array();
     protected static $relations = array();
@@ -36,12 +36,9 @@ abstract class Entity extends \QF\Entity
          */
     );
     
-    public function __construct($data = array(), $connection = null)
+    public function __construct($db = null)
     {
-        foreach ($data as $k => $v) {
-            $this->set($k, $v);
-        }
-        $this->_connection = $connection;
+        $this->_db = $db;
     }
     
     public function __call($method, $args)
@@ -90,15 +87,17 @@ abstract class Entity extends \QF\Entity
         }
         return serialize(array(
             'p' => $data,
-            'dbp' => $this->_databaseProperties,
-            'con' => $this->_connection
+            'dbp' => $this->_databaseProperties
         ));
     }
     
     public function unserialize($serialized)
     {
         $data = unserialize($serialized);
-        $this->__construct($data['p'], $data['con']);
+        $this->__construct();
+        foreach ($data['p'] as $k => $v) {
+            $this->$k = $v;
+        }
         $this->_databaseProperties = $data['dbp'];
     }
     
@@ -106,9 +105,9 @@ abstract class Entity extends \QF\Entity
      *
      * @return Repository
      */
-    public function getRepository()
+    public static function getRepository($db)
     {
-        return new self::$repositoryClass($this->_connection, $this);
+        return new self::$repositoryClass($db, get_called_class());
     }
 
     /**
@@ -117,12 +116,12 @@ abstract class Entity extends \QF\Entity
      */
     public function getDB()
     {
-        return $this->getRepository()->getDB();
+        return $this->_db;
     }
     
-    public function getConnection()
+    public function setDB($db)
     {
-        return $this->_connection;
+        $this->_db = $db;
     }
     
     /**
@@ -146,9 +145,8 @@ abstract class Entity extends \QF\Entity
 
         if (isset($data[3]) && $data[3] !== true) {
             array_unshift($values, $this->getIdentifier());
-            $repositoryName = $data[0]::getRepositoryClass();
-            $repository = new $repositoryName($this->_connection, $data[0]);
-            $query = $this->getDB->prepare('SELECT '.$data[2].' FROM '.$data[3].' WHERE '.$data[1].'= ?')->execute(array($this->{static::getIdentifier()}));
+            $repository = $data[0]::getRepository($this->getDB());
+            $query = $this->getDB()->prepare('SELECT '.$data[2].' FROM '.$data[3].' WHERE '.$data[1].'= ?')->execute(array($this->{static::getIdentifier()}));
             $relTableIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
             
             $values = array_merge($refTableIds, (array) $values);
@@ -160,8 +158,7 @@ abstract class Entity extends \QF\Entity
             array_unshift($values, $this->{$data[1]});
             $condition = (array) $condition;
             array_unshift($condition, $data[2].' = ?');
-            $repositoryName = $data[0]::getRepositoryClass();
-            $repository = new $repositoryName($this->_connection, $data[0]);
+            $repository = $data[0]::getRepository($this->getDB());
             $entries = $repository->load($condition, $values, $order, $limit, $offset);
         }
 
@@ -199,8 +196,7 @@ abstract class Entity extends \QF\Entity
             throw new Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
         }
 
-        $repositoryName = $data[0]::getRepositoryClass();
-        $repository = new $repositoryName($this->_connection, $data[0]);
+        $repository = $data[0]::getRepository($this->getDB());
         if (!isset($data[3]) || $data[3] === true) {
             if ($data[1] == static::getIdentifier()) {
                 if (!$this->{static::getIdentifier()}) {
@@ -265,8 +261,7 @@ abstract class Entity extends \QF\Entity
         if (!$data = static::getRelation($relation)) {
             throw new Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
         }
-        $repositoryName = $data[0]::getRepositoryClass();
-        $repository = new $repositoryName($this->_connection, $data[0]);
+        $repository = $data[0]::getRepository($this->getDB());
         if (!isset($data[3]) || $data[3] === true) {
             if ($data[1] == static::getIdentifier()) {
                 if (is_object($identifier)) {                  
@@ -330,7 +325,7 @@ abstract class Entity extends \QF\Entity
     public function save()
     {
         try {
-            return $this->getRepository()->save($this);
+            return static::getRepository($this->getDB())->save($this);
         } catch (\Exception $e) {
             throw $e;
             return false;
@@ -344,7 +339,7 @@ abstract class Entity extends \QF\Entity
     public function delete()
     {
         try {
-            return $this->getRepository()->remove($this);
+            return static::getRepository($this->getDB())->remove($this);
         } catch (\Exception $e) {
             throw $e;
             return false;
