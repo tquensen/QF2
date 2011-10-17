@@ -29,7 +29,7 @@ class User
     }
     
     public function logout() {
-        $this->setRole(null, true);
+        $this->setRole('GUEST', true);
         $this->setUser(null, true);
     }
     
