@@ -13,10 +13,10 @@ RewriteEngine on
 
 #i18n
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^([a-z]{2})/(.*)$ index.php?language=$1&route=$2 [L]
+RewriteRule ^([a-z]{2})/(.*)$ index.php?language=$1&route=$2 [L,QSA]
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)$ index.php?route=$1 [L]
+RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
 
 AddDefaultCharset utf-8
 
