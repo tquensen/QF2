@@ -88,19 +88,9 @@ class Pager
 
     /**
      *
-     * @param string $module the module to look for the pager partial. pass null to use the default partial in /Partial/
-     * @return string the html output of the pager partial
+     * @return array an array to use in the view
      */
-    public function getHtml($module = null, $partial = 'pager')
-    {
-        return include_partial('global/gurupager', $this->getForPartial());
-    }
-
-    /**
-     *
-     * @return array an array to use in the partial
-     */
-    public function getForPartial()
+    public function getForView()
     {
         return array('pages' => $this->pages, 'links' => $this->getLinks());
     }
