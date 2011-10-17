@@ -4,11 +4,11 @@
         <li>
             <?php if ($error['element']): ?>
                 <label for="<?php echo htmlspecialchars($form->getName() . '__' . $form->getElement($error['element'])->getName()) ?>">
-                    <span><?php $o->esc($form->getElement($error['element'])->label) ?>:</span>
-                    <?php $o->esc($error['message']) ?>
+                    <span><?php echo htmlspecialchars($form->getElement($error['element'])->label) ?>:</span>
+                    <?php echo htmlspecialchars($error['message']) ?>
                 </label>
             <?php else: ?>
-                <?php $o->esc($error['message']) ?>
+                <?php echo htmlspecialchars($error['message']) ?>
             <?php endif; ?>
         </li>
     <?php endforeach; ?>
