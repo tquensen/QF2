@@ -93,11 +93,16 @@ class Core
             throw new HttpException('page not found', 404);
         }
         
-        if (!empty($routeData['rights']) && !$this->user->userHasRight($routeData['rights'])) {
-            if ($this->user->getRole() === 'GUEST') {
-                throw new Exception\HttpException('login required', 401);
-            } else {
+        if (!empty($routeData['rights'])) {
+            if (!$this->user) {
                 throw new Exception\HttpException('permission denied', 403);
+            }
+            if (!$this->user->userHasRight($routeData['rights'])) {        
+                if ($this->user->getRole() === 'GUEST') {
+                    throw new Exception\HttpException('login required', 401);
+                } else {
+                    throw new Exception\HttpException('permission denied', 403);
+                }
             }
         }
 

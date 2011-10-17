@@ -20,10 +20,10 @@ $config['default_language'] = $config['languages'][0];
 $config['current_language'] = $config['default_language'];
 
 
-$config['roles'] = array(
-    'guest' => array('GUEST'),
-    'user' => array('USER'),
-    'admin' => array('ADMIN', 'USER')
+$config['roles'] = array( // 'ROLE_NAME' => array('list','of','rights')
+    'GUEST' => array('guest'),
+    'USER' => array('user'),
+    'ADMIN' => array('admin', 'user')
 );
 
 //database connection
