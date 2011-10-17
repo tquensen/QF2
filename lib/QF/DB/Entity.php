@@ -322,10 +322,13 @@ abstract class Entity extends \QF\Entity
      *
      * @return bool
      */
-    public function save()
+    public function save($db = null)
     {
+        if (!$db) {
+            $db = $this->getDB();
+        }
         try {
-            return static::getRepository($this->getDB())->save($this);
+            return static::getRepository($db)->save($this);
         } catch (\Exception $e) {
             throw $e;
             return false;
@@ -336,10 +339,13 @@ abstract class Entity extends \QF\Entity
      *
      * @return bool.
      */
-    public function delete()
+    public function delete($db = null)
     {
+        if (!$db) {
+            $db = $this->getDB();
+        }
         try {
-            return static::getRepository($this->getDB())->remove($this);
+            return static::getRepository($db)->remove($this);
         } catch (\Exception $e) {
             throw $e;
             return false;
