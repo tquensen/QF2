@@ -54,7 +54,18 @@ class Repository
             $entityClass = $this->entityClass;
         }
         $entity = new $entityClass($this->getDB());
-        $isNew ? $entity->postCreate() : $entity->postLoad();
+        if ($isNew) {
+            foreach ($data as $k => $v) {
+                $entity->$k = $v;
+            }
+            $entity->postCreate();
+        } else {
+            foreach ($data as $k => $v) {
+                $entity->$k = $v;
+                $entity->setDatabaseProperty($k, $v);
+            }
+            $entity->postLoad();
+        }
         return $entity;
     }
     
@@ -356,9 +367,6 @@ class Repository
                         $entityName = $entity[0];
                         $fields = $this->_filter($row, $alias);
                         $entity = $this->create($fields, false, $entityName);
-                        foreach ($fields as $k => $v) {
-                            $entity->setDatabaseProperty($k, $v);
-                        }
                         $returnData[$prefix][$row[$identifiers[$prefix]]] = $entity;
                     }
                 }
