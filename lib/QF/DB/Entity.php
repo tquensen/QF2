@@ -107,7 +107,7 @@ abstract class Entity extends \QF\Entity
      */
     public static function getRepository($db)
     {
-        return new self::$repositoryClass($db, get_called_class());
+        return new static::$repositoryClass($db, get_called_class());
     }
 
     /**
