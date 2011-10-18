@@ -151,7 +151,7 @@ class Repository
 	{
         try
         {
-            if (is_object($entry))
+            if (is_object($entity))
             {
                 if ($entity->preRemove($this->getDB()) === false) {
                     return false;
