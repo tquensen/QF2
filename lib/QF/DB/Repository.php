@@ -164,7 +164,7 @@ class Repository
                 }
 
                 $query = $this->getDB()->prepare('DELETE FROM '.$entityClass::getTableName().' WHERE '.$entityClass::getIdentifier().' = ? LIMIT 1');
-                $result = $query->execute($entity->{$entityClass::getIdentifier()});
+                $result = $query->execute(array($entity->{$entityClass::getIdentifier()}));
                 $entity->clearDatabaseProperties();
             }
             else
@@ -176,7 +176,7 @@ class Repository
             foreach ($entityClass::getRelations() as $relation => $info) {
                 if (isset($info[3]) && $info[3] !== true) {
                     $query = $this->getDB()->prepare('DELETE FROM '.$info[3].' WHERE '.$info[1].' = ?');
-                    $query->execute(is_object($entity) ? $entity->{$entityClass::getIdentifier()} : $entity);
+                    $query->execute(array(is_object($entity) ? $entity->{$entityClass::getIdentifier()} : $entity));
                 }
             }
 
