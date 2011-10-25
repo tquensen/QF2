@@ -11,7 +11,9 @@ class Repository
     
     protected $entityClass = null;
     
-    public function __construct($db = null, $entityClass = null)
+    protected static $defaultEntityClass = null;
+    
+    public function __construct($db, $entityClass = null)
     {
         $this->db = $db;
 
@@ -22,9 +24,14 @@ class Repository
             
             $this->entityClass = $entityClass;
         }
-        if (!is_subclass_of($this->entityClass, '\\QF\\DB\\Entity')) {
+        if (!is_subclass_of($this->getEntityClass(), '\\QF\\DB\\Entity')) {
             throw new \InvalidArgumentException('$entityClass must be an \\QF\\DB\\Entity instance or classname');
         }
+    }
+    
+    public function getEntityClass()
+    {
+        return $this->entityClass ?: static::$defaultEntityClass;
     }
     
     /**
@@ -51,7 +58,7 @@ class Repository
     public function create($data = array(), $isNew = true, $entityClass = null)
     {
         if ($entityClass === null) {
-            $entityClass = $this->entityClass;
+            $entityClass = $this->getEntityClass();
         }
         $entity = new $entityClass($this->getDB());
         if ($isNew) {
@@ -188,7 +195,7 @@ class Repository
     
     public function removeBy($conditions, $values, $cleanRefTable = false)
 	{
-        $entityClass = $this->entityClass;
+        $entityClass = $this->getEntityClass();
         $query = 'DELETE FROM '.$entityClass::getTableName();
                 
         $where = array();
@@ -217,7 +224,7 @@ class Repository
      */
     public function cleanRefTables()
     {
-        $entityClass = $this->entityClass;
+        $entityClass = $this->getEntityClass();
         foreach ($entityClass::getRelations() as $relation => $info) {
             if (!isset($info[3]) || $info[3] === true) {
                 continue;
@@ -253,7 +260,7 @@ class Repository
      */
     public function load($conditions = array(), $values = array(), $order = null, $limit = null, $offset = null, $build = true)
     {
-        $entity = $this->entityClass;
+        $entity = $this->getEntityClass();
 
         if (!is_subclass_of($entity, '\\QF\\DB\\Entity')) {
             throw new \InvalidArgumentException('$entity must be an \\QF\\DB\\Entity instance or classname');
@@ -313,7 +320,7 @@ class Repository
     public function build(\PDOStatement $statement, $entities = null, $return = null)
     {
         if ($entities === null) {
-            $entities = $this->entityClass;
+            $entities = $this->getEntityClass();
         }
         if (is_string ($entities)) {
             $entities = array(0 => array($entities));
@@ -399,5 +406,15 @@ class Repository
             }
         }
         return $return;
+    }
+    
+    public static function get($db, $entityClass = null)
+    {
+        if (!$entityClass) { 
+            $entityClass = static::$defaultEntityClass;
+        } elseif (is_object($entityClass)) {
+            $entityClass = get_class($entityClass);
+        }           
+        return $entityClass::getRepository($db);
     }
 }

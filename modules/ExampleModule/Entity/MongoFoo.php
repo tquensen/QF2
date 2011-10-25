@@ -1,10 +1,12 @@
 <?php
-namespace QF\Mongo;
+namespace ExampleModule\Entity;
 
-abstract class MapReduceEntity extends Entity
+use QF\Mongo\Entity;
+
+class MongoFoo extends Entity
 {
-    protected static $collectionName = null;
-    protected static $autoId = false;
+    protected static $collectionName = 'foo';
+    protected static $autoId = true;
     protected static $repositoryClass = '\\QF\\Mongo\\Repository';
     protected static $_properties = array(
         /* example
@@ -23,20 +25,52 @@ abstract class MapReduceEntity extends Entity
             'column' => true, //true if this property is a database column (default false)
             'relation' => array(local_column, foreign_column), //database relation or false for no relation, default = false
                           //assumes 1:n or m:n relation if collection is set, n:1 or 1:n otherwise
-        )
+        ),
          */
         
-        '_id'        => array('column' => true),
-        'value'     => array('column' => true)
+        '_id'        => array('type' => '\\MongoId', 'column' => true),
+        'title'         => array('type' => 'string', 'column' => true),
+        'description'   => array('type' => 'string', 'column' => true),
+        'bar_id'        => array('type' => '\\MongoId', 'column' => true),
+        'bar'           => array(
+            'type' => '\\ExampleModule\Entity\\MongoBar', 'relation' => array('bar_id', '_id')
+        ),
     );
     
     /**
-     * @var mixed;
+     * @var \MongoId
      */
     protected $_id;
     
-    /**
-     * @var mixed;
-     */
-    protected $value;
+    /** @var string */
+    protected $title;
+    
+    /** @var string */
+    protected $description;
+    
+    /** @var \MongoId */
+    protected $bar_id;
+
+    /** @var \ExampleModule\Entity\MongoBar */
+    protected $bar;
+    
+    public function preSave(\MongoDB $db)
+    {
+
+    }
+
+    public function preRemove(\MongoDB $db)
+    {
+        
+    }
+
+    public function postCreate()
+    {
+
+    }
+
+    public function postLoad()
+    {
+
+    }
 }

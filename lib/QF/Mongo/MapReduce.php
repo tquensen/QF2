@@ -26,21 +26,19 @@ class MapReduce
      * @var MongoDB
      */
     protected $db = null;
-    protected $connection = null;
     
     /**
      *
      * @param string $collection the collection to use for the map/reduce
-     * @param string $connection the connection name
+     * @param string $db the database connection
      * @param MongoCode|string $map the map function as MongoCode or string
      * @param MongoCode|string $reduce the reduce function as MongoCode or string
      * @param MongoCode|string $finalize the finalize function as MongoCode or string
      */
-    public function __construct($collection = null, $connection = null, $map = null, $reduce = null, $finalize = null)
+    public function __construct($collection, $db, $map = null, $reduce = null, $finalize = null)
     {
         $this->collection = $collection;
-        $this->connection = $connection;
-        $this->db = DB::get($this->connection);
+        $this->db = $db;
     
         if ($map) {
             $this->map($map);
@@ -170,8 +168,8 @@ class MapReduce
     {
         $this->outType = $outType;
         
-        if (!is_subclass_of($entityClass, '\\Mongo\\Entity')) {
-            throw new \InvalidArgumentException('$entityClass must be an \\Mongo\\Entity classname');
+        if (!is_subclass_of($entityClass, '\\QF\\Mongo\\Entity')) {
+            throw new \InvalidArgumentException('$entityClass must be an \\QF\\Mongo\\Entity classname');
         }
         
         $this->outCollection = $entityClass::getCollectionName();
@@ -241,8 +239,7 @@ class MapReduce
         
         if ($this->outEntity) {
             $entityName = $this->outEntity;
-            $repositoryName = $entityName::getRepositoryClass();
-            $repository = new $repositoryName($this->connection, $entityName);
+            $repository = $entityName::getRepository($this->db);
             return $repository->find($query, $sort, $limit, $skip, $build);
         }
         

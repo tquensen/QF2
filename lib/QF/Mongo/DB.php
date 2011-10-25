@@ -3,57 +3,49 @@ namespace QF\Mongo;
 
 class DB
 {
-    protected static $connections = array();
-    protected static $settings = array();
+    protected $connection = null;
+    protected $settings = array();
     
     public function __construct($settings = array())
     {
-        static::init($settings);
+        $this->settings = $settings;
     }
     
-    public static function init($settings = array())
-    {
-        static::$settings = $settings;
-    }
-
     /**
      *
      * @return \MongoDB
      */
-    public static function get($connection = null)
+    public function get()
     {
-        if (!$connection) {
-            $connection = 'default';
-        }
-        
-        if (!isset(static::$connections[$connection])) {
-            if (!isset(static::$settings[$connection])) {
-                return;
-            }
+        if ($this->connection === null) {
 
-            if (!empty(static::$settings[$connection]['server'])) {
-                $mongo = new \Mongo(static::$settings[$connection]['server'], !empty(static::$settings[$connection]['options']) ? static::$settings[$connection]['options'] : array());
+            if (!empty($this->settings['server'])) {
+                $mongo = new \Mongo($this->settings['server'], !empty($this->settings['options']) ? $this->settings['options'] : array());
             } else {
                 $mongo = new \Mongo();
             }
-            $database = !empty(static::$settings[$connection]['database']) ? static::$settings[$connection]['database'] : $connection;
-            self::$connections[$connection] = $mongo->$database;
+            $database = !empty($this->settings['database']) ? $this->settings['database'] : 'default';
+            $this->connection = $mongo->$database;
         }
-        return isset(static::$connections[$connection]) ? static::$connections[$connection] : null;
+        return $this->connection;
     }
     
-    public static function getRepository($entityClass, $connection = null)
+    /**
+     *
+     * @param string|\QF\Mongo\Entity $entityClass (name of) an entity class
+     * @return \QF\Mongo\Repository 
+     */
+    public function getRepository($entityClass)
     {
         if (is_object($entityClass)) {
             $entityClass = get_class($entityClass);
         }
             
-        if (!is_subclass_of($this->entityClass, '\\Mongo\\Entity')) {
+        if (!is_subclass_of($entityClass, '\\Mongo\\Entity')) {
             throw new \InvalidArgumentException('$entityClass must be an \\Mongo\\Entity instance or classname');
         }
         
-        $repositoryName = $entityClass::getRepositoryClass();
-        return new $repositoryName($connection, $entityClass);
+        return $entityClass::getRepository($this->get());
     }
 
     

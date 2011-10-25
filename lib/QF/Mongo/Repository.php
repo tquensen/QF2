@@ -11,12 +11,12 @@ class Repository
     protected $db = null;
     
     protected $entityClass = null;
+    
+    protected static $defaultEntityClass = null;
 
-    protected $connection = null;
-
-    public function __construct($connection = null, $entityClass = null)
+    public function __construct($db, $entityClass = null)
     {
-        $this->connection = $connection;
+        $this->db = $db;
 
         if ($entityClass) { 
             if (is_object($entityClass)) {
@@ -25,9 +25,14 @@ class Repository
             
             $this->entityClass = $entityClass;
         }
-        if (!is_subclass_of($this->entityClass, '\\Mongo\\Entity')) {
+        if (!is_subclass_of($this->getEntityClass(), '\\Mongo\\Entity')) {
             throw new \InvalidArgumentException('$entityClass must be an \\Mongo\\Entity instance or classname');
         }
+    }
+    
+    public function getEntityClass()
+    {
+        return $this->entityClass ?: static::$defaultEntityClass;
     }
 
     /**
@@ -36,12 +41,14 @@ class Repository
      */
     public function getDB()
     {
-        if ($this->db === null) {
-            $this->db = DB::get($this->connection);
-        }
         return $this->db;
     }
 
+    public function setDB($db)
+    {
+        $this->db = $db;
+    }
+    
     /**
      *
      * @return \MongoCollection
@@ -58,18 +65,9 @@ class Repository
      */
     public function getCollectionName()
     {
-        $entityClass = $this->entityClass;
-        return $entityClass::$getCollectionName();
+        $entityClass = $this->getEntityClass();
+        return $entityClass::getCollectionName();
     }
-
-    /**
-     *
-     * @return string
-     */
-    public function getConnection()
-    {
-        return $this->connection;
-    }    
 
     /**
      *
@@ -79,9 +77,20 @@ class Repository
      */
     public function create($data = array(), $isNew = true)
     {
-        $name = $this->entityClass;
-        $entity = new $name($data, $this->connection);
-        $isNew ? $entity->postCreate() : $entity->postLoad();
+        $name = $this->getEntityClass();
+        $entity = new $name($this->getDB());
+        if ($isNew) {
+            foreach ($data as $k => $v) {
+                $entity->$k = $v;
+            }
+            $entity->postCreate();
+        } else {
+            foreach ($data as $k => $v) {
+                $entity->$k = $v;
+                $entity->setDatabaseProperty($k, $v);
+            }
+            $entity->postLoad();
+        }
         return $entity;
     }
 
@@ -98,14 +107,10 @@ class Repository
             $data = array($data);
         }
         
-        $entityClass = $this->entityClass;
+        $entityClass = $this->getEntityClass();
         
         foreach ($data as $current) {
             $model = $this->create($current, false);
-            foreach ($entityClass::getColumns() as $col) {
-                if (isset($current[$col]))
-                $model->setDatabaseProperty($col, $current[$col]);
-            }
             if (is_array($model->_id)) {
                 $return[] = $model;
             } else {
@@ -123,7 +128,7 @@ class Repository
      */
     public function findOne($query, $build = true)
     {
-        $entityClass = $this->entityClass;
+        $entityClass = $this->getEntityClass();
         
         if (is_string($query)) {
             $query = array('_id' => $entityClass::isAutoId() ? new \MongoId($query) : $query);
@@ -194,7 +199,7 @@ class Repository
      */
     public function mapReduce($map = null, $reduce = null, $finalize = null)
     {
-        return new MapReduce($this->getCollectionName(), $this->connection, $map, $reduce, $finalize);
+        return new MapReduce($this->getCollectionName(), $this->getDB(), $map, $reduce, $finalize);
     }
     
     /**
@@ -235,10 +240,10 @@ class Repository
         $entityClass = get_class($entity);
         
         try {
-            if ($entity->preSave() === false) {
+            if ($entity->preSave($this->getDB()) === false) {
                 return false;
             }
-            $data = $entity->getData();
+
             if ($entity->isNew()) {
                 $insert = array();
                 foreach ($entityClass::getColumns() as $column) {
@@ -305,7 +310,7 @@ class Repository
             return false;
         }
         try {
-            if ($entity->preRemove() === false) {
+            if ($entity->preRemove($this->getDB()) === false) {
                 return false;
             }
             $status = $this->getCollection()->remove(array('_id' => $entity->_id), array('safe' => $safe !== null ? $safe : false));
@@ -338,13 +343,18 @@ class Repository
 //    }
 
     /**
-     * @param string $connection the database connection to use (null for the default connection)
+     * @param string $sb the database connection to use
      * @param string|Entity $entityClass
      * @return Mongo_Repository
      */
-    public static function get($connection = null, $entityClass = null)
+    public static function get($db, $entityClass = null)
     {
-        return new static($connection, $entityClass);
+        if (!$entityClass) { 
+            $entityClass = static::$defaultEntityClass;
+        } elseif (is_object($entityClass)) {
+            $entityClass = get_class($entityClass);
+        }           
+        return $entityClass::getRepository($db);
     }
 
 }

@@ -4,20 +4,44 @@ namespace QF\Mongo;
 abstract class Entity extends \QF\Entity
 {
     protected $_databaseProperties = array();
-    protected $_connection = null;
+    protected $_db = null;
     
+    protected static $columns = array();
+    protected static $relations = array();
+
     protected static $collectionName = null;
     protected static $autoId = false;
-    protected static $columns = array(); //array('_id', 'name', 'user_id')
-    protected static $relations = array(); //array of array(ForeignClassName, local_column, foreign_column, [true=foreign is single (for m:1 or 1:1), leave blank/false=foreign is multiple (for 1:m or n:m)])
     protected static $repositoryClass = '\\QF\\Mongo\\Repository';
-
-    public function __construct($data = array(), $connection = null)
+    protected static $_properties = array(
+        /* example
+        'property' => array(
+            'type' => 'string', //a scalar type or a classname, true to allow any type, default = true
+            'container' => 'data', //the parent-property containing the property ($this->container[$property]) or false ($this->$property), default = false
+            'readonly' => false, //only allow read access (get, has, is)
+            'required' => false, //disallow unset(), clear(), and set(null), default = false (unset(), clear(), and set(null) is allowed regardles of type) - the property can still be null if not initialized!
+            'collection' => true, //stores multiple values, activates add and remove methods, true to store values in an array, name of a class that implements ArrayAccess to store values in that class, default = false (single value),
+            'collectionUnique' => true, //do not allow dublicate entries when using as collection, when type = array or an object and collectionUnique is a string, that property/key will be used as index of the collection
+            'collectionRemoveByValue' => true, //true to remove entries from a collection by value, false to remove by key, default = false, this only works if collection is an array or an object implementing Traversable
+            'collectionSingleName' => false, //alternative property name to use for add/remove actions, default=false (e.g. if property = "children" and collectionSingleName = "child", you can use addChild/removeChild instead of addChildren/removeChildren)
+            'exclude' => true, //set to true to exclude this property on toArray() and foreach(), default = false
+            'default' => null, // the default value to return by get if null, and to set by clear, default = null
+    
+            'column' => true, //true if this property is a database column (default false)
+            'relation' => array(local_column, foreign_column), //database relation or false for no relation, default = false
+                          //assumes 1:n or m:n relation if collection is set, n:1 or 1:n otherwise
+        ),
+         */
+        '_id'        => array('type' => '\\MongoId', 'column' => true),
+    );
+    
+    /**
+     * @var \MongoId
+     */
+    protected $_id;
+    
+    public function __construct($db = null)
     {
-        foreach ($data as $k => $v) {
-            $this->set($k, $v);
-        }
-        $this->_connection = $connection;
+        $this->_db = $db;
     }
     
     public function __call($method, $args)
@@ -66,15 +90,17 @@ abstract class Entity extends \QF\Entity
         }
         return serialize(array(
             'p' => $data,
-            'dbp' => $this->_databaseProperties,
-            'con' => $this->_connection
+            'dbp' => $this->_databaseProperties
         ));
     }
     
     public function unserialize($serialized)
     {
         $data = unserialize($serialized);
-        $this->__construct($data['p'], $data['con']);
+        $this->__construct();
+        foreach ($data['p'] as $k => $v) {
+            $this->$k = $v;
+        }
         $this->_databaseProperties = $data['dbp'];
     }
     
@@ -82,9 +108,9 @@ abstract class Entity extends \QF\Entity
      *
      * @return Repository
      */
-    public function getRepository()
+    public static function getRepository($db)
     {
-        return new self::$repositoryClass($this->_connection, $this);
+        return new static::$repositoryClass($db, get_called_class());
     }
 
     /**
@@ -93,21 +119,21 @@ abstract class Entity extends \QF\Entity
      */
     public function getDB()
     {
-        return $this->getRepository()->getDB();
+        return $this->_db;
     }
 
+    public function setDB($db)
+    {
+        $this->_db = $db;
+    }
+    
     /**
      *
      * @return MongoCollection
      */
     public function getCollection()
     {
-        return $this->getRepository()->getCollection();
-    }
-    
-    public function getConnection()
-    {
-        return $this->_connection;
+        return $this->getRepository()->{static::$collectionName};
     }
 
     public function increment($property, $value, $save = null)
@@ -138,11 +164,12 @@ abstract class Entity extends \QF\Entity
         if (!$relationInfo = static::getRelation($relation)) {
             throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
         }
-        $repositoryName = $relationInfo[0]::GetRepositoryClass();
-        $repository = new $repositoryName($this->getConnection(), $relationInfo[0]);
+        
+        $repository = $relationInfo[0]::GetRepository($this->getDB());
             
         if (!empty($relationInfo[3])) {
-            $related = $repository->findOne(array($relationInfo[2] => $this->{$relationInfo[1]}));
+            $query = array_merge(array($relationInfo[2] => $this->{$relationInfo[1]}), (array) $query);            
+            $related = $repository->findOne($query);
             $this->set($relation, $related);
             return $related;
         } else {
@@ -177,9 +204,8 @@ abstract class Entity extends \QF\Entity
             }
             return true;
         }
-        if (!is_object($related) || !($related instanceof Model)) {
-            $repositoryName = $relationInfo[0]::GetRepositoryClass();
-            $repository = new $repositoryName($this->getConnection(), $relationInfo[0]);
+        if (!is_object($related) || !($related instanceof Entity)) {
+            $repository = $relationInfo[0]::GetRepository($this->getDB());
             $related = $repository->findOne($related);
             if (!$related) {
                 throw new \InvalidArgumentException('Could not find valid '.$relationInfo[0]);
@@ -279,8 +305,7 @@ abstract class Entity extends \QF\Entity
         }
         if (!empty($relationInfo[3])) {
             
-            $repositoryName = $relationInfo[0]::GetRepositoryClass();
-            $repository = new $repositoryName($this->getConnection(), $relationInfo[0]);
+            $repository = $relationInfo[0]::GetRepository($this->getDB());
                 
             if ($relationInfo[1] == '_id') {
                 if (!$this->{$relationInfo[1]} || $save === null) {
@@ -325,8 +350,7 @@ abstract class Entity extends \QF\Entity
             if ($related === true) {
                 if ($relationInfo[2] == '_id') {                    
                     if ($delete) {
-                        $repositoryName = $relationInfo[0]::GetRepositoryClass();
-                        $repository = new $repositoryName($this->getConnection(), $relationInfo[0]);
+                        $repository = $relationInfo[0]::GetRepository($this->getDB());
                         
                         $options = $save !== null ? array('safe' => $save) : array();
                         if (is_array($this->{$relationInfo[1]})) {
@@ -342,8 +366,7 @@ abstract class Entity extends \QF\Entity
                     $this->{$relationInfo[1]} = null;
                     return $save !== null ? $this->save($save) : true;
                 } else {
-                    $repositoryName = $relationInfo[0]::GetRepositoryClass();
-                    $repository = new $repositoryName($this->getConnection(), $relationInfo[0]);
+                    $repository = $relationInfo[0]::GetRepository($this->getDB());
                     $related = $repository->find(array($relationInfo[2] => $this->{$relationInfo[1]}));
                     foreach ($related as $rel) {
                         if (is_array($related->{$relationInfo[2]})) {
@@ -366,8 +389,7 @@ abstract class Entity extends \QF\Entity
                 return true;
             } else {
                 if (!is_object($related) || !($related instanceof Entity)) {
-                    $repositoryName = $relationInfo[0]::GetRepositoryClass();
-                    $repository = new $repositoryName($this->getConnection(), $relationInfo[0]);
+                    $repository = $relationInfo[0]::GetRepository($this->getDB());
                     $related = $repository->findOne($related);
                 }
                 if (!$related) {
@@ -423,10 +445,13 @@ abstract class Entity extends \QF\Entity
      * @param bool|integer $safe @see php.net/manual/en/mongocollection.update.php
      * @return bool Returns if the update was successfully sent to the database.
      */
-    public function save($safe = true)
+    public function save($safe = true, $db = null)
     {
+        if (!$db) {
+            $db = $this->getDB();
+        }
         try {
-            return $this->getRepository()->save($this, $safe);
+            return static::getRepository($db)->save($this, $safe);
         } catch (\Exception $e) {
             throw $e;
             return false;
@@ -438,22 +463,25 @@ abstract class Entity extends \QF\Entity
      * @param bool|integer $safe @see php.net/manual/en/mongocollection.remove.php
      * @return mixed If "safe" is set, returns an associative array with the status of the remove ("ok"), the number of items removed ("n"), and any error that may have occured ("err"). Otherwise, returns TRUE if the remove was successfully sent, FALSE otherwise.
      */
-    public function delete($safe = true)
+    public function delete($safe = true, $db = null)
     {
+        if (!$db) {
+            $db = $this->getDB();
+        }
         try {
-            return $this->getRepository()->remove($this, $safe);
+            return static::getRepository($db)->remove($this, $safe);
         } catch (\Exception $e) {
             throw $e;
             return false;
         }
     }
 
-    public function preSave()
+    public function preSave(\MongoDB $db)
     {
 
     }
 
-    public function preRemove()
+    public function preRemove(\MongoDB $db)
     {
         
     }
@@ -480,12 +508,52 @@ abstract class Entity extends \QF\Entity
     
     public static function getColumns()
     {
-        return static::$columns;
+        if (!isset(static::$columns[static::$collectionName])) {
+            $cols = array();        
+            foreach (static::$_properties as $prop => $data) {
+                if (!empty($data['column'])) {
+                    $cols[] = $prop;
+                }
+            }
+            static::$columns[static::$collectionName] = $cols;
+        }
+        return static::$columns[static::$collectionName];
+    }
+    
+    public static function getRelation($rel)
+    {
+        if (!isset(static::$relations[static::$collectionName])) {
+            $rels = array();          
+            foreach (static::$_properties as $prop => $data) {
+                if (!empty($data['relation']) && !empty($data['type']) && !empty($data['relation'][0]) && !empty($data['relation'][1])) {
+                    $rel = array($data['type'], $data['relation'][0], $data['relation'][1]);
+                    if (empty($data['collection'])) {
+                        $rel[3] = true;
+                    }
+                    $rels[] = $rel;
+                }
+            }
+            static::$relations[static::$collectionName] = $rels;
+        }
+        return !empty(static::$relations[static::$collectionName][$rel]) ? static::$relations[static::$collectionName][$rel] : false;
     }
     
     public static function getRelations()
     {
-        return static::$relations;
+        if (!isset(static::$relations[static::$collectionName])) {
+            $rels = array();          
+            foreach (static::$_properties as $prop => $data) {
+                if (!empty($data['relation']) && !empty($data['type']) && !empty($data['relation'][0]) && !empty($data['relation'][1])) {
+                    $rel = array($data['type'], $data['relation'][0], $data['relation'][1]);
+                    if (empty($data['collection'])) {
+                        $rel[3] = true;
+                    }
+                    $rels[] = $rel;
+                }
+            }
+            static::$relations[static::$collectionName] = $rels;
+        }
+        return static::$relations[static::$collectionName];
     }
     
     public static function getRepositoryClass()

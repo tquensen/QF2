@@ -29,7 +29,7 @@ abstract class Entity extends \QF\Entity
             'default' => null, // the default value to return by get if null, and to set by clear, default = null
     
             'column' => true, //true if this property is a database column (default false)
-            'relation' => array(ForeignClassName, local_column, foreign_column), //database relation or false for no relation, default = false
+            'relation' => array(local_column, foreign_column), //database relation or false for no relation, default = false
                           //assumes 1:n relation if collection is set, n:1 or 1:n otherwise
             'refTable' => 'tablename' //for n:m relations - the name of the ref table, default = false
         )
@@ -413,8 +413,8 @@ abstract class Entity extends \QF\Entity
         if (!isset(static::$relations[static::$tableName])) {
             $rels = array();          
             foreach (static::$_properties as $prop => $data) {
-                if (!empty($data['relation'])) {
-                    $rel = $data['relation'];
+                if (!empty($data['relation']) && !empty($data['type']) && !empty($data['relation'][0]) && !empty($data['relation'][1])) {
+                    $rel = array($data['type'], $data['relation'][0], $data['relation'][1]);
                     if (!empty($data['refTable'])) {
                         $rel[3] = $data['refTable'];
                     } elseif (empty($data['collection'])) {
