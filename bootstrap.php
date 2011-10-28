@@ -1,5 +1,5 @@
 <?php
-define('QF_CLI', QF_ENV === 'cli' ? true : false);
+define('QF_CLI', isset($_SERVER['argc']) && $_SERVER['argc'] > 1 ? true : false);
 define('QF_DEBUG', QF_CLI || QF_ENV === 'dev' ? true : false);
 define('QF_BASEPATH', __DIR__);
 
