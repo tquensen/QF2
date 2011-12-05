@@ -33,22 +33,22 @@ class Form
 
     public function getFormToken()
     {
-        if (!$this->getOption('useFormToken') || empty($this->options['formTokenName'])) {
+        if (empty($this->options['useFormToken']) || empty($this->getOption('formTokenName'))) {
             return false;
         }
         $token = md5(time().rand(10000, 99999));
-        $_SESSION['_QF_FORM_TOKEN'][$this->options['formTokenName']][$token] = true;
+        $_SESSION['_QF_FORM_TOKEN'][$token] = $this->options['formTokenName'];
         return $token;
     }
 
     public function checkFormToken()
     {
-        if (!$this->getOption('useFormToken') || empty($this->options['formTokenName']) || empty($_REQUEST[$this->options['formTokenName']])) {
+        if (empty($this->options['useFormToken']) || empty($this->options['formTokenName']) || empty($_REQUEST[$this->options['formTokenName']])) {
             return false;
         }
         $token = $_REQUEST[$this->options['formTokenName']];
-        if (!empty($_SESSION['_QF_FORM_TOKEN'][$this->options['formTokenName']][$token])) {
-            unset($_SESSION['_QF_FORM_TOKEN'][$this->options['formTokenName']][$token]);
+        if (!empty($_SESSION['_QF_FORM_TOKEN'][$token]) && $_SESSION['_QF_FORM_TOKEN'][$token] == $this->options['formTokenName']) {
+            unset($_SESSION['_QF_FORM_TOKEN'][$token]);
             return true;
         } else {
             return false;
