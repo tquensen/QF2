@@ -35,7 +35,7 @@ if (QF_CLI === true) {
 
     chdir(__DIR__);
     
-    //init routing (not required for cli, but useful as it allows $qf->callRoute() and $qf->routing->getUrl() calls)
+    //init routing (not required for cli, but useful as it allows $qf->routing->callRoute() and $qf->routing->getUrl() calls)
     $qf->routing = new QF\Routing($qf);
 
     //init cli
@@ -63,7 +63,7 @@ if (QF_CLI === true) {
     $qf->setConfig('meta_description', $qf->t->meta_description);    
 
     //user handling
-    session_name('your_session_name');
+    session_name('qf_session');
     session_start();
     $qf->user = new QF\User($qf);
     

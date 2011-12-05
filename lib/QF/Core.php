@@ -63,65 +63,6 @@ class Core
     }
     
     /**
-     * calls the error page defined by $errorCode and shows $message
-     *
-     * @param string $errorCode the error page name (default error pages are 401, 403, 404, 500)
-     * @param string $message a message to show on the error page, leave empty for default message depending on error code
-     * @param Exception $exception an exception to display (only if QF_DEBUG = true)
-     * @return string the parsed output of the error page
-     */
-    public function callError($errorCode = 404, $message = '', $exception = null)
-    {
-        return $this->callRoute('error'.$errorCode, array('message' => $message, 'exception' => $exception));
-    }
-    
-    /**
-     *
-     * @param string $route the key of the route to get
-     * @param array $parameter parameters for the page
-     * @param bool $setAsMainRoute whether this route is the main call (set format, current_route and current_route_parameter config values) or not
-     * @return @return string the parsed output of the page
-     */
-    public function callRoute($route, $parameter = array(), $setAsMainRoute = false)
-    {
-        if (!$this->routing || !($this->routing instanceof Routing)) {
-            throw new \Exception('Routing is not available');
-        }
-        
-        $routeData = $this->routing->getRoute($route);
-        if (!$routeData || empty($routeData['controller']) || empty($routeData['action'])) {
-            throw new HttpException('page not found', 404);
-        }
-        
-        if (!empty($routeData['rights'])) {
-            if (!$this->user) {
-                throw new Exception\HttpException('permission denied', 403);
-            }
-            if (!$this->user->userHasRight($routeData['rights'])) {        
-                if ($this->user->getRole() === 'GUEST') {
-                    throw new Exception\HttpException('login required', 401);
-                } else {
-                    throw new Exception\HttpException('permission denied', 403);
-                }
-            }
-        }
-
-
-        if (!empty($routeData['parameter'])) {
-            $parameter = array_merge($routeData['parameter'], $parameter);
-        }
-        
-        if ($setAsMainRoute) {
-            $this->setConfig('current_route', $route);
-            $this->setConfig('current_route_parameter', $parameter);
-            if (!empty($parameter['_format'])) {
-                $this->setConfig('format', $parameter['_format']);
-            }
-        }
-        return $this->callAction($routeData['controller'], $routeData['action'], $parameter);       
-    }
-
-    /**
      * parses the given page and returns the output
      *
      * inside the page, you have direct access to any given parameter

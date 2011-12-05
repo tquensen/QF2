@@ -26,9 +26,9 @@ try {
     try {
         //401, 403, 404, 500 ...
         if ($e instanceof \QF\Exception\HttpException) {
-            echo $qf->parseTemplate($qf->callError($e->getCode(), $e->getMessage(), $e));        
+            echo $qf->parseTemplate($qf->routing->callError($e->getCode(), $e->getMessage(), $e));        
         } else {
-            echo $qf->parseTemplate($qf->callError(500, 'server error', $e)); 
+            echo $qf->parseTemplate($qf->routing->callError(500, 'server error', $e)); 
         }
     } catch (Exception $e) {
         //seems like the error was inside the template or error page

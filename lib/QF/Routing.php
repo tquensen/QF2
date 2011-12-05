@@ -61,6 +61,65 @@ class Routing
 
         throw new HttpException('page not found', 404);
     }
+    
+    /**
+     *
+     * @param string $route the key of the route to get
+     * @param array $parameter parameters for the page
+     * @param bool $setAsMainRoute whether this route is the main call (set format, current_route and current_route_parameter config values) or not
+     * @return @return string the parsed output of the page
+     */
+    public function callRoute($route, $parameter = array(), $setAsMainRoute = false)
+    {
+        $routeData = $this->getRoute($route);
+        if (!$routeData || empty($routeData['controller']) || empty($routeData['action'])) {
+            throw new HttpException('page not found', 404);
+        }
+        
+        if (!empty($routeData['rights'])) {
+            if (!$this->qf->user) {
+                throw new Exception\HttpException('permission denied', 403);
+            }
+            if (!$this->qf->user->userHasRight($routeData['rights'])) {        
+                if ($this->qf->user->getRole() === 'GUEST') {
+                    throw new Exception\HttpException('login required', 401);
+                } else {
+                    throw new Exception\HttpException('permission denied', 403);
+                }
+            }
+        }
+
+
+        if (!empty($routeData['parameter'])) {
+            $parameter = array_merge($routeData['parameter'], $parameter);
+        }
+        
+        if ($setAsMainRoute) {
+            $this->setConfig('current_route', $route);
+            $this->setConfig('current_route_parameter', $parameter);
+            if (!empty($parameter['_format'])) {
+                $this->setConfig('format', $parameter['_format']);
+            }
+            if (!empty($parameter['_template'])) {
+                $this->setConfig('template', $parameter['_template']);
+            }
+        }
+        return $this->qf->callAction($routeData['controller'], $routeData['action'], $parameter);       
+    }
+    
+    /**
+     * calls the error page defined by $errorCode and shows $message
+     *
+     * @param string $errorCode the error page name (default error pages are 401, 403, 404, 500)
+     * @param string $message a message to show on the error page, leave empty for default message depending on error code
+     * @param Exception $exception an exception to display (only if QF_DEBUG = true)
+     * @return string the parsed output of the error page
+     */
+    public function callError($errorCode = 404, $message = '', $exception = null)
+    {
+        return $this->qf->callRoute('error'.$errorCode, array('message' => $message, 'exception' => $exception));
+    }
+    
 
     /**
      *
