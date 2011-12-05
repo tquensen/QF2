@@ -19,7 +19,7 @@ try {
     
     //throws 404 QF\Exception\HttpException for invalid routes
     $routeData = $qf->routing->parseRoute($route);
-    $pageContent = $qf->callRoute($routeData['route'], $routeData['parameter'], true);
+    $pageContent = $qf->routing->callRoute($routeData['route'], $routeData['parameter'], true);
     echo $qf->parseTemplate($pageContent);
 
 } catch (Exception $e) {    

@@ -16,11 +16,10 @@ class Routing
     }
 
     /**
-     * gets the module, page and parameters from the requested route
+     * gets the routename and parameters from the requested route
      *
      * @param string $route the raw route string
-     * @param bool $isMainRoute whether this route is the main call (used as main content in the template) or not
-     * @return array an array containing the route data
+     * @return array an array containing the route name and parameters
      */
     public function parseRoute($route)
     {
@@ -59,7 +58,7 @@ class Routing
             }
         }
 
-        throw new HttpException('page not found', 404);
+        throw new Exception\HttpException('page not found', 404);
     }
     
     /**
