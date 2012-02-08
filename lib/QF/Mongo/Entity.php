@@ -28,7 +28,7 @@ abstract class Entity extends \QF\Entity
     
             'column' => true, //true if this property is a database column (default false)
             'relation' => array(local_column, foreign_column), //database relation or false for no relation, default = false
-                          //assumes 1:n or m:n relation if collection is set, n:1 or 1:n otherwise
+                          //assumes n:1 or n:m relation if collection is set, 1:1 or 1:n otherwise
         ),
          */
         '_id'        => array('type' => '\\MongoId', 'column' => true),
@@ -49,7 +49,7 @@ abstract class Entity extends \QF\Entity
         if (preg_match('/^(load|link|unlink)(.+)$/', $method, $matches)) {
             $action = $matches[1];
             $property = lcfirst($matches[2]);
-            if (isset(self::$relations[$property])) {
+            if (static::getRelation($property)) {
                 if ($action == 'load') {
                     return $this->loadRelated($property, isset($args[0]) ? $args[0] : array(), isset($args[1]) ? $args[1] : array(), isset($args[2]) ? $args[2] : null, isset($args[3]) ? $args[3] : null);
                 } elseif ($action == 'link') {
@@ -205,7 +205,7 @@ abstract class Entity extends \QF\Entity
             return true;
         }
         if (!is_object($related) || !($related instanceof Entity)) {
-            $repository = $relationInfo[0]::GetRepository($this->getDB());
+            $repository = $relationInfo[0]::getRepository($this->getDB());
             $related = $repository->findOne($related);
             if (!$related) {
                 throw new \InvalidArgumentException('Could not find valid '.$relationInfo[0]);

@@ -22,12 +22,39 @@ abstract class MapReduceEntity extends Entity
     
             'column' => true, //true if this property is a database column (default false)
             'relation' => array(local_column, foreign_column), //database relation or false for no relation, default = false
-                          //assumes 1:n or m:n relation if collection is set, n:1 or 1:n otherwise
-        )
+                          //assumes n:1 or n:m relation if collection is set, 1:1 or 1:n otherwise
+        ),
          */
         
-        '_id'        => array('column' => true),
-        'value'     => array('column' => true)
+        '_id' => array(
+            'column' => true,
+            //'exclude' => true
+        ),
+        'value' => array(
+            'column' => true,
+            //'exclude' => true
+        ),
+        
+        /*
+         * example structure for { _id: { tag: "key", count: 123 }, value: { foo: "xyz", bar: "abc" } } 
+         * you can add 'exclude' => true to _id and value if you define every sub-property
+         */
+        'tag' => array(
+            'container' => '_id',
+            'type' => 'string',
+            'required' => true
+         ),
+        'count' => array(
+            'container' => '_id',
+            'type' => 'int',
+            'required' => true
+         ),
+        'foo' => array(
+            'container' => 'value'
+         ),
+        'bar' => array(
+            'container' => 'value'
+         )
     );
     
     /**

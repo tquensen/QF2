@@ -30,7 +30,7 @@ abstract class Entity extends \QF\Entity
     
             'column' => true, //true if this property is a database column (default false)
             'relation' => array(local_column, foreign_column), //database relation or false for no relation, default = false
-                          //assumes 1:n relation if collection is set, n:1 or 1:n otherwise
+                          //assumes n:1 or n:m relation if collection is set, 1:n or 1:1 otherwise
             'refTable' => 'tablename' //for n:m relations - the name of the ref table, default = false
         )
          */
@@ -46,7 +46,7 @@ abstract class Entity extends \QF\Entity
         if (preg_match('/^(load|link|unlink)(.+)$/', $method, $matches)) {
             $action = $matches[1];
             $property = lcfirst($matches[2]);
-            if (isset(self::$relations[$property])) {
+            if (static::getRelation($property)) {
                 if ($action == 'load') {
                     return $this->loadRelated($property, isset($args[0]) ? $args[0] : null, isset($args[1]) ? $args[1] : array(), isset($args[2]) ? $args[2] : null, isset($args[3]) ? $args[3] : null, isset($args[4]) ? $args[4] : null);
                 } elseif ($action == 'link') {
@@ -293,6 +293,9 @@ abstract class Entity extends \QF\Entity
             } elseif ($data[2] == static::getIdentifier()) {
                 $this->{$data[1]} = null;
                 $this->save();
+                if ($delete && is_object($identifier)) {
+                    $identifier->delete();
+                }
             }
         } else {
             if (!$this->{static::getIdentifier()}) {

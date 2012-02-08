@@ -25,7 +25,7 @@ class Foo extends Entity
     
             'column' => true, //true if this property is a database column (default false)
             'relation' => array(local_column, foreign_column), //database relation or false for no relation, default = false
-                          //assumes 1:n relation if collection is set, n:1 or 1:n otherwise
+                          //assumes n:1 or n:m relation if collection is set, 1:n or 1:1 otherwise
             'refTable' => 'tablename' //for n:m relations - the name of the ref table, default = false
         )
          */
