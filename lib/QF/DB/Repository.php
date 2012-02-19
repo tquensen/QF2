@@ -294,118 +294,147 @@ class Repository
     }
     
     /**
-     * builds entities from a PDOStatement as defined by $entities
+     * $relations is an array of arrays as followed:
+     *  array(fromAlias, relationProperty, toAlias, $condition = null, $values = array(), $order = null)
      * 
-     * example for $entities:
-     *  - if null, the current entity class of this repository is implied
-     *  - $entities must contain either a single entity or an array of multiple entity definitions with prefix as keys
-     *  - an single entity is defined either by
-     *    - the name of an entity class as string (e.g. "\Foo\Model\User")
-     *    - or by an array(classname, relations-array (optional))
-     *  - the relations-array consists of one or more "relationname" => $relation pairs, where
-     *    - relationname is the name of the property where the related entry is stored, and
-     *    - $relation is the prefix of the related entity as string "prefix"
-     * 
-     * examples:
-     *   - "\Foo\Model\User"
-     *   - array('\Foo\Model\User')
-     *   - array('a' => array('\Foo\Model\User', array('addresses' => 'b')), 'b' => '\Foo\Model\Addresses');
-     *   - array('a' => array('\Foo\Model\User', array('profile' => 'b')), 'b' => array('\Foo\Model\Profile'));
-     * 
-     * @param \PDOStatement $statement the pdo statement
-     * @param mixed $entities a definition of the entities to return
-     * @param mixed $return if multiple entities are definded: true to return an array of all fetched entities or the prefix of an entity, null for the first defined entity
-     * @return array the resulting entities 
+     * @param array $relations the relations
+     * @param array|string $conditions the where conditions
+     * @param array $values values for ?-placeholders in the conditions
+     * @param string $order an order by clause (id ASC, foo DESC)
+     * @param int $limit
+     * @param int $offset
+     * @return array
      */
-    public function build(\PDOStatement $statement, $entities = null, $return = null)
+    public function loadWithRelations($relations = array(), $conditions = array(), $values = array(), $order = null, $limit = null, $offset = null)
     {
-        if ($entities === null) {
-            $entities = $this->getEntityClass();
-        }
-        if (is_string ($entities)) {
-            $entities = array(0 => array($entities));
-        } elseif(!empty($entities[0])) {
-            $entities = array(0 => $entities);
-        }
-        foreach ($entities as $k => $v) {
-            if (!is_array($v)) {
-                $entities[$k] = array($v, array());
-            } else {
-                if (substr($v[0], 0, 1) !== '\\') {
-                    $v[0] = '\\'.$v[0];
-                }
-                $entities[$k] = array($v[0], isset($v[1]) ? $v[1] : array());
-            }
+        $entityClasses = array();
+        $entityClasses['a'] = $this->getEntityClass();
+
+        if (!is_subclass_of($entityClasses['a'], '\\QF\\DB\\Entity')) {
+            throw new \InvalidArgumentException('$entity must be an \\QF\\DB\\Entity instance or classname');
         }
         
-        $results = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        $returnData = array();
-        if (count($entities) === 1 && !empty($entities[0])) {
-            $key = $entities[0][0]::getIdentifier();
-            foreach ($results as $row) {
-                $entity = $this->create($row, false, $entities[0][0]);
-                $returnData[$entity->$key] = $entity;
-                $return = true;
+        $query = 'SELECT '.implode(', ', $entityClasses['a']::getColumns()).' FROM '.$entityClasses['a']::getTableName();
+        $where = array();
+        foreach ((array) $conditions as $k => $v) {
+            if (is_numeric($k)) {
+                $where[] = ' '.$v;
+            } else {
+                $where[] = ' '.$k.'='.$this->getDB()->quote($v);
             }
-        } else {
-            if ($return === null) {
-                $entityKeys = array_keys($entities);
-                $return = reset($entityKeys);
+        }
+        if ($where) {
+            $query .= ' WHERE'.implode(' AND ', $where);
+        }
+        if ($order) {
+            $query .= ' ORDER BY '.$order;
+        }
+        if ($limit || $offset) {
+            $query .= ' LIMIT '.(int)$limit.((int)$offset ? ' OFFSET '.(int)$offset : '');
+        }
+        $stmt = $this->getDB()->prepare($query);
+        $stmt->execute(array_values((array) $values));
+        
+        $entities = array();
+        $entities['a'] = $this->build($stmt, $entity);
+        
+        foreach ($relations as $rel) {
+            if (empty($rel[0]) || !isset($entityClasses[$rel[0]])) {
+                throw new \Exception('unknown fromAlias '.$rel[0]);
             }
+            if (empty($rel[2])) {
+                throw new \Exception('missing toAlias');
+            }
+            
+            if (!is_subclass_of($entityClasses[$rel[0]], '\\QF\\DB\\Entity')) {
+                throw new \InvalidArgumentException('$entity must be an \\QF\\DB\\Entity instance or classname');
+            }
+            
+            if (empty($rel[1]) || !$relData = $entityClasses[$rel[0]]::getRelation($rel[1])) {
+                throw new \Exception('unknown relation '.$rel[0].'.'.$rel[1]);
+            }
+            
+            $entityClasses[$rel[2]] = $relData[0];
+            
+            if (isset($relData[3]) && $relData[3] !== true) {
+                foreach ($entities[$rel[0]] as $fromEntity) {
+                    array_push($values, $fromEntity->{static::getIdentifier()});
+                }
+                $stmt = $this->getDB()->prepare('SELECT '.$data[1].' a, '.$data[2].' b FROM '.$data[3].' WHERE '.$data[1].' IN ('.implode(',', array_fill(0, count($entities['a']), '?')).')')
+                        ->execute($values);
+                $refTableIds = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            $relations = array();
-            $identifiers = array();
-            foreach ($entities as $k => $entity) {
-                $identifiers[$k] = $k.'_'.$entity[0]::getIdentifier();
+                $values = (array) (!empty($rel[4]) ? $rel[4] : null);
+                $condition = (array) (!empty($rel[3]) ? $rel[3] : null);
                 
-                if (empty($entity[1])) {
-                    continue;
+                foreach ($refTableIds as $row) {
+                    array_push($values, $row['b']);
                 }
-                foreach ($entity[1] as $relKey => $relData) {
-                    if (isset($entities[$relData])) {
-                        $relInfo = $entity[0]::getRelation($relData);                            
-                        $relations[] = array($k, $relData, $relKey, empty($relInfo[3]) || $relInfo[3] !== true);
-                    }
-                } 
-            }
-            foreach ($results as $row) {
-                foreach ($entities as $prefix => $entity) {
-                    if ($row[$identifiers[$prefix]] && !isset($returnData[$prefix][$row[$identifiers[$prefix]]])) {
-                        $entityName = $entity[0];
-                        $fields = $this->_filter($row, $alias);
-                        $entity = $this->create($fields, false, $entityName);
-                        $returnData[$prefix][$row[$identifiers[$prefix]]] = $entity;
-                    }
+                
+                array_push($condition, $relData[0]::getIdentifier().' IN ('.implode(',', array_fill(0, count($refTableIds), '?')).')');
+                
+                $repository = $relData[0]::getRepository($this->getDB());
+                $entities[$rel[2]] = $repository->load($condition, $values, !empty($rel[5]) ? $rel[5] : null);
+                
+                foreach ($refTableIds as $row) {
+                    $entities[$rel[0]][$row['a']]->add($rel[1], $entities[$rel[2]][$row['b']]);
                 }
-                foreach ($relations as $relation) {
-                    if ($row[$identifiers[$relation[0]]] && $row[$identifiers[$relation[1]]]) {
-                        if (empty($relation[3])) {
-                            $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{'add'.ucfirst($relation[2])}($data);
-                        } else {
-                            $returnData[$relation[0]][$row[$identifiers[$relation[0]]]]->{$relation[2]} = $returnData[$relation[1]][$row[$identifiers[$relation[1]]]];
+                
+            } else {
+                $values = (array) (!empty($rel[4]) ? $rel[4] : null);
+                $condition = (array) (!empty($rel[3]) ? $rel[3] : null);
+                
+                foreach ($entities[$rel[0]] as $fromEntity) {
+                    array_push($values, $fromEntity->{$relData[1]});
+                }
+                
+                array_push($condition, $relData[2].' IN ('.implode(',', array_fill(0, count($entities['a']), '?')).')');
+                
+                $repository = $relData[0]::getRepository($this->getDB());
+                $entities[$rel[2]] = $repository->load($condition, $values, !empty($rel[5]) ? $rel[5] : null);
+                
+                foreach ($entities[$rel[0]] as $fromEntity) {
+                    foreach ($entities[$rel[3]] as $toEntity) {
+                        if ($fromEntity->{$relData[1]} == $toEntity->{$relData[2]}) {
+                            if (!empty($relData[3])) {
+                                $fromEntity->set($rel[1], $toEntity);
+                            } else {
+                                $fromEntity->add($rel[1], $toEntity);
+                            }
                         }
                     }
                 }
             }
         }
         
-        return $return === true ? $returnData : (isset($returnData[$return]) ? $returnData[$return] : array()); 
+        return $entities['a'];
+        
     }
     
-    protected function _filter($row, $prefix = '')
+    
+    
+    /**
+     * builds entities from a PDOStatement
+     * 
+     * @param \PDOStatement $statement the pdo statement
+     * @param mixed $entityClass the entity class to use
+     * @return array the resulting entities 
+     */
+    public function build(\PDOStatement $statement, $entityClass = null)
     {
-        if (!$prefix) {
-            return $row;
+        if ($entityClass === null) {
+            $entityClass = $this->getEntityClass();
         }
-        $prefix = $prefix.'_';
-        $length = strlen($prefix);
-        $return = array();
-        foreach ($row as $k=>$v) {
-            if (substr($k, 0, $length) == $prefix) {
-               $return[substr($k, $length)] = $v;
-            }
+
+        $results = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $returnData = array();
+        $key = $entityClass::getIdentifier();
+        foreach ($results as $row) {
+            $entity = $this->create($row, false, $entityClass);
+            $returnData[$entity->$key] = $entity;
         }
-        return $return;
+        
+        return $returnData; 
     }
     
     public static function get($db, $entityClass = null)
@@ -414,7 +443,7 @@ class Repository
             $entityClass = static::$defaultEntityClass;
         } elseif (is_object($entityClass)) {
             $entityClass = get_class($entityClass);
-        }           
+        }
         return $entityClass::getRepository($db);
     }
 }

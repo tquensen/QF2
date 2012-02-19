@@ -144,10 +144,10 @@ abstract class Entity extends \QF\Entity
         }
 
         if (isset($data[3]) && $data[3] !== true) {
-            array_unshift($values, $this->getIdentifier());
+
             $repository = $data[0]::getRepository($this->getDB());
-            $query = $this->getDB()->prepare('SELECT '.$data[2].' FROM '.$data[3].' WHERE '.$data[1].'= ?')->execute(array($this->{static::getIdentifier()}));
-            $relTableIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $stmt = $this->getDB()->prepare('SELECT '.$data[2].' FROM '.$data[3].' WHERE '.$data[1].'= ?')->execute(array($this->{static::getIdentifier()}));
+            $refTableIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
             
             $values = array_merge($refTableIds, (array) $values);
             $condition = (array) $condition;
