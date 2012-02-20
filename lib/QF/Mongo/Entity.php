@@ -28,7 +28,8 @@ abstract class Entity extends \QF\Entity
     
             'column' => true, //true if this property is a database column (default false)
             'relation' => array(local_column, foreign_column), //database relation or false for no relation, default = false
-                          //assumes n:1 or n:m relation if collection is set, 1:1 or 1:n otherwise
+                          //assumes 1:n or n:m relation if collection is set, 1:1 or n:1 otherwise
+            'relationMultiple' => true //set to true for m:n relations (when either local_column or foreign_columns is an array) default = false
         ),
          */
         '_id'        => array('type' => '\\MongoId', 'column' => true),
@@ -174,8 +175,8 @@ abstract class Entity extends \QF\Entity
             return $related;
         } else {
             $query = (array) $query;
-            if ($relationInfo[2] == '_id' && is_array($this->{$relationInfo[1]})) {
-                $query[$relationInfo[2]] = array('$in' => $this->{$relationInfo[1]});
+            if ($relationInfo[2] == '_id' && (isset($relationInfo[3]) && $relationInfo[3] === false)) {
+                $query[$relationInfo[2]] = array('$in' => (array) $this->{$relationInfo[1]});
             } else {
                 $query[$relationInfo[2]] = $this->{$relationInfo[1]};
             }            
@@ -190,10 +191,9 @@ abstract class Entity extends \QF\Entity
      * @param string $relation the relation name
      * @param Mongo_Model|mixed $related either a Mongo\Model object, a Mongo\Model->_id-value or an array with multiple Mongo\Models
      * @param mixed $save set to null to prevent a save() call, otherwise call save($save)
-     * @param bool $multiple true to store multiple related as array (m:n), false to only store a single value (1:1, n:1, default)
      * @return bool
      */
-    public function linkRelated($relation, $related, $save = true, $multiple = false)
+    public function linkRelated($relation, $related, $save = true)
     {
         if (!$relationInfo = static::getRelation($relation)) {
             throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
@@ -255,6 +255,9 @@ abstract class Entity extends \QF\Entity
                 if ($save !== null) {
                     $related->save($save);
                 }
+            }
+            if (isset($relationInfo[3]) && $relationInfo[3] === false) {
+                $multiple = true;
             }
             if ($relationInfo[1] == '_id') {
                 if ($multiple) {
@@ -347,13 +350,16 @@ abstract class Entity extends \QF\Entity
                 return $save !== null ? $this->save($save) : true;
             }
         } else {
+            if (isset($relationInfo[3]) && $relationInfo[3] === false) {
+                $multiple = true;
+            }
             if ($related === true) {
                 if ($relationInfo[2] == '_id') {                    
                     if ($delete) {
-                        $repository = $relationInfo[0]::GetRepository($this->getDB());
+                        $repository = $relationInfo[0]::getRepository($this->getDB());
                         
                         $options = $save !== null ? array('safe' => $save) : array();
-                        if (is_array($this->{$relationInfo[1]})) {
+                        if ($multiple) {
                             $status = (bool) $repository->getCollection()->remove(array($relationInfo[2] => array('$in' => $this->{$relationInfo[1]})), $options);
                         } else {
                             $status = (bool) $repository->getCollection()->remove(array($relationInfo[2] => $this->{$relationInfo[1]}), $options);
@@ -369,7 +375,7 @@ abstract class Entity extends \QF\Entity
                     $repository = $relationInfo[0]::GetRepository($this->getDB());
                     $related = $repository->find(array($relationInfo[2] => $this->{$relationInfo[1]}));
                     foreach ($related as $rel) {
-                        if (is_array($related->{$relationInfo[2]})) {
+                        if ($multiple) {
                             $rels = $related->{$relationInfo[2]};
                             if ($k = array_search($this->{$relationInfo[1]}, $rels)) {
                                 unset($rels[$k]);
@@ -399,7 +405,7 @@ abstract class Entity extends \QF\Entity
                     return false;
                 }
                 if ($relationInfo[1] == '_id') {
-                    if (is_array($related->{$relationInfo[2]})) {
+                    if ($multiple) {
                         $rels = $related->{$relationInfo[2]};
                         if ($k = array_search($this->{$relationInfo[1]}, $rels)) {
                             unset($rels[$k]);
@@ -419,7 +425,7 @@ abstract class Entity extends \QF\Entity
                         return true;
                     }
                 } else {
-                    if (is_array($this->{$relationInfo[1]})) {
+                    if ($multiple) {
                         $rels = $this->{$relationInfo[1]};
                         if ($k = array_search($related->{$relationInfo[2]}, $rels)) {
                             unset($rels[$k]);
@@ -529,6 +535,8 @@ abstract class Entity extends \QF\Entity
                     $rel = array($data['type'], $data['relation'][0], $data['relation'][1]);
                     if (empty($data['collection'])) {
                         $rel[3] = true;
+                    } elseif (!empty($data['relationMultiple'])) {
+                        $rel[3] = false;
                     }
                     $rels[] = $rel;
                 }
@@ -547,6 +555,8 @@ abstract class Entity extends \QF\Entity
                     $rel = array($data['type'], $data['relation'][0], $data['relation'][1]);
                     if (empty($data['collection'])) {
                         $rel[3] = true;
+                    }elseif (!empty($data['relationMultiple'])) {
+                        $rel[3] = false;
                     }
                     $rels[] = $rel;
                 }

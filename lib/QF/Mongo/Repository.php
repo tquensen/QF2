@@ -190,6 +190,100 @@ class Repository
     }
     
     /**
+     * $relations is an array of arrays as followed:
+     *  array(fromAlias, relationProperty, toAlias, $query = null, $sort = array())
+     * 
+     * @param array $relations the relations
+     * @param array $query The fields for which to search.
+     * @param array $sort The fields by which to sort.
+     * @param int $limit The number of results to return.
+     * @param int $skip The number of results to skip.
+     * @return array Returns an array or a cursor for the search results.
+     */
+    public function findWithRelations($relations = array(), $query = array(), $sort = array(), $limit = null, $skip = null)
+    {
+        $entityClasses = array();
+        $entityClasses['a'] = $this->getEntityClass();
+
+        if (!is_subclass_of($entityClasses['a'], '\\QF\\Mongo\\Entity')) {
+            throw new \InvalidArgumentException('$entity must be an \\QF\\Mongo\\Entity instance or classname');
+        }
+        
+        $cursor = $query ? $this->getCollection()->find($query) : $this->getCollection()->find();
+        if ($sort) {
+            $cursor->sort($sort);
+        }
+        if ($limit) {
+            $cursor->limit($limit);
+        }
+        if ($skip) {
+            $cursor->skip($skip);
+        }
+        
+        $entities = array();
+        $entities['a'] = $this->build($cursor);
+        
+        foreach ($relations as $rel) {
+            if (empty($rel[0]) || !isset($entityClasses[$rel[0]])) {
+                throw new \Exception('unknown fromAlias '.$rel[0]);
+            }
+            if (empty($rel[2])) {
+                throw new \Exception('missing toAlias');
+            }
+            
+            if (!is_subclass_of($entityClasses[$rel[0]], '\\QF\\Mongo\\Entity')) {
+                throw new \InvalidArgumentException('$entity must be an \\QF\\Mongo\\Entity instance or classname');
+            }
+            
+            if (empty($rel[1]) || !$relData = $entityClasses[$rel[0]]::getRelation($rel[1])) {
+                throw new \Exception('unknown relation '.$rel[0].'.'.$rel[1]);
+            }
+            
+            $entityClasses[$rel[2]] = $relData[0];
+            
+            $fromValues = array();
+            
+            if (isset($relData[3]) && $relData[3] === false && $relationInfo[2] == '_id') {
+                foreach ($entities[$rel[0]] as $fromEntity) {
+                    $fromValues = array_merge($fromValues, (array) $fromEntity->{$relData[1]});
+                }
+            } else {
+                foreach ($entities[$rel[0]] as $fromEntity) {
+                    $fromValues[] = $fromEntity->{$relData[1]};
+                }
+            }
+                    
+            $query = array_merge(array($relationInfo[2] => array('$in' =>  array_values($fromValues))), (array) (!empty($rel[3]) ? $rel[3] : array())); 
+                
+            $entities[$rel[3]] = $repository->find($query, !empty($rel[4]) ? $rel[4] : array());
+                
+            foreach ($entities[$rel[0]] as $fromEntity) {
+                foreach ($entities[$rel[3]] as $toEntity) {
+                    if (!empty($relData[3])) {
+                        if ($fromEntity->{$relData[1]} == $toEntity->{$relData[2]}) {
+                            $fromEntity->set($rel[1], $toEntity);
+                        }
+                    } elseif(isset($relData[3])) {
+                        if ($relationInfo[1] == '_id' && in_array($fromEntity->{$relationInfo[1]}, (array) $toEntity->{$relationInfo[2]})) {
+                            $fromEntity->add($rel[1], $toEntity);
+                        } elseif(in_array($toEntity->{$relationInfo[2]}, (array) $fromEntity->{$relationInfo[1]})) {
+                            $fromEntity->add($rel[1], $toEntity);
+                        }
+                    } else {
+                        if ($fromEntity->{$relData[1]} == $toEntity->{$relData[2]}) {
+                            $fromEntity->add($rel[1], $toEntity);
+                        }
+                    }
+
+                }
+            }
+        }
+        
+        return $entities['a'];
+        
+    }
+    
+    /**
      * creates a Mongo\MapReduce object for this collection
      * 
      * @param MongoCode|string $map the map function as MongoCode or string

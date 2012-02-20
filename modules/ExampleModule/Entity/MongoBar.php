@@ -24,7 +24,8 @@ class MongoBar extends Entity
     
             'column' => true, //true if this property is a database column (default false)
             'relation' => array(local_column, foreign_column), //database relation or false for no relation, default = false
-                          //assumes n:1 or n:m relation if collection is set, 1:1 or 1:n otherwise
+                          //assumes 1:n or n:m relation if collection is set, 1:1 or n:1 otherwise
+            'relationMultiple' => true //set to true for m:n relations (when either local_column or foreign_columns is an array) default = false
         ),
          */
         
