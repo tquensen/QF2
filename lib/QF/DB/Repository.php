@@ -229,9 +229,16 @@ class Repository
             if (!isset($info[3]) || $info[3] === true) {
                 continue;
             }
-            $stmt = $this->getDB()->prepare('SELECT a_b.id FROM '.$info[3].' a_b LEFT JOIN '.$entityClass::getTableName().' a ON a_b.'.$info[1].' = a.'.$entityClass::getIdentifier().' WHERE a.'.$entityClass::getIdentifier().' IS NULL')->execute();
-            $refTableIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            $deleteStmt = $this->getDB()->prepare('DELETE FROM '.$info[3].' WHERE id IN ('.implode(',', array_fill(0, count($refTableIds), '?')).')')->execute($refTableIds);
+            $stmt = $this->getDB()->prepare('SELECT a_b.'.$info[1].' rel1, a_b.'.$info[2].' rel2 FROM '.$info[3].' a_b LEFT JOIN '.$entityClass::getTableName().' a ON a_b.'.$info[1].' = a.'.$entityClass::getIdentifier().' WHERE a.'.$entityClass::getIdentifier().' IS NULL')->execute();
+            $refTableIds = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $where = array();
+            $values = array();
+            foreach ($refTableIds as $row) {
+                $where[] = '('.$info[1].' = ? AND '.$info[2].' = ?)';
+                $values[] = $row['rel1'];
+                $values[] = $row['rel2'];
+            }
+            $deleteStmt = $this->getDB()->prepare('DELETE FROM '.$info[3].' WHERE '.implode(' OR ', $where))->execute($values);
         }
     }
     
