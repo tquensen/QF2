@@ -215,6 +215,48 @@ class Routing
         
         return $baseurl.$url;
     }
+    
+    /**
+     * builds a html link element or inline form
+     *
+     * @param string $title the link text
+     * @return string the url to the route including base_url (if available) and parameter
+     */
+    public function getLink($title, $url, $method = null, $attrs = array(), $tokenName = null, $confirm = null, $postData = array())
+    {
+        if (!$url) {
+            return $title;
+        }
+
+        if (!$method) {
+            $method = 'GET';
+        }
+
+        if ($method == 'GET') {
+            $attributes = '';
+            foreach ((array) $attrs as $k => $v) {
+                $attributes .= ' '.$k.'="'.$v.'"';
+            }
+            return '<a href="'.htmlspecialchars($url).'"'.($attributes).($confirm ? ' onclick="return confirm(\''.htmlspecialchars($confirm).'\')"' : '').'>'.$title.'</a>';
+        } else {
+            $form = new \QF\Form\Form(array(
+                'name' => md5($url).'Form',
+                'action' => $url,
+                'method' => strtoupper($method),
+                'class' => 'inlineForm',
+                'wrapper' => 'plain',
+                'formTokenName' => $tokenName ?: 'form_token'
+            ));
+            if ($confirm) {
+                $form->setOption('attributes', array('onsubmit' => 'return confirm(\''.htmlspecialchars($confirm).'\')'));
+            }
+            $form->setElement(new \QF\Form\Element\Button('_submit', array('label' => $title, 'attributes' => $attrs ? $attrs : array())));
+            foreach ((array) $postData as $postKey => $postValue) {
+                $form->setElement(new \QF\Form\Element\Hidden($postKey, array('alwaysDisplayDefault' => true, 'defaultValue' => $postValue)));
+            }
+            return $this->qf->parse('DefaultModule', 'form/form', array('form' => $form));
+        }
+    }
 
     /**
      * builds an url to a public file (js, css, images, ...)

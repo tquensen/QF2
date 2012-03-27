@@ -102,4 +102,22 @@ class User
             return false;
         }
     }
+    
+    public function generateFormToken($name = true)
+    {
+        $token = md5(time().rand(10000, 99999));
+        $_SESSION['_QF_FORM_TOKEN'][$token] = $name;
+        return $token;
+    }
+
+    public function checkFormToken($name = true)
+    {
+        $token = !empty($_REQUEST[$name !== true ?: 'form_token']) ? $_REQUEST[$name !== true ?: 'form_token'] : false;
+        if (!empty($token) && !empty($_SESSION['_QF_FORM_TOKEN'][$token]) && $_SESSION['_QF_FORM_TOKEN'][$token] == $name) {
+            unset($_SESSION['_QF_FORM_TOKEN'][$token]);
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
