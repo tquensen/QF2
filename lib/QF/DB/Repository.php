@@ -302,7 +302,15 @@ class Repository
     
     /**
      * $relations is an array of arrays as followed:
-     *  array(fromAlias, relationProperty, toAlias, $condition = null, $values = array(), $order = null)
+     *  array(fromAlias, relationProperty, toAlias, options = array())
+     *      options is an array with the following optional keys:
+     *          'conditions' => array|string additional where conditions to filter for
+     *          'values' => array values for ?-placeholders in the conditions
+     *          'order' => string the order of the related entries
+     *          'count' => false|string fetch only the number of related entries, not the entries themself
+     * 
+     *      if count is set, the count of related entities will be saved in the property of the from-object defined by count
+     *      (example: 'count' => 'fooCount' will save the number of related entries in $fromObject->fooCount)
      * 
      * @param array $relations the relations
      * @param array|string $conditions the where conditions
@@ -363,6 +371,20 @@ class Repository
             
             $entityClasses[$rel[2]] = $relData[0];
             
+            $options = !empty($rel[3]) ? (array) $rel[3] : array();
+            $values = (array) (!empty($rel[4]) ? $rel[4] : null);
+            $condition = (array) (!empty($rel[3]) ? $rel[3] : null);
+                
+            $repository = $relData[0]::getRepository($this->getDB());
+            
+            
+            if (!empty($options['count'])) {
+                foreach ($entities[$rel[0]] as $fromEntity) {
+                    $fromEntity->countRelated($rel[1], $condition, $values, $options['count']);
+                }
+                continue;
+            }
+            
             if (isset($relData[3]) && $relData[3] !== true) {
                 foreach ($entities[$rel[0]] as $fromEntity) {
                     array_push($values, $fromEntity->{static::getIdentifier()});
@@ -370,35 +392,27 @@ class Repository
                 $stmt = $this->getDB()->prepare('SELECT '.$data[1].' a, '.$data[2].' b FROM '.$data[3].' WHERE '.$data[1].' IN ('.implode(',', array_fill(0, count($entities['a']), '?')).')')
                         ->execute($values);
                 $refTableIds = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                $values = (array) (!empty($rel[4]) ? $rel[4] : null);
-                $condition = (array) (!empty($rel[3]) ? $rel[3] : null);
-                
+             
                 foreach ($refTableIds as $row) {
                     array_push($values, $row['b']);
                 }
                 
                 array_push($condition, $relData[0]::getIdentifier().' IN ('.implode(',', array_fill(0, count($refTableIds), '?')).')');
                 
-                $repository = $relData[0]::getRepository($this->getDB());
-                $entities[$rel[2]] = $repository->load($condition, $values, !empty($rel[5]) ? $rel[5] : null);
+                $entities[$rel[2]] = $repository->load($condition, $values, !empty($options['order']) ? $options['order'] : null);
                 
                 foreach ($refTableIds as $row) {
                     $entities[$rel[0]][$row['a']]->add($rel[1], $entities[$rel[2]][$row['b']]);
                 }
                 
-            } else {
-                $values = (array) (!empty($rel[4]) ? $rel[4] : null);
-                $condition = (array) (!empty($rel[3]) ? $rel[3] : null);
-                
+            } else {                
                 foreach ($entities[$rel[0]] as $fromEntity) {
                     array_push($values, $fromEntity->{$relData[1]});
                 }
                 
                 array_push($condition, $relData[2].' IN ('.implode(',', array_fill(0, count($entities['a']), '?')).')');
-                
-                $repository = $relData[0]::getRepository($this->getDB());
-                $entities[$rel[2]] = $repository->load($condition, $values, !empty($rel[5]) ? $rel[5] : null);
+
+                $entities[$rel[2]] = $repository->load($condition, $values, !empty($options['order']) ? $options['order'] : null);
                 
                 foreach ($entities[$rel[0]] as $fromEntity) {
                     foreach ($entities[$rel[3]] as $toEntity) {
@@ -416,6 +430,41 @@ class Repository
         
         return $entities['a'];
         
+    }
+    
+    /**
+     *
+     * @param array|string $conditions the where conditions
+     * @param array $values values for ?-placeholders in the conditions
+     * @return int
+     */
+    public function count($conditions = array(), $values = array())
+    {
+        $entity = $this->getEntityClass();
+
+        if (!is_subclass_of($entity, '\\QF\\DB\\Entity')) {
+            throw new \InvalidArgumentException('$entity must be an \\QF\\DB\\Entity instance or classname');
+        }
+        $query = 'SELECT count('.$entity::getIdentifier().') FROM '.$entity::getTableName();
+        $where = array();
+        foreach ((array) $conditions as $k => $v) {
+            if (is_numeric($k)) {
+                $where[] = ' '.$v;
+            } else {
+                $where[] = ' '.$k.'='.$this->getDB()->quote($v);
+            }
+        }
+        if ($where) {
+            $query .= ' WHERE'.implode(' AND ', $where);
+        }
+        
+        $stmt = $this->getDB()->prepare($query);
+        $stmt->execute(array_values((array) $values));
+        
+        $count = $stmt->fetchColumn();
+        $stmt->closeCursor();
+           
+        return $count;
     }
     
     

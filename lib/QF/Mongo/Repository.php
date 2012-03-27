@@ -191,7 +191,15 @@ class Repository
     
     /**
      * $relations is an array of arrays as followed:
-     *  array(fromAlias, relationProperty, toAlias, $query = null, $sort = array())
+     *  array(fromAlias, relationProperty, toAlias, options = array())
+     *      options is an array with the following optional keys:
+     *          'query' => array additional query to filter
+     *          'sort' => array sorting of the related entries
+     *          'count' => false|string fetch only the number of related entries, not the entries themself
+     * 
+     *      if count=true, the count of related entities will be saved in the property of the from-object defined by count
+     *      (example: 'count' => 'fooCount' will save the number of related entries in $fromObject->fooCount)
+     *      
      * 
      * @param array $relations the relations
      * @param array $query The fields for which to search.
@@ -241,7 +249,18 @@ class Repository
             
             $entityClasses[$rel[2]] = $relData[0];
             
+            $options = !empty($rel[3]) ? (array) $rel[3] : array();
+            
             $fromValues = array();
+            
+            $repository = $relData[0]::getRepository($this->getDB());
+            
+            if (!empty($options['count'])) {
+                foreach ($entities[$rel[0]] as $fromEntity) {
+                    $fromEntity->countRelated($rel[1], (array) (!empty($options['query']) ? $options['query'] : array()), $options['count']);
+                }
+                continue;
+            }
             
             if (isset($relData[3]) && $relData[3] === false && $relationInfo[2] == '_id') {
                 foreach ($entities[$rel[0]] as $fromEntity) {
@@ -253,9 +272,10 @@ class Repository
                 }
             }
                     
-            $query = array_merge(array($relationInfo[2] => array('$in' =>  array_values($fromValues))), (array) (!empty($rel[3]) ? $rel[3] : array())); 
-                
-            $entities[$rel[3]] = $repository->find($query, !empty($rel[4]) ? $rel[4] : array());
+            $query = array_merge(array($relationInfo[2] => array('$in' =>  array_values($fromValues))), (array) (!empty($options['query']) ? $options['query'] : array())); 
+            
+            
+            $entities[$rel[3]] = $repository->find($query, !empty($options['sort']) ? $options['sort'] : array());
                 
             foreach ($entities[$rel[0]] as $fromEntity) {
                 foreach ($entities[$rel[3]] as $toEntity) {

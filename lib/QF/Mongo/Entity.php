@@ -47,12 +47,14 @@ abstract class Entity extends \QF\Entity
     
     public function __call($method, $args)
     {
-        if (preg_match('/^(load|link|unlink)(.+)$/', $method, $matches)) {
+        if (preg_match('/^(count|load|link|unlink)(.+)$/', $method, $matches)) {
             $action = $matches[1];
             $property = lcfirst($matches[2]);
             if (static::getRelation($property)) {
                 if ($action == 'load') {
                     return $this->loadRelated($property, isset($args[0]) ? $args[0] : array(), isset($args[1]) ? $args[1] : array(), isset($args[2]) ? $args[2] : null, isset($args[3]) ? $args[3] : null);
+                } elseif ($action == 'count') {
+                    return $this->countRelated($property, isset($args[0]) ? $args[0] : array(), isset($args[1]) ? $args[1] : array());
                 } elseif ($action == 'link') {
                     return $this->linkRelated($property, isset($args[0]) ? $args[0] : null, array_key_exists(1, $args) ? $args[1] : true, array_key_exists(2, $args) ? $args[2] : false);
                 } else {
@@ -158,7 +160,7 @@ abstract class Entity extends \QF\Entity
      * @param array $sort The fields by which to sort.
      * @param int $limit The number of results to return.
      * @param int $skip The number of results to skip.
-     * @return Mongo_Model|array
+     * @return Entity|array
      */
     public function loadRelated($relation, $query = array(), $sort = array(), $limit = null, $skip = null)
     {
@@ -184,6 +186,40 @@ abstract class Entity extends \QF\Entity
             $this->set($relation, $related);
             return $related;
         }
+    }
+    
+    /**
+     *
+     * @param string $relation the relation name
+     * @param array $query Additional fields to filter.
+     * @param string $saveAs save the result in this property (Example: 'fooCount' to save as $this->fooCount) property must exist!
+     * @return int
+     */
+    public function countRelated($relation, $query = array(), $saveAs = null)
+    {
+        if (!$relationInfo = static::getRelation($relation)) {
+            throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
+        }
+        
+        $repository = $relationInfo[0]::GetRepository($this->getDB());
+            
+        if (!empty($relationInfo[3])) {
+            $query = array_merge(array($relationInfo[2] => $this->{$relationInfo[1]}), (array) $query);            
+            $return = $repository->count($query);
+        } else {
+            $query = (array) $query;
+            if ($relationInfo[2] == '_id' && (isset($relationInfo[3]) && $relationInfo[3] === false)) {
+                $query[$relationInfo[2]] = array('$in' => (array) $this->{$relationInfo[1]});
+            } else {
+                $query[$relationInfo[2]] = $this->{$relationInfo[1]};
+            }            
+            $return = $repository->count($query, $sort, $limit, $skip);
+        }
+        
+        if ($saveAs) {
+            $this->$saveAs = $return;
+        }
+        return $return;
     }
 
     /**

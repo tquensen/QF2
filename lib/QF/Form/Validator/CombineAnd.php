@@ -9,11 +9,23 @@ class CombineAnd extends Validator
 	{
         $this->validators = $validators;
 		$this->options = $options;
-
-        foreach ($this->validators as $validator) {
-            $validator->setElement($this->getElement());
-        }
 	}
+    
+    public function setElement(Element $element)
+    {
+        foreach ($this->validators as $validator) {
+            $validator->setElement($element);
+        }
+        $this->element = $element;
+    }
+
+    public function setForm(Form $form)
+    {
+        foreach ($this->validators as $validator) {
+            $validator->setForm($form);
+        }
+        $this->form = $form;
+    }
 
 	public function validate($value)
 	{

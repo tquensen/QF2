@@ -43,12 +43,14 @@ abstract class Entity extends \QF\Entity
     
     public function __call($method, $args)
     {
-        if (preg_match('/^(load|link|unlink)(.+)$/', $method, $matches)) {
+        if (preg_match('/^(count|load|link|unlink)(.+)$/', $method, $matches)) {
             $action = $matches[1];
             $property = lcfirst($matches[2]);
             if (static::getRelation($property)) {
                 if ($action == 'load') {
                     return $this->loadRelated($property, isset($args[0]) ? $args[0] : null, isset($args[1]) ? $args[1] : array(), isset($args[2]) ? $args[2] : null, isset($args[3]) ? $args[3] : null, isset($args[4]) ? $args[4] : null);
+                } elseif ($action == 'count') {
+                    return $this->countRelated($property, isset($args[0]) ? $args[0] : null, isset($args[1]) ? $args[1] : array(), isset($args[2]) ? $args[2] : array());
                 } elseif ($action == 'link') {
                     return $this->linkRelated($property, isset($args[0]) ? $args[0] : null);
                 } else {
@@ -132,7 +134,7 @@ abstract class Entity extends \QF\Entity
      * @param string $order the order
      * @param int $limit the limit
      * @param int $offset the offset
-     * @return MiniMVC_Model|MiniMVC_Collection
+     * @return Entity|array
      */
     public function loadRelated($relation, $condition = null, $values = array(), $order = null, $limit = null, $offset = null)
     {
@@ -172,6 +174,52 @@ abstract class Entity extends \QF\Entity
         }
 
         return $entries;
+    }
+    
+    /**
+     *
+     * @param string $relation the name of a relation
+     * @param string $condition the where-condition
+     * @param array $values values for the placeholders in the condition
+     * @param string $saveAs save the result in this property (Example: 'fooCount' to save as $this->fooCount) property must exist!
+     * @return int
+     */
+    public function countRelated($relation, $condition = null, $values = array(), $saveAs = null)
+    {
+        if (!$data = static::getRelation($relation)) {
+            throw new \Exception('Unknown relation "'.$relation.'" for entity '.get_class($this));
+        }
+        if (!is_array($values)) {
+            $values = (array) $values;
+        }
+
+        if (isset($data[3]) && $data[3] !== true) {
+            if (empty($condition) && empty($values)) {
+                $stmt = $this->getDB()->prepare('SELECT count(a.'.$data[1].') FROM '.$data[3].' a LEFT JOIN '.$data[0]::getTableName().' b WHERE a.'.$data[1].' = ? AND b.'.$data[0]::getIdentifier().' IS NOT NULL')->execute(array($this->{static::getIdentifier()}));
+                $return = $stmt->fetchColumn();
+            } else {
+                $repository = $data[0]::getRepository($this->getDB());
+                $stmt = $this->getDB()->prepare('SELECT '.$data[2].' FROM '.$data[3].' WHERE '.$data[1].'= ?')->execute(array($this->{static::getIdentifier()}));
+                $refTableIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                $values = array_merge($refTableIds, (array) $values);
+                $condition = (array) $condition;
+                array_unshift($condition, $data[0]::getIdentifier().' IN ('.implode(',', array_fill(0, count($refTableIds), '?')).')');
+                $return = $repository->count($condition, $values);
+            }
+        } else {
+            $values = (array) $values;
+            array_unshift($values, $this->{$data[1]});
+            $condition = (array) $condition;
+            array_unshift($condition, $data[2].' = ?');
+            $repository = $data[0]::getRepository($this->getDB());
+            $return = $repository->count($condition, $values);
+        }
+        
+        if ($saveAs) {
+            $this->$saveAs = $return;
+        }
+        return $return;
     }
     
     /**

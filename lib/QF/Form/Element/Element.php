@@ -83,6 +83,11 @@ class Element
 	{
 		return $this->name;
 	}
+    
+    public function getValue()
+    {
+        return $this->value;
+    }
 
 	public function setValue($value)
 	{
@@ -121,7 +126,7 @@ class Element
 		$this->errorMessage = $errorMessage;
 		$this->isValid = false;
         if ($this->globalErrors) {
-            $this->getForm()->setError($this->errorMessage);
+            $this->getForm()->setError($this->errorMessage, $this->getName());
         } else {
             $this->getForm()->setError();
         }
