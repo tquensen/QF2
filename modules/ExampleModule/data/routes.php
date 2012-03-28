@@ -1,13 +1,5 @@
 <?php
-//default static pages / fallback (this must be the LAST route!)
-$config['routes']['static'] = array(
-    'url' => ':page:(.:_format:)',
-    'controller' => '\\ExampleModule\\Controller\\Example',
-    'action' => 'staticPage',
-    'method' => 'GET',
-    'parameter' => array('page' => false, '_format' => false),
-    'patterns' => array('_format' => '(json|html)')
-);
+//example controller routes
 
 $config['routes']['example.index'] = array(
     'url' => 'example(.:_format:)',
@@ -28,20 +20,20 @@ $config['routes']['example.create'] = array(
 );
 
 $config['routes']['example.update'] = array(
-    'url' => 'example/update(.:_format:)',
+    'url' => 'example/:id:/update(.:_format:)',
     'controller' => '\\ExampleModule\\Controller\\Example',
     'action' => 'update',
     'method' => array('GET', 'POST'),
-    'parameter' => array('_format' => false),
+    'parameter' => array('id' => false, '_format' => false),
     'patterns' => array('_format' => '(json|html)')
 );
 
 $config['routes']['example.delete'] = array(
-    'url' => 'example/delete(.:_format:)',
+    'url' => 'example/:id:/delete(.:_format:)',
     'controller' => '\\ExampleModule\\Controller\\Example',
     'action' => 'delete',
-    'method' => 'POST',
-    'parameter' => array('_format' => false),
+    'method' => 'DELETE',
+    'parameter' => array('id' => false, '_format' => false),
     'patterns' => array('_format' => '(json|html)')
 );
 
@@ -51,5 +43,17 @@ $config['routes']['example.show'] = array(
     'action' => 'show',
     'method' => 'GET',
     'parameter' => array('id' => false, '_format' => false),
+    'patterns' => array('_format' => '(json|html)')
+);
+
+
+
+//default static pages / fallback (this must be the LAST route!)
+$config['routes']['static'] = array(
+    'url' => ':page:(.:_format:)',
+    'controller' => '\\ExampleModule\\Controller\\Base',
+    'action' => 'staticPage',
+    'method' => 'GET',
+    'parameter' => array('page' => false, '_format' => false),
     'patterns' => array('_format' => '(json|html)')
 );

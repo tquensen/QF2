@@ -8,35 +8,6 @@ use \QF\Controller,
 
 class Example extends Controller
 {
-    public function home($parameter)
-    {
-        $t = $this->qf->i18n->get('ExampleModule');
-        return $this->qf->parse('ExampleModule', 'home', array('t' => $t));
-    }
-    
-    public function staticPage($parameter)
-    {
-        if (empty($parameter['page']) || !preg_match('/[\w\-\+]/i', $parameter['page'])) {
-            return $this->qf->callError();
-        }
-        
-        //set title/description
-        $t = $this->qf->i18n->get('ExampleModule');
-        $titleKey = 'page_'.$parameter['page'].'_title';
-        $descriptionKey = 'page_'.$parameter['page'].'_description';
-        $title = $t->get($titleKey);
-        $description = $t->get($descriptionKey);
-        if ($title && $title != $titleKey) {
-            $this->qf->config->page_title = $title;
-        }
-        if ($description && $description != $descriptionKey) {
-            $this->qf->config->meta_description = $description;
-        }
-
-        return $this->qf->parse('ExampleModule', 'pages/'.$parameter['page'], array('t' => $t));
-    }
-    
-    
     //default index, show, create, update, delete actions
     
     public function index($parameter)
@@ -60,7 +31,7 @@ class Example extends Controller
             false
         );
         
-        return $this->qf->parse('ExampleModule', 'index', array('t' => $t, 'entities' => $entities, 'pager' => $pager));
+        return $this->qf->parse('ExampleModule', 'example/index', array('t' => $t, 'entities' => $entities, 'pager' => $pager));
     }
     
     public function show($parameter)
@@ -75,7 +46,7 @@ class Example extends Controller
         $this->qf->config->page_title = $t->showTitle(array('title' => htmlspecialchars($foo->title)));
         $this->qf->config->meta_description = $t->showDescription(array('title' => htmlspecialchars($foo->title))); 
         
-        return $this->qf->parse('ExampleModule', 'show', array('t' => $t, 'entity' => $foo));
+        return $this->qf->parse('ExampleModule', 'example/show', array('t' => $t, 'entity' => $foo));
     }
     
     public function create($parameter)
@@ -86,7 +57,7 @@ class Example extends Controller
         $this->qf->config->meta_description = $t->createDescription;
         
         $form = new ExampleForm(array(
-            'model' => new Foo($this->qf->db->get()),
+            'entity' => new Foo($this->qf->db->get()),
             't' => $t
         ));
         
@@ -94,7 +65,7 @@ class Example extends Controller
         
         $success = false;
         if ($form->validate()) {
-            $foo = $form->updateModel();
+            $foo = $form->updateEntity();
             if ($foo->save()) {
                 $success = true;
                 $message = $t->createSuccessMessage(array('title' => htmlspecialchars($foo->title)));
@@ -116,7 +87,7 @@ class Example extends Controller
         
         $view['t'] = $t;
         
-        return $this->qf->parse('ExampleModule', 'create', $view);
+        return $this->qf->parse('ExampleModule', 'example/create', $view);
     }
     
     public function update($parameter)
@@ -132,7 +103,7 @@ class Example extends Controller
         $this->qf->config->meta_description = $t->updateDescription;
 
         $form = new ExampleForm(array(
-            'model' => $foo,
+            'entity' => $foo,
             't' => $t
         ));
         
@@ -140,7 +111,7 @@ class Example extends Controller
         
         $success = false;
         if ($form->validate()) {
-            $foo = $form->updateModel();
+            $foo = $form->updateEntity();
             if ($foo->save()) {
                 $success = true;
                 $message = $t->updateSuccessMessage(array('title' => htmlspecialchars($foo->title)));
@@ -162,7 +133,7 @@ class Example extends Controller
         
         $view['t'] = $t;
         
-        return $this->qf->parse('ExampleModule', 'update', $view);
+        return $this->qf->parse('ExampleModule', 'example/update', $view);
     }
     
     public function delete($parameter)
@@ -199,6 +170,6 @@ class Example extends Controller
         $view['success'] = $success;
         $view['message'] = $message;
 
-        return $this->qf->parse('ExampleModule', 'delete', $view);
+        return $this->qf->parse('ExampleModule', 'example/delete', $view);
     }
 }

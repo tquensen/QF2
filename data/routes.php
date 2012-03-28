@@ -1,7 +1,7 @@
 <?php
 $config['routes']['home'] = array(
     'url' => 'home',
-    'controller' => '\\ExampleModule\\Controller\\Example',
+    'controller' => '\\ExampleModule\\Controller\\Base',
     'action' => 'home'
 );
 
