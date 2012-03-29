@@ -12,13 +12,13 @@ class Form
     protected $wasSubmitted = null;
     protected $errors = array();
     protected $options = array();
-    protected $model = null;
+    protected $entity = null;
     protected $postValidators = array();
 
     public function __construct($options = array())
     {
         $this->name = (isset($options['name'])) ? $options['name'] : $this->name;
-        $this->model = (isset($options['model'])) ? $options['model'] : $this->model;
+        $this->entity = (isset($options['entity'])) ? $options['entity'] : $this->entity;
 
         $this->options['method'] = 'POST';
         $this->options['action'] = !empty($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
@@ -65,25 +65,25 @@ class Form
         $this->name = $name;
     }
 
-    public function getModel()
+    public function getEntity()
     {
-        return $this->model;
+        return $this->entity;
     }
 
-    public function setModel($model)
+    public function setEntity($entity)
     {
-        $this->model = $model;
+        $this->entity = $entity;
     }
 
-    public function updateModel()
+    public function updateEntity()
     {
-        if (!is_object($this->model)) {
+        if (!is_object($this->entity)) {
             return false;
         }
         foreach ($this->elements as $element) {
-            $element->updateModel($this->model);
+            $element->updateEntity($this->entity);
         }
-        return $this->model;
+        return $this->entity;
     }
 
     public function __get($element)

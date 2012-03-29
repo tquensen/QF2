@@ -11,8 +11,8 @@ class ExampleForm extends Form
     
     public function __construct($options = array())
     {
-        if (empty($options['model'])) {
-            $options['model'] = new \ExampleModule\Entity\Foo();
+        if (empty($options['entity'])) {
+            $options['entity'] = new \ExampleModule\Entity\Foo();
         }
         parent::__construct($options);
         

@@ -5,34 +5,35 @@ class MiniMVC_Form_Validator_Unique extends MiniMVC_Form_Validator
 
     public function validate($value)
     {
-        if ($this->getOption('values')) {
-            return (!in_array($value, $this->getOption('values')));
-        }
+        if ($this->getOption('values'))
+		{
+			return (!in_array($value, $this->getOption('values')));
+		}
 
-        if ($this->getOption('model') && $this->getOption('property')) {
-            $model = $this->getOption('model');
-            if (is_string($model) && class_exists($model)) {
-                $model = new $model();
-            }
-            $property = $this->getOption('property');		
+        $entity = $this->getForm()->getEntity();
+        
+        if ($entity && $this->getOption('property')) {
+            $property = $this->getOption('property');
         } elseif ($element = $this->getElement()) {
-            $model = $element->getForm()->getModel();
-            $property = $element->getOption('modelProperty') ? $element->getOption('modelProperty') : $element->getName();
+            $property = $element->getOption('entityProperty') ? $element->getOption('entityProperty') : $element->getName();
         }
         
-        if (!empty($model) && !empty($property) && method_exists((object) $model, 'getTable'))
+        if (!empty($entity) && !empty($property) && method_exists((object) $entity, 'getRepository'))
         {
-            try {
-                $entry = $model->getTable()->loadOneBy($property . ' = ?', $value);
-                if (!$entry || $entry->getIdentifier() == $model->getIdentifier()) {
+            try
+            {
+                $found = $entity->getRepository($entity->getDB())->loadOne($property, $value);
+                if (!$found || $found->{$found->getIdentifier()} == $entity->{$entity->getIdentifier()}) {
                     return true;
                 }
-            } catch (Exception $e) {
+            }
+            catch (Exception $e)
+            {
                 return false;
             }
         }
-        
-        return false;
+		
+		return false;
     }
 
 }

@@ -12,11 +12,11 @@ class Custom extends Element
         }
 	}
 
-	public function updateModel($model)
+	public function updateEntity($entity)
 	{
-        if ($this->getOption('useModel') !== false && $model = $this->getForm()->getModel()) {
-            if ($this->getOption('updateModelCallback') && is_callable($this->getOption('updateModelCallback'))) {
-                call_user_func($this->getOption('updateModelCallback'), $model, $this);
+        if ($this->getOption('useEntity') !== false && $entity) {
+            if ($this->getOption('updateEntityCallback') && is_callable($this->getOption('updateEntityCallback'))) {
+                call_user_func($this->getOption('updateEntityCallback'), $entity, $this);
             }
         }
 	}

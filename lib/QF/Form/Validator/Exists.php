@@ -10,22 +10,19 @@ class Exists extends Validator
 			return (in_array($value, $this->getOption('values')));
 		}
 
-        if ($this->getOption('model') && $this->getOption('property')) {
-			$model = $this->getOption('model');
-            if (is_string($model) && class_exists($model)) {
-                $model = new $model();
-            }
+        $entity = $this->getForm()->getEntity();
+        
+        if ($entity && $this->getOption('property')) {
             $property = $this->getOption('property');
         } elseif ($element = $this->getElement()) {
-            $model = $element->getForm()->getModel();
-            $property = $element->getOption('modelProperty') ? $element->getOption('modelProperty') : $element->getName();
+            $property = $element->getOption('entityProperty') ? $element->getOption('entityProperty') : $element->getName();
         }
         
-        if (!empty($model) && !empty($property) && method_exists((object) $model, 'getTable'))
+        if (!empty($entity) && !empty($property) && method_exists((object) $entity, 'getRepository'))
         {
             try
             {
-                return $model->getTable()->exist($property . ' = ?', $value);
+                return (bool) $entity->getRepository($entity->getDB())->count($property, $value);
             }
             catch (Exception $e)
             {

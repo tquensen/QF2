@@ -9,7 +9,7 @@ class FieldsetEnd extends Element
 	{
 	}
 
-	public function updateModel($model)
+	public function updateEntity($entity)
 	{
 	}
 }

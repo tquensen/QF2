@@ -55,9 +55,9 @@ class Element
             if ($this->defaultValue !== null) {
                 $this->value = $this->defaultValue;
             } else {
-                if ($this->getOption('useModel') !== false && $model = $this->getForm()->getModel()) {
-                    $property = $this->getOption('modelProperty') ? $this->getOption('modelProperty') : $this->name;
-                    $this->value = isset($model->$property) ? $model->$property : null;
+                if ($this->getOption('useModel') !== false && $entity = $this->getForm()->getEntity()) {
+                    $property = $this->getOption('entityProperty') ? $this->getOption('entityProperty') : $this->name;
+                    $this->value = isset($entity->$property) ? $entity->$property : null;
                 }
             }
         }
@@ -143,10 +143,10 @@ class Element
 		return ($this->form) ? $this->form->wasSubmitted() : false;
 	}
 
-    public function updateModel($model) {
-        if ($this->getOption('useModel') !== false && $model = $this->getForm()->getModel()) {
-            $property = $this->getOption('modelProperty') ? $this->getOption('modelProperty') : $this->name;
-            $model->$property = $this->value;
+    public function updateEntity($entity) {
+        if ($this->getOption('useEntity') !== false && $entity) {
+            $property = $this->getOption('entityProperty') ? $this->getOption('entityProperty') : $this->name;
+            $entity->$property = $this->value;
         }
     }
 

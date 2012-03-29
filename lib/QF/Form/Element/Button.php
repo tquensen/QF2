@@ -9,7 +9,7 @@ class Button extends Element
 	{
 	}
 
-	public function updateModel($model)
+	public function updateEntity($entity)
 	{
 	}
 

@@ -9,7 +9,7 @@ class Submit extends Element
 	{
 	}
 
-	public function updateModel($model)
+	public function updateEntity($entity)
 	{
 	}
 
