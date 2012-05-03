@@ -9,6 +9,8 @@ class User
     protected $qf = null;
     protected $roles = array();
     
+    protected $attributes = array();
+    
     protected $user = null;
     protected $role = 'GUEST';
 
@@ -20,17 +22,21 @@ class User
         if (isset($_SESSION['_QF_USER'])) {
             $this->role = $_SESSION['_QF_USER']['role'];
             $this->user = $_SESSION['_QF_USER']['user'];
+            $this->attributes = $_SESSION['_QF_USER']['attributes'];
         }
     }
     
-    public function login($role, $user = null, $persistent = false) {
+    public function login($role, $user = null, $persistent = true) {
         $this->setRole($role, $persistent);
         $this->setUser($user, $persistent);
     }
     
-    public function logout() {
+    public function logout($clearAttributes = false) {
         $this->setRole('GUEST', true);
         $this->setUser(null, true);
+        if ($clearAttributes) {
+            $this->setAttributes(array(), true);
+        }
     }
     
     public function getUser()
@@ -42,17 +48,39 @@ class User
         return $this->role;
     }
     
-    public function setUser($user, $persistent = false) {
+    public function getAttributes() {
+        return $this->attributes;
+    }
+    
+    public function getAttribute($key) {
+        return isset($this->attributes[$key]) ? $this->attributes[$key] : null;
+    }
+    
+    public function setUser($user, $persistent = true) {
         $this->user = $user;
         if ($persistent) {
             $_SESSION['_QF_USER']['user'] = $user;
         }
     }
 
-    public function setRole($role, $persistent = false) {
+    public function setRole($role, $persistent = true) {
         $this->role = $role;
         if ($persistent) {
             $_SESSION['_QF_USER']['role'] = $role;
+        }
+    }
+    
+    public function setAttributes($attributes, $persistent = true) {
+        $this->attributes = (array) $attributes;
+        if ($persistent) {
+            $_SESSION['_QF_USER']['attributes'] = (array) $attributes;
+        }
+    }
+    
+    public function setAttribute($key, $value, $persistent = true) {
+        $this->attributes[$key] = $value;
+        if ($persistent) {
+            $_SESSION['_QF_USER']['attributes'][$key] = $value;
         }
     }
     
