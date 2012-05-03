@@ -74,4 +74,47 @@ class MongoFoo extends Entity
     {
 
     }
+    
+    
+    /**
+     * initiate the collection for this model
+     */
+    public static function install($db, $installedVersion = 0, $targetVersion = 0)
+    {
+        $collection = static::getRepository($db)->getCollection();
+        switch ($installedVersion) {
+            case 0:
+                $collection->ensureIndex(array('bar_id' => 1), array('safe' => true, 'unique' => false));
+            case 1:
+                if ($targetVersion && $targetVersion <= 1) break;
+            /* //for every new version add your code below (including the lines "case NEW_VERSION:" and "if ($targetVersion && $targetVersion <= NEW_VERSION) break;")
+
+                $collection->ensureIndex(array('name' => 1), array('safe' => true));
+
+            case 2:
+                if ($targetVersion && $targetVersion <= 2) break;
+             */
+        }
+        return true;
+    }
+
+    /**
+     * remove the collection for this model
+     */
+    public static function uninstall($db, $installedVersion = 0, $targetVersion = 0)
+    {
+        $collection = static::getRepository($db)->getCollection();
+        SWITCH ($installedVersion) {
+            case 0:
+            /* //for every new version add your code directly below "case 0:", beginning with "case NEW_VERSION:" and "if ($targetVersion >= NEW_VERSION) break;"
+            case 2:
+                if ($targetVersion >= 2) break;
+                $collection->deleteIndex("name");
+             */
+            case 1:
+                if ($targetVersion >= 1) break;
+                $collection->drop();
+        }
+        return true;
+    }
 }

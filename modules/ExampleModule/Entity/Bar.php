@@ -70,4 +70,59 @@ class Bar extends Entity
     {
 
     }
+    
+    /**
+     * Created the table for this model
+     */
+    public static function install($db, $installedVersion = 0, $targetVersion = 0)
+    {
+        switch ($installedVersion) {
+            case 0:
+                $sql = "CREATE TABLE ".static::getTableName()." (
+                      ".static::getIdentifier()." INT(11) ".(static::isAutoIncrement() ? "AUTO_INCREMENT" : "").",
+                          
+                      title VARCHAR(255) NOT NULL,
+                      
+					  PRIMARY KEY (".static::getIdentifier().")
+
+                      
+					) ENGINE=INNODB DEFAULT CHARSET=utf8";
+
+                $db->query($sql);
+            case 1:
+                if ($targetVersion && $targetVersion <= 1) break;
+            /* //for every new version add your code below (including the lines "case NEW_VERSION:" and "if ($targetVersion && $targetVersion <= NEW_VERSION) break;")
+
+                $sql = "ALTER TABLE ".static::getTableName()."
+					  ADD something VARCHAR(255)";
+
+                $db->query($sql);
+
+            case 2:
+                if ($targetVersion && $targetVersion <= 2) break;
+             */
+        }
+        return true;
+    }
+
+    /**
+     * Deletes the table for this model
+     */
+    public static function uninstall($db, $installedVersion = 0, $targetVersion = 0)
+    {
+        SWITCH ($installedVersion) {
+            case 0:
+            /* //for every new version add your code directly below "case 0:", beginning with "case NEW_VERSION:" and "if ($targetVersion >= NEW_VERSION) break;"
+            case 2:
+                if ($targetVersion >= 2) break;
+                $sql = "ALTER TABLE ".static::getTableName()." DROP something";
+                $db->query($sql);
+             */
+            case 1:
+                if ($targetVersion >= 1) break;
+                $sql = "DROP TABLE ".static::getTableName()."";
+                $db->query($sql);
+        }
+        return true;
+    } 
 }

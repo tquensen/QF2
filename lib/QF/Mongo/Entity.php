@@ -134,16 +134,19 @@ abstract class Entity extends \QF\Entity
      *
      * @return MongoCollection
      */
-    public function getCollection()
+    public function getCollection($db = null)
     {
-        return $this->getRepository()->{static::$collectionName};
+        if (!$db) {
+            $db = $this->getDB();
+        }
+        return $this->getRepository($db)->getCollection();
     }
 
     public function increment($property, $value, $save = null)
     {
         $this->set($property, $this->get($property) + $value);
         if ($save !== null) {
-            $status = $this->getCollection()->update(array('_id' => $this->_id), array('$inc' => array($property => $value)), array('safe' => $save));
+            $status = $this->getRgetCollection()->update(array('_id' => $this->_id), array('$inc' => array($property => $value)), array('safe' => $save));
             if ($status) {
                 $this->setDatabaseProperty($property, $this->$property);
                 return true;
@@ -605,5 +608,53 @@ abstract class Entity extends \QF\Entity
     public static function getRepositoryClass()
     {
         return static::$repositoryClass;
+    }
+    
+    /**
+     * initiate the collection for this model
+     */
+    public static function install($db, $installedVersion = 0, $targetVersion = 0)
+    {
+        return;
+        
+        //EXAMPLE / copy&paste
+        $collection = static::getRepository($db)->getCollection();
+        switch ($installedVersion) {
+            case 0:
+                $collection->ensureIndex(array('slug' => 1), array('safe' => true, 'unique' => true));
+            case 1:
+                if ($targetVersion && $targetVersion <= 1) break;
+            /* //for every new version add your code below (including the lines "case NEW_VERSION:" and "if ($targetVersion && $targetVersion <= NEW_VERSION) break;")
+
+                $collection->ensureIndex(array('name' => 1), array('safe' => true));
+
+            case 2:
+                if ($targetVersion && $targetVersion <= 2) break;
+             */
+        }
+        return true;
+    }
+
+    /**
+     * remove the collection for this model
+     */
+    public static function uninstall($db, $installedVersion = 0, $targetVersion = 0)
+    {
+        return;
+        
+        //EXAMPLE / copy&paste
+        $collection = static::getRepository($db)->getCollection();
+        SWITCH ($installedVersion) {
+            case 0:
+            /* //for every new version add your code directly below "case 0:", beginning with "case NEW_VERSION:" and "if ($targetVersion >= NEW_VERSION) break;"
+            case 2:
+                if ($targetVersion >= 2) break;
+                $collection->deleteIndex("name");
+             */
+            case 1:
+                if ($targetVersion >= 1) break;
+                $collection->drop();
+        }
+        return true;
     }
 }
