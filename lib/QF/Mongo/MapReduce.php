@@ -17,6 +17,8 @@ class MapReduce
     protected $sort = array();
     protected $limit = null;
     
+    protected $timeout = 0;
+    
     protected $scope = array();
     
     protected $result = null;
@@ -211,15 +213,38 @@ class MapReduce
         if ($this->scope) {
             $options['scope'] = $this->scope;
         }
+        
+        $phpOptions = $this->timeout > 0 ? array('timeout' => $this->timeout) : array('timeout' => 0);
 
-        $this->result = $this->db->command($options);
+        $this->result = $this->db->command($options, $phpOptions);
         
         return $returnResult ? $this->result : $this;
+    }
+    
+    public function timeout($timeout)
+    {
+        $this->timeout = $timeout;
+        
+        return $this;
     }
     
     public function getResult()
     {
         return $this->result;
+    }
+    
+    /**
+     *
+     * @param array $query The fields for which to search.
+     * @param bool $build (default true) set to false to return the raw MongoCursor
+     */
+    public function findOne($query = array(), $build = true)
+    {
+        $result = $this->find($query, array(), 1, 0, $build);
+        if (is_object($result)) {
+            return $result->getNext();
+        }
+        return array_shift($result);
     }
     
     /**
@@ -258,6 +283,7 @@ class MapReduce
             if ($skip) {
                 $cursor->skip($skip);
             }
+            $cursor->rewind(); 
             return $cursor;
         }
         return false;

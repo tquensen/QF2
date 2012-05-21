@@ -152,6 +152,95 @@ class Repository
     {
         return $this->getCollection()->count($query, $limit, $skip);
     }
+    
+    /**
+     *
+     * @param array $key the key(s) to get distinct values for
+     * @param array $query Associative array or object with fields to match.
+     * @return array returns the distinct values for the given key or false on error
+     */
+    public function distict($key = array(), $query = array())
+    {
+        $cmd = array(
+            'distinct' => $this->getCollectionName(),
+        );
+        if ($key) {
+            $cmd['key'] = $key;
+        }
+        if ($query) {
+            $cmd['query'] = $query;
+        }
+        
+        $result = $this->getDB()->command($cmd);
+        
+        if (!$result || empty($result['ok']) || !$result['ok'] || !isset($result['values'])) {
+            return false;
+        } else {
+            return $result['values'];
+        }
+    }
+    
+    /**
+     *
+     * @param array $key the key(s) to group by 
+     * @param array $condition Associative array or object with fields to match.
+     * @param array $initial the initial value of the aggregator object
+     * @param \MongoCode $reduce the reduce function as \MongoCode or string. example: function(obj,prev){ prev.count++;}
+     * @param \MongoCode $finalize the finalize function as \MongoCode or string. example: function finalize(key, value) { return value; }
+     * @return array returns the grouped data or false on error
+     */
+    public function group($key = array(), $condition = array(), $initial = array(), $reduce = null, $finalize = null)
+    {
+        $cmd = array(
+            'ns' => $this->getCollectionName(),
+        );
+        
+        $key = (array) $key;
+        $tmpKey = array();
+        foreach ($key as $k => $v) {
+            if (is_integer($k) || $v !== true) {
+                $tmpKey[$v] = true;
+            } else {
+                $tmpKey[$k] = true;
+            }
+        }
+        $cmd['key'] = $tmpKey;
+        
+        if ($condition) {
+            $cmd['condition'] = $condition;
+        }
+        if ($initial) {
+            $cmd['initial'] = $initial;
+        } else {
+            $cmd['initial'] = array();
+        }
+        if ($reduce) {
+            if (is_string($reduce)) {
+                $reduce = new \MongoCode($reduce);
+            }
+            if (!is_object($reduce) || !($reduce instanceof \MongoCode)) {
+                throw new \Exception('string or \\MongoCode expected for $reduce, ' . get_class($reduce) . ' given!');
+            }
+            $cmd['reduce'] = $reduce;
+        }
+        if ($finalize) {
+            if (is_string($finalize)) {
+                $finalize = new \MongoCode($finalize);
+            }
+            if (!is_object($finalize) || !($finalize instanceof \MongoCode)) {
+                throw new \Exception('string or \\MongoCode expected for $finalize, ' . get_class($finalize) . ' given!');
+            }
+            $cmd['finalize'] = $finalize;
+        }
+        
+        $result = $this->getDB()->command(array('group' => $cmd));
+        
+        if (!$result || empty($result['ok']) || !$result['ok'] || !isset($result['retval'])) {
+            return false;
+        } else {
+            return $result['retval'];
+        }
+    }
 
     /**
      *
