@@ -15,10 +15,6 @@ class Install extends Controller
             return 'Error: Class '.$parameter['entity'].' does not exist';
         }
         
-        if (!($parameter['entity'] instanceof \QF\DB\Entity)) {
-            return 'Error: Class '.$parameter['entity'].' is not a \\QF\\DB\\Entity';
-        }
-        
        $type = $parameter['storageKey'];
        
        $db = $this->qf->{$type}->get();

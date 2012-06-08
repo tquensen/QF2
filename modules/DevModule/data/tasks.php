@@ -1,5 +1,5 @@
 <?php
-$config['tasks']['dev.install.db'] = array(
+$config['tasks']['dev.install'] = array(
     'class' => '\\DevModule\\Task\\Install',
     'task' => 'install',
     'parameter' => array(
@@ -12,7 +12,7 @@ $config['tasks']['dev.install.db'] = array(
     'assign' => array('entity', 'from', 'to')
 );
 
-$config['tasks']['dev.uninstall.db'] = array(
+$config['tasks']['dev.uninstall'] = array(
     'class' => '\\DevModule\\Task\\Install',
     'task' => 'install',
     'parameter' => array(

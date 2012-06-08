@@ -27,7 +27,7 @@ class Cli
             throw new \Exception('task '.$class.'->'.$task.' not found');
         }
         
-        $class = new $class($qf);
+        $class = new $class($this->qf);
         return $class->$task($parameter);
     }
 
