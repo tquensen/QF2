@@ -116,7 +116,7 @@ class Routing
      */
     public function callError($errorCode = 404, $message = '', $exception = null)
     {
-        return $this->qf->callRoute('error'.$errorCode, array('message' => $message, 'exception' => $exception));
+        return $this->callRoute('error'.$errorCode, array('message' => $message, 'exception' => $exception));
     }
     
 

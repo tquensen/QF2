@@ -615,7 +615,7 @@ abstract class Entity extends \QF\Entity
      */
     public static function install($db, $installedVersion = 0, $targetVersion = 0)
     {
-        return;
+        return 'no installation configured for this Entity';
         
         //EXAMPLE / copy&paste
         $collection = static::getRepository($db)->getCollection();
@@ -640,7 +640,7 @@ abstract class Entity extends \QF\Entity
      */
     public static function uninstall($db, $installedVersion = 0, $targetVersion = 0)
     {
-        return;
+        return 'no installation configured for this Entity';
         
         //EXAMPLE / copy&paste
         $collection = static::getRepository($db)->getCollection();

@@ -27,7 +27,7 @@ $qf = new QF\Core($config);
 $qf->db = new QF\DB\DB($config->db['default']);
 */   
 /* mongoDB
-$qf->mongodb = new QF\Mongo\DB($config->mongodb['default']);
+$qf->db = new QF\Mongo\DB($config->mongodb['default']);
 */ 
 
 if (QF_CLI === true) {

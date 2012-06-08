@@ -1,7 +1,9 @@
 <?php
 namespace ExampleModule\Task;
 
-class Example
+use \QF\Controller;
+
+class Example extends Controller
 {
     public function exampleTask($parameter)
     {

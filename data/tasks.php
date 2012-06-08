@@ -10,3 +10,7 @@ $config['tasks']['example'] = array(
     'assign' => array('bar', 'baz')
 );
 
+//load development Tasks on CLI access
+if (QF_CLI === true) {
+    $this->load(__DIR__.'/../modules/DevModule/data/tasks.php');
+}

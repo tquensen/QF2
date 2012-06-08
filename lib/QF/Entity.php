@@ -7,6 +7,7 @@ use \IteratorAggregate;
 abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
 {
     protected static $_types = array('boolean' => true, 'bool' => true, 'integer' => true, 'int' => true, 'float' => true, 'double' => true, 'string' => true, 'array' => true);
+    protected $_unserializing = false;
     protected static $_properties = array(
         /* example
         'property' => array(
@@ -63,7 +64,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             throw new \Exception('Trying to set undefined property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
-        } elseif (!empty(static::$_properties[$property]['readonly'])) {
+        } elseif (!$this->_unserializing && !empty(static::$_properties[$property]['readonly'])) {
             $trace = debug_backtrace();
             throw new \Exception('Trying to set readonly property: '.get_class($this).'::$'.$property .
                 ' in ' . $trace[0]['file'] .
@@ -343,20 +344,18 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
         $exclude = array_flip((array) $exclude);
         $return = array();
         foreach (array_keys(static::$_properties) as $prop) {
-            if (isset($exclude[$prop]) || !empty(static::$_properties[$prop]['exclude'])) {
+            if ((isset($exclude[$prop]) && (!$recursive || !is_array($exclude[$prop]))) || !empty(static::$_properties[$prop]['exclude'])) {
                 continue;
             }
             $property = $this->get($prop);
             if ($recursive) {
-                if (is_array($property) || (is_object($property) && $property instanceof Traversable)) {
-                        foreach ($property as $k => $v) {
-                            if (is_object($v) && method_exists($v, 'toArray')) {
-                                $property[$k] = $v->toArray();
-                            }
+                if (is_object($property) && $property instanceof Entity) {
+                    $property = isset($exclude[$prop]) && is_array($exclude[$prop]) ? $property->toArray($exclude[$prop]) : $property->toArray();
+                } elseif (is_array($property) || (is_object($property) && $property instanceof \Traversable)) {
+                    foreach ($property as $k => $v) {
+                        if (is_object($v) && $v instanceof Entity) {
+                            $property[$k] = isset($exclude[$prop]) && is_array($exclude[$prop]) ? $v->toArray($exclude[$prop]) : $v->toArray();
                         }
-                } elseif (is_object($property)) {
-                    if (method_exists($property, 'toArray')) {
-                         $property = $property->toArray();
                     }
                 }
             }
@@ -373,7 +372,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     {
         $data = array();
         foreach (array_keys(static::$_properties) as $prop) {
-            $data[$prop] = $this->$prop;
+            $data[$prop] = $this->get($prop);
         }
         return serialize($data);
     }
@@ -381,9 +380,11 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     public function unserialize($serialized)
     {
         $data = unserialize($serialized);
+        $this->_unserializing = true; // workaround to set readonly properties
         foreach ($data as $k => $v) {
-            $this->$k = $v;
+            $this->set($k, $v);
         }
+        $this->_unserializing = false;
     }
     
     public function offsetSet($offset, $data)
