@@ -5,14 +5,22 @@ use \QF\Exception\HttpException;
 
 class Routing
 {
-    /**
-     * @var \QF\Core
-     */
-    protected $qf = null;
 
-    public function __construct(Core $qf)
+    protected $routes = null;
+    /**
+     * @var \QF\FrontController
+     */
+    protected $controller = null;
+    /**
+     * @var \QF\User
+     */
+    protected $user = null;
+
+    public function __construct($routes, $controller, $user = null)
     {
-        $this->qf = $qf;
+        $this->routes = $routes;
+        $this->controller = $controller;
+        $this->user = $user;
     }
 
     /**
@@ -25,12 +33,12 @@ class Routing
     {
         $method = isset($_REQUEST['REQUEST_METHOD']) ? strtoupper($_REQUEST['REQUEST_METHOD']) : (!empty($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET');
         
-        $this->qf->setConfig('request_method', $method);
+        $this->controller->request_method = $method;
         
         $found = false;
         $routeParameters = '';
 
-        if (empty($route) && ($homeRoute = $this->qf->getConfig('home_route')) && $routeData = $this->getRoute($homeRoute)) {
+        if (empty($route) && ($homeRoute = $this->controller->home_route) && $routeData = $this->getRoute($homeRoute)) {
             return array('route' => $homeRoute, 'parameter' => array());
         } else {
             foreach ((array)$this->getRoute() as $routeName => $routeData) {
@@ -58,7 +66,7 @@ class Routing
             }
         }
 
-        throw new Exception\HttpException('page not found', 404);
+        throw new HttpException('page not found', 404);
     }
     
     /**
@@ -76,11 +84,11 @@ class Routing
         }
         
         if (!empty($routeData['rights'])) {
-            if (!$this->qf->user) {
+            if (!$this->user) {
                 throw new Exception\HttpException('permission denied', 403);
             }
-            if (!$this->qf->user->userHasRight($routeData['rights'])) {        
-                if ($this->qf->user->getRole() === 'GUEST') {
+            if (!$this->user->userHasRight($routeData['rights'])) {        
+                if ($this->user->getRole() === 'GUEST') {
                     throw new Exception\HttpException('login required', 401);
                 } else {
                     throw new Exception\HttpException('permission denied', 403);
@@ -94,16 +102,16 @@ class Routing
         }
         
         if ($setAsMainRoute) {
-            $this->setConfig('current_route', $route);
-            $this->setConfig('current_route_parameter', $parameter);
+            $this->controller->current_route = $route;
+            $this->controller->current_route_parameter = $parameter;
             if (!empty($parameter['_format'])) {
-                $this->setConfig('format', $parameter['_format']);
+                $this->controller->format = $parameter['_format'];
             }
             if (!empty($parameter['_template'])) {
-                $this->setConfig('template', $parameter['_template']);
+                $this->controller->template = $parameter['_template'];
             }
         }
-        return $this->qf->callAction($routeData['controller'], $routeData['action'], $parameter);       
+        return $this->controller->callAction($routeData['controller'], $routeData['action'], $parameter);       
     }
     
     /**
@@ -127,7 +135,7 @@ class Routing
      */
     public function getRoute($route = null)
     {
-        $routes = $this->qf->getConfig('routes');
+        $routes = $this->routes;
         if (!$route) {
             return $routes;
         }
@@ -169,22 +177,22 @@ class Routing
      */
     public function getUrl($route, $params = array(), $language = null)
     {
-        $baseurl = $this->qf->getConfig('base_url', '/');
-        $currentLanguage = $this->qf->getConfig('current_language');
-        $defaultLanguage = $this->qf->getConfig('default_language');
+        $baseurl = $this->controller->base_url ?: '/';
+        $currentLanguage = $this->controller->current_language;
+        $defaultLanguage = $this->controller->default_language;
         if ($language === null) {
             if ($currentLanguage && $currentLanguage != $defaultLanguage) {
-                if ($baseurlI18n = $this->qf->getConfig('base_url_i18n')) {
+                if ($baseurlI18n = $this->controller->base_url_i18n) {
                     $baseurl = str_replace(':lang:', $currentLanguage, $baseurlI18n);
                 }
             }
-        } elseif ($language && in_array($language, $this->qf->getConfig('languages', array())) && $language != $defaultLanguage) {
-            if ($baseurlI18n = $this->qf->getConfig('base_url_i18n')) {
-                    $baseurl = str_replace(':lang:', $language, $baseurlI18n);
-                }
+        } elseif ($language && in_array($language, $this->controller->languages ?: array()) && $language != $defaultLanguage) {
+            if ($baseurlI18n = $this->controller->base_url_i18n) {
+                $baseurl = str_replace(':lang:', $language, $baseurlI18n);
+            }
         }
         
-        if ((!$route || $route == $this->qf->getConfig('home_route')) && empty($params)) {
+        if ((!$route || $route == $this->controller->home_route) && empty($params)) {
             return $baseurl;
         }
         if (!($routeData = $this->getRoute($route)) || empty($routeData['url'])) {
@@ -254,7 +262,7 @@ class Routing
             foreach ((array) $postData as $postKey => $postValue) {
                 $form->setElement(new \QF\Form\Element\Hidden($postKey, array('alwaysDisplayDefault' => true, 'defaultValue' => $postValue)));
             }
-            return $this->qf->parse('DefaultModule', 'form/form', array('form' => $form));
+            return $this->controller->parse('DefaultModule', 'form/form', array('form' => $form));
         }
     }
 
@@ -267,11 +275,11 @@ class Routing
      */
     public function getAsset($file, $module = null)
     {
-        $theme = $this->qf->getConfig('theme', null);
+        $theme = $this->controller->theme;
         $themeString = $theme ? 'themes/'.$theme . '/' : '';
         
-        if (!$baseurl = $this->qf->getConfig('static_url')) {
-            $baseurl = $this->qf->getConfig('base_url', '/');
+        if (!$baseurl = $this->controller->static_url) {
+            $baseurl = $this->controller->base_url ?: '/';
         }
         if ($module) {
             if ($theme && file_exists(\QF_BASEPATH . '/templates/' . $themeString . 'modules/'.$module.'/public/'.$file)) {

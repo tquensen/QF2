@@ -1,5 +1,5 @@
 <?php
-$config['tasks']['dev.install'] = array(
+$tasks['dev.install'] = array(
     'class' => '\\DevModule\\Task\\Install',
     'task' => 'install',
     'parameter' => array(
@@ -7,12 +7,12 @@ $config['tasks']['dev.install'] = array(
         'from' => 0,
         'to' => 0,
         'type' => 'install',
-        'storageKey' => 'db' //how to access the db connection ($qf->db)
+        'storageKey' => 'db' //how to access the db connection ($c['db'])
     ),
     'assign' => array('entity', 'from', 'to')
 );
 
-$config['tasks']['dev.uninstall'] = array(
+$tasks['dev.uninstall'] = array(
     'class' => '\\DevModule\\Task\\Install',
     'task' => 'install',
     'parameter' => array(
@@ -20,7 +20,7 @@ $config['tasks']['dev.uninstall'] = array(
         'from' => 0,
         'to' => 0,
         'type' => 'uninstall',
-        'storageKey' => 'db' //how to access the db connection ($qf->db)
+        'storageKey' => 'db' //how to access the db connection ($c['db'])
     ),
     'assign' => array('entity', 'from', 'to')
 );

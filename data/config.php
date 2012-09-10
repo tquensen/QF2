@@ -19,36 +19,10 @@ $config['default_language'] = $config['languages'][0];
 //fallback for current_language
 $config['current_language'] = $config['default_language'];
 
-
-$config['roles'] = array( // 'ROLE_NAME' => array('list','of','rights')
-    'GUEST' => array('guest'),
-    'USER' => array('user'),
-    'ADMIN' => array('admin', 'user')
-);
-
-//database connection
-/*
-$config['db']['default'] = array(
-    'driver' => 'mysql:host=localhost;dbname=qfdb', //A valid PDO dsn. @see http://de3.php.net/manual/de/pdo.construct.php
-    'username' => 'root', //The user name for the DSN string. This parameter is optional for some PDO drivers.
-    'password' => '', //The password for the DSN string. This parameter is optional for some PDO drivers.
-    'options' => array() //A key=>value array of driver-specific connection options. (optional)
-);
- */
-
-//import config files
-//syntax:
-//$this->load->(file)
-//where file is the full path to the file to include
-
-//import routes, task and any other general config files
-$this->load(__DIR__.'/routes.php');
-$this->load(__DIR__.'/tasks.php');
-
 //add module config files
-//$this->load(__DIR__.'/../modules/ExampleModule/data/config.php');
+//require __DIR__.'/../modules/ExampleModule/data/config.php';
 
 //load environment specific config
 if (file_exists(__DIR__.'/config_'.QF_ENV.'.php')) {
-    $this->load(__DIR__.'/config_'.QF_ENV.'.php');
+    require __DIR__.'/config_'.QF_ENV.'.php';
 }

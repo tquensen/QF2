@@ -3,13 +3,9 @@ namespace QF;
 
 class I18n
 {
-    /**
-     * @var \QF\Core
-     */
-    protected $qf = null;
     
     /**
-     * @var \QF\Translation
+     * @var \QF\Translation[]
      */
     protected $translations = null;
     
@@ -20,20 +16,11 @@ class I18n
     /**
      * initializes the translation class
      *
-     * @param \QF\Core $qf
      * @param string $translationDir the path to the translation files
-     * @param string $language the target language (leave blank to use the default language)
+     * @param string $language the target language
      */
-    function __construct(Core $qf, $translationDir, $language = null)
+    function __construct($translationDir, $language)
     {
-        $this->qf = $qf;
-
-        $defaultLanguage = $qf->getConfig('default_language', 'en');
-        if (!$language || !in_array($language, $qf->getConfig('languages', array()))) {
-            $language = $defaultLanguage;
-        }
-
-        $qf->setConfig('current_language', $language);
         $this->currentLanguage = $language;
         
         $i18n = &$this->data;

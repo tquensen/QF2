@@ -13,58 +13,93 @@ $loader = new Symfony\Component\ClassLoader\UniversalClassLoader();
 $loader->registerNamespace('QF', __DIR__.'/lib');
 $loader->registerNamespaceFallbacks(array(__DIR__.'/lib', __DIR__.'/modules'));
 //autoload all classes with PEAR-like class names inside the lib folder
+$loader->registerPrefix('Pimple', __DIR__.'/lib/Pimple');
 $loader->registerPrefixFallbacks(array(__DIR__.'/lib'));
 $loader->register();
 
 //require_once(QF_BASEPATH.'/lib/functions.php');
 
+$c = new Pimple();
+
 //configuration
-$config = new QF\Config(QF_BASEPATH.'/data/config.php');
-$qf = new QF\Core($config);
+$c['config'] = $c->share(function ($c) {
+    return new QF\Config(QF_BASEPATH.'/data/config.php');
+});
+
+$c['routing'] = $c->share(function ($c) {
+    require QF_BASEPATH.'/data/routes.php';
+    return new QF\Routing($routes, $c['controller'], $c['user']);
+});
+
+$c['controller'] = $c->share(function ($c) {
+    require QF_BASEPATH.'/data/config.php';
+    return new QF\FrontController($config);
+});
+
+$c['cli'] = $c->share(function ($c) {
+    require QF_BASEPATH.'/data/tasks.php';
+    return new QF\Cli($tasks);
+});
+
+$c['user'] = $c->share(function ($c) {
+    require QF_BASEPATH.'/data/roles.php';
+    return new QF\User($roles);
+});
+
+//i18n
+$c['i18n'] = $c->share(function ($c) {    
+    $currentLanguage = $c['controller']->current_language;
+    $defaultLanguage = $c['controller']->default_language ?: 'en';
+    $languages = $c['controller']->languages ?: array();
+    if (!$currentLanguage || !in_array($currentLanguage, $languages)) {
+        $currentLanguage = $defaultLanguage;
+        $c['controller']->current_language = $currentLanguage;
+    }
+
+    return new QF\I18n(QF_BASEPATH . '/data/i18n', $currentLanguage);
+});
+
+//default translations
+$c['t'] = $c->share(function ($c) {    
+    return $c['i18n']->get();
+});
 
 //init database
 /* PDO
-$qf->db = new QF\DB\DB($config->db['default']);
+$c['db'] = $c->share(function ($c) {
+    require QF_BASEPATH.'/data/db.php';
+    return new QF\DB\DB($db['default']);
+});
 */   
 /* mongoDB
-$qf->db = new QF\Mongo\DB($config->mongodb['default']);
-*/ 
+$c['db'] = $c->share(function ($c) {
+    require QF_BASEPATH.'/data/db.php';
+    return new QF\Mongo\DB($db['mongo']);
+});
+*/
+
+
+
 
 if (QF_CLI === true) {
 //cli
-
+    
     chdir(__DIR__);
-    
-    //init routing (not required for cli, but useful as it allows $qf->routing->callRoute() and $qf->routing->getUrl() calls)
-    $qf->routing = new QF\Routing($qf);
-
-    //init cli
-    $qf->cli = new QF\Cli($qf);
-    
-    $qf->setConfig('format', 'plain'); //use the plain format for views  
-    
-    //init i18n with default language
-    $qf->i18n = new QF\I18n($qf, QF_BASEPATH . '/data/i18n');
-    $qf->t = $qf->i18n->get();
+    $c['controller']->format = 'plain'; //use the plain format for views  
     
 } else {
 //web
-    
-    //init routing
-    $qf->routing = new QF\Routing($qf);    
 
     //init i18n
     $language = isset($_GET['language']) ? $_GET['language'] : '';
-    $qf->i18n = new QF\I18n($qf, QF_BASEPATH . '/data/i18n',  $language);
-    $qf->t = $qf->i18n->get();
-
+    $c['controller']->current_language = $language;
+    
     //set i18n title/description
-    $qf->setConfig('website_title', $qf->t->website_title);
-    $qf->setConfig('meta_description', $qf->t->meta_description);    
+    $c['controller']->website_title = $c['t']->website_title;
+    $c['controller']->meta_description = $c['t']->meta_description;    
 
     //user handling
     session_name('qf_session');
     session_start();
-    $qf->user = new QF\User($qf);
     
 }

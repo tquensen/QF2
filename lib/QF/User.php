@@ -3,10 +3,6 @@ namespace QF;
 
 class User
 {
-    /**
-     * @var \QF\Core
-     */
-    protected $qf = null;
     protected $roles = array();
     
     protected $attributes = array();
@@ -14,10 +10,9 @@ class User
     protected $user = null;
     protected $role = 'GUEST';
 
-    public function __construct(Core $qf)
+    public function __construct($roles)
     {
-        $this->qf = $qf;
-        $this->roles = $qf->getConfig('roles', array());
+        $this->roles = $roles;
         
         if (isset($_SESSION['_QF_USER'])) {
             $this->role = $_SESSION['_QF_USER']['role'];

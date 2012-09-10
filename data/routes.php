@@ -1,12 +1,12 @@
 <?php
-$config['routes']['home'] = array(
+$routes['home'] = array(
     'url' => 'home',
     'controller' => '\\ExampleModule\\Controller\\Base',
     'action' => 'home'
 );
 
 /* examples
-$config['routes']['projects'] = array(
+$routes['projects'] = array(
     'url' => 'projects/:project:',
     'controller' => '\\ExampleModule\\Controller\\Example',
     'action' => 'projects'
@@ -14,7 +14,7 @@ $config['routes']['projects'] = array(
 */
 
 //load error routes
-$this->load(__DIR__.'/../modules/DefaultModule/data/errorRoutes.php');
+require __DIR__.'/../modules/DefaultModule/data/errorRoutes.php';
 
 //load routes from Example module
-$this->load(__DIR__.'/../modules/ExampleModule/data/routes.php');
+require __DIR__.'/../modules/ExampleModule/data/routes.php';

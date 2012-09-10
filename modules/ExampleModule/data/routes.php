@@ -1,7 +1,7 @@
 <?php
 //example controller routes
 
-$config['routes']['example.index'] = array(
+$routes['example.index'] = array(
     'url' => 'example(.:_format:)',
     'controller' => '\\ExampleModule\\Controller\\Example',
     'action' => 'index',
@@ -10,7 +10,7 @@ $config['routes']['example.index'] = array(
     'patterns' => array('_format' => '(json|html)')
 );
 
-$config['routes']['example.create'] = array(
+$routes['example.create'] = array(
     'url' => 'example/create(.:_format:)',
     'controller' => '\\ExampleModule\\Controller\\Example',
     'action' => 'create',
@@ -19,7 +19,7 @@ $config['routes']['example.create'] = array(
     'patterns' => array('_format' => '(json|html)')
 );
 
-$config['routes']['example.update'] = array(
+$routes['example.update'] = array(
     'url' => 'example/:id:/update(.:_format:)',
     'controller' => '\\ExampleModule\\Controller\\Example',
     'action' => 'update',
@@ -28,7 +28,7 @@ $config['routes']['example.update'] = array(
     'patterns' => array('_format' => '(json|html)')
 );
 
-$config['routes']['example.delete'] = array(
+$routes['example.delete'] = array(
     'url' => 'example/:id:/delete(.:_format:)',
     'controller' => '\\ExampleModule\\Controller\\Example',
     'action' => 'delete',
@@ -37,7 +37,7 @@ $config['routes']['example.delete'] = array(
     'patterns' => array('_format' => '(json|html)')
 );
 
-$config['routes']['example.show'] = array(
+$routes['example.show'] = array(
     'url' => 'example/:id:(.:_format:)',
     'controller' => '\\ExampleModule\\Controller\\Example',
     'action' => 'show',
@@ -49,7 +49,7 @@ $config['routes']['example.show'] = array(
 
 
 //default static pages / fallback (this must be the LAST route!)
-$config['routes']['static'] = array(
+$routes['static'] = array(
     'url' => ':page:(.:_format:)',
     'controller' => '\\ExampleModule\\Controller\\Base',
     'action' => 'staticPage',

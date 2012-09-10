@@ -18,17 +18,17 @@ try {
     $route = isset($_GET['route']) ? $_GET['route'] : '';
     
     //throws 404 QF\Exception\HttpException for invalid routes
-    $routeData = $qf->routing->parseRoute($route);
-    $pageContent = $qf->routing->callRoute($routeData['route'], $routeData['parameter'], true);
-    echo $qf->parseTemplate($pageContent);
+    $routeData = $c['routing']->parseRoute($route);
+    $pageContent = $c['routing']->callRoute($routeData['route'], $routeData['parameter'], true);
+    echo $c['controller']->parseTemplate($pageContent, array('config' => $c['config']));
 
 } catch (Exception $e) {    
     try {
         //401, 403, 404, 500 ...
         if ($e instanceof \QF\Exception\HttpException) {
-            echo $qf->parseTemplate($qf->routing->callError($e->getCode(), $e->getMessage(), $e));        
+            echo $c['controller']->parseTemplate($c['routing']->callError($e->getCode(), $e->getMessage(), $e));        
         } else {
-            echo $qf->parseTemplate($qf->routing->callError(500, 'server error', $e)); 
+            echo $c['controller']->parseTemplate($c['routing']->callError(500, 'server error', $e)); 
         }
     } catch (Exception $e) {
         //seems like the error was inside the template or error page

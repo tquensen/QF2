@@ -1,5 +1,5 @@
 <?php
-$config['tasks']['example'] = array(
+$tasks['example'] = array(
     'class' => '\\ExampleModule\\Task\\Example',
     'task' => 'exampleTask',
     'parameter' => array(
@@ -12,5 +12,5 @@ $config['tasks']['example'] = array(
 
 //load development Tasks on CLI access
 if (QF_CLI === true) {
-    $this->load(__DIR__.'/../modules/DevModule/data/tasks.php');
+    require __DIR__.'/../modules/DevModule/data/tasks.php';
 }
