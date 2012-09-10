@@ -1,7 +1,8 @@
 <?php
 namespace ExampleModule\Controller;
 
-use \QF\Controller;
+use \QF\Controller,
+    \QF\Exception\HttpException;
 
 
 class Base extends Controller
@@ -15,7 +16,7 @@ class Base extends Controller
     public function staticPage($parameter, $c)
     {
         if (empty($parameter['page']) || !preg_match('/[\w\-\+]/i', $parameter['page'])) {
-            return $c['controller']->callError();
+            throw new HttpException('invalid page '.$parameter['page'], 404);
         }
         
         //set title/description

@@ -15,12 +15,37 @@ class Routing
      * @var \QF\User
      */
     protected $user = null;
+    
+    /**
+     * @var \QF\I18n
+     */
+    protected $user = null;
+    
+    protected $homeRoute = null;
+    protected $baseUrl = null;
+    protected $baseUrlI18n = null;
+    protected $staticUrl = null;
+    protected $currentRoute = null;
+    protected $currentRouteParameter = null;
+    protected $requestMethod = null;
 
-    public function __construct($routes, $controller, $user = null)
+    public function __construct($routes, $config, $controller, $user = null, $i18n = null)
     {
         $this->routes = $routes;
-        $this->controller = $controller;
+        $this->controller = $controller;        
         $this->user = $user;
+        $this->i18n = $i18n;
+        
+        $this->homeRoute = !empty($config['home_route']) ? $config['home_route'] : false;
+        $this->baseUrl = !empty($config['base_url']) ? $config['base_url'] : false;
+        $this->BaseUrlI18n = !empty($config['base_url_i18n']) ? $config['base_url_i18n'] : false;
+        $this->staticUrl = !empty($config['static_url']) ? $config['static_url'] : false;
+        
+        if (isset($_REQUEST['REQUEST_METHOD'])) {
+            $this->requestMethod = strtoupper($_REQUEST['REQUEST_METHOD']);
+        } else {
+            $this->requestMethod = !empty($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET';
+        }
     }
 
     /**
@@ -31,14 +56,9 @@ class Routing
      */
     public function parseRoute($route)
     {
-        $method = isset($_REQUEST['REQUEST_METHOD']) ? strtoupper($_REQUEST['REQUEST_METHOD']) : (!empty($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET');
+        $method = $this->requestMethod;
         
-        $this->controller->request_method = $method;
-        
-        $found = false;
-        $routeParameters = '';
-
-        if (empty($route) && ($homeRoute = $this->controller->home_route) && $routeData = $this->getRoute($homeRoute)) {
+        if (empty($route) && ($homeRoute = $this->homeRoute) && $routeData = $this->getRoute($homeRoute)) {
             return array('route' => $homeRoute, 'parameter' => array());
         } else {
             foreach ((array)$this->getRoute() as $routeName => $routeData) {
@@ -102,13 +122,13 @@ class Routing
         }
         
         if ($setAsMainRoute) {
-            $this->controller->current_route = $route;
-            $this->controller->current_route_parameter = $parameter;
+            $this->currentRoute = $route;
+            $this->currentRouteParameter = $parameter;
             if (!empty($parameter['_format'])) {
-                $this->controller->format = $parameter['_format'];
+                $this->controller->setFormat($parameter['_format']);
             }
             if (!empty($parameter['_template'])) {
-                $this->controller->template = $parameter['_template'];
+                $this->controller->setTemplate($parameter['_template']);
             }
         }
         return $this->controller->callAction($routeData['controller'], $routeData['action'], $parameter);       
@@ -177,22 +197,23 @@ class Routing
      */
     public function getUrl($route, $params = array(), $language = null)
     {
-        $baseurl = $this->controller->base_url ?: '/';
-        $currentLanguage = $this->controller->current_language;
-        $defaultLanguage = $this->controller->default_language;
-        if ($language === null) {
+        $baseurl = $this->baseUrl ?: '/';
+        
+        if ($language === null && $this->i18n) {
+            $currentLanguage = $this->i18n->getCurrentLanguage();
+            $defaultLanguage = $this->i18n->getDefaultLanguage();
             if ($currentLanguage && $currentLanguage != $defaultLanguage) {
-                if ($baseurlI18n = $this->controller->base_url_i18n) {
+                if ($baseurlI18n = $this->baseUrlI18n) {
                     $baseurl = str_replace(':lang:', $currentLanguage, $baseurlI18n);
                 }
             }
-        } elseif ($language && in_array($language, $this->controller->languages ?: array()) && $language != $defaultLanguage) {
-            if ($baseurlI18n = $this->controller->base_url_i18n) {
+        } elseif ($language && $this->i18n && in_array($language, $this->i18n->getLanguages()) && $language != $defaultLanguage) {
+            if ($baseurlI18n = $this->baseUrlI18n) {
                 $baseurl = str_replace(':lang:', $language, $baseurlI18n);
             }
         }
         
-        if ((!$route || $route == $this->controller->home_route) && empty($params)) {
+        if ((!$route || $route == $this->homeRoute) && empty($params)) {
             return $baseurl;
         }
         if (!($routeData = $this->getRoute($route)) || empty($routeData['url'])) {
@@ -275,11 +296,11 @@ class Routing
      */
     public function getAsset($file, $module = null)
     {
-        $theme = $this->controller->theme;
+        $theme = $this->controller->getTheme();
         $themeString = $theme ? 'themes/'.$theme . '/' : '';
         
-        if (!$baseurl = $this->controller->static_url) {
-            $baseurl = $this->controller->base_url ?: '/';
+        if (!$baseurl = $this->staticUrl) {
+            $baseurl = $this->baseUrl ?: '/';
         }
         if ($module) {
             if ($theme && file_exists(\QF_BASEPATH . '/templates/' . $themeString . 'modules/'.$module.'/public/'.$file)) {
@@ -299,7 +320,81 @@ class Routing
             }
         }
     }
+    
+    public function getHomeRoute()
+    {
+        return $this->homeRoute;
+    }
+    
+    public function getBaseUrl()
+    {
+        return $this->baseUrl;
+    }
+    
+    public function getBaseUrlI18n()
+    {
+        return $this->baseUrlI18n;
+    }
+    
+    public function getStaticUrl()
+    {
+        return $this->staticUrl;
+    }
+    
+    public function getRequestMethod()
+    {
+        return $this->requestMethod;
+    }
+    
+    public function getCurrentRoute()
+    {
+        return $this->currentRoute;
+    }
+    
+    public function getCurrentRouteParameter()
+    {
+        return $this->currentRouteParameter;
+    }
+    
+    public function getRequestHash()
+    {
+        return md5(serialize(array($this->currentRoute, $this->currentRouteParameter, $this->requestMethod)));
+    }
 
+    public function setHomeRoute($homeRoute)
+    {
+        $this->homeRoute = $homeRoute;
+    }
+    
+    public function setBaseUrl($baseUrl)
+    {
+        $this->baseUrl = $baseUrl;
+    }
+    
+    public function setBaseUrlI18n($baseUrlI18n)
+    {
+        $this->baseUrlI18n = $baseUrlI18n;
+    }
+    
+    public function setStaticUrl($staticUrl)
+    {
+        $this->staticUrl = $staticUrl;
+    }
+    
+    public function setRequestMethod($requestMethod)
+    {
+        $this->requestMethod = strtoupper($requestMethod);
+    }
+    
+    public function setCurrentRoute($currentRoute)
+    {
+        $this->currentRoute = $currentRoute;
+    }
+    
+    public function setCurrentRouteParameter($currentRouteParameter)
+    {
+        $this->currentRouteParameter = $currentRouteParameter;
+    }
     
     protected function generateRoutePattern($routeData) {
         $routePattern = str_replace(array('?','(',')','[',']','.'), array('\\?','(',')?','\\[','\\]','\\.'), $routeData['url']);

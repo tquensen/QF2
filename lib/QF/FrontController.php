@@ -5,17 +5,17 @@ use \QF\Exception\HttpException;
 
 class FrontController
 {
-    /**
-     *
-     * @var \QF\Config
-     */
-    protected $config = null;
     
     protected $parameter = array();
-
-    public function __construct($config)
+    
+    protected $theme = null;
+    protected $format = null;
+    protected $defaultFormat = null;
+    protected $template = null;
+    
+    public function __construct($parameter)
     {
-        $this->parameter = $config;
+        $this->parameter = $parameter;
     }
     
     public function __get($key)
@@ -66,16 +66,16 @@ class FrontController
 
         if ($_theme && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
             $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php';
-        } elseif ($_theme && !$_format && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->default_format . '.php')) {
-            $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->default_format . '.php';
+        } elseif ($_theme && !$_format && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php';
         } elseif (file_exists(\QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
             $_file = \QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . $_formatString . '.php';
-        } elseif (!$_format && file_exists(\QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . '.' . $this->default_format . '.php')) {
-            $_file = \QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . '.' . $this->default_format . '.php';
+        } elseif (!$_format && file_exists(\QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php';
         } elseif (file_exists(\QF_BASEPATH . '/modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
             $_file = \QF_BASEPATH . '/modules/' . $module . '/views/' . $view . $_formatString . '.php';
-        } elseif (!$_format && file_exists(\QF_BASEPATH . '/modules/' . $module . '/views/' . $view . '.' . $this->default_format . '.php')) {
-            $_file = \QF_BASEPATH . '/modules/' . $module . '/views/' . $view . '.' . $this->default_format . '.php';
+        } elseif (!$_format && file_exists(\QF_BASEPATH . '/modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php')) {
+            $_file = \QF_BASEPATH . '/modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php';
         } else {
             throw new HttpException('view not found', 404);
         }
@@ -101,7 +101,7 @@ class FrontController
         $_theme = $this->theme;
         $_themeString = $_theme ? 'themes/'.$_theme . '/' : '';
         $_format = $this->format;
-        $_defaultFormat = $this->default_format;
+        $_defaultFormat = $this->defaultFormat;
         $_file = false;
 
         if (is_array($_templateName)) {
@@ -150,6 +150,46 @@ class FrontController
         ob_start();
         require($_file);
         return ob_get_clean();
+    }
+    
+    public function getTheme()
+    {
+        return $this->theme;
+    }
+    
+    public function getFormat()
+    {
+        return $this->format;
+    }
+    
+    public function getDefaultFormat()
+    {
+        return $this->defaultFormat;
+    }
+    
+    public function getTemplate()
+    {
+        return $this->template;
+    }
+
+    public function setTheme($theme)
+    {
+        $this->theme = $theme;
+    }
+    
+    public function setFormat($format)
+    {
+        $this->format = $format;
+    }
+    
+    public function setDefaultFormat($defaultFormat)
+    {
+        $this->defaultFormat = $defaultFormat;
+    }
+    
+    public function setTemplate($template)
+    {
+        $this->template = $template;
     }
 
 }

@@ -13,13 +13,9 @@ class Example extends Controller
     
     public function index($parameter, $c)
     {   
-        $cacheKey = serialize(array(
-            $c['controller']->current_route,
-            $c['controller']->current_route_parameter,
-            $c['controller']->request_method,
-        ));
+        $cacheKey = $c['routing']->getRequestHash(); //unique hash for current route (url+request method)
         
-        $data = $c['cache']->getOrSet('view_'.md5($cacheKey), function($parameter) use ($c) {  
+        $data = $c['cache']->getOrSet('view_'.$cacheKey, function($parameter) use ($c) {  
             $t = $c['i18n']->get('ExampleModule');
 
             $showPerPage = 20;
@@ -46,7 +42,7 @@ class Example extends Controller
                 'metaDescription' => $metaDescription
             );
             
-        }, $parameter, 60*60, false, array('view', 'view_Example', 'view_Example_index'));
+        }, $parameter, 60*60, false, array('view', 'view_Example', 'view_Example_index', 'view_Example_index_page_'.(!empty($_GET['p']) ? $_GET['p'] : 1)));
             
         $c['controller']->page_title = $data['pageTitle'];
         $c['controller']->meta_description = $data['metaDescription'];
@@ -56,13 +52,9 @@ class Example extends Controller
     
     public function show($parameter, $c)
     {
-        $cacheKey = serialize(array(
-            $c['controller']->current_route,
-            $c['controller']->current_route_parameter,
-            $c['controller']->request_method,
-        ));
+        $cacheKey = $c['routing']->getRequestHash(); //unique hash for current route (url+request method)
         
-        $data = $c['cache']->getOrSet('view_'.md5($cacheKey), function($parameter) use ($c) {  
+        $data = $c['cache']->getOrSet('view_'.$cacheKey, function($parameter) use ($c) {  
             $t = $c['i18n']->get('ExampleModule');
             
             $foo = Foo::getRepository($c['db']->get())->loadOne('id', $parameter['id']);

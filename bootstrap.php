@@ -19,44 +19,54 @@ $loader->register();
 
 //require_once(QF_BASEPATH.'/lib/functions.php');
 
-$c = new Pimple();
+require QF_BASEPATH.'/data/config.php';
 
-//configuration
-$c['config'] = $c->share(function ($c) {
-    return new QF\Config(QF_BASEPATH.'/data/config.php');
+$c = new Pimple();
+foreach ($config as $k => $v) {
+    $c['cfg_'.$k] = $v;
+}
+
+$c['controller'] = $c->share(function ($c) {
+    $config = $c['cfg_controller'];
+    $controller = new QF\FrontController(!empty($config['parameter']) ? $config['parameter'] : array());
+    
+    if (!empty($config['theme'])) { $controller->setTheme($config['theme']); }
+    if (!empty($config['template'])) { $controller->setTemplate($config['template']); }
+    if (!empty($config['format'])) { $controller->setFormat($config['format']); }
+    if (!empty($config['default_format'])) { $controller->setDefaultFormat($config['default_format']); }
+    
+    return $controller;
 });
 
 $c['routing'] = $c->share(function ($c) {
+    $routes = array();
     require QF_BASEPATH.'/data/routes.php';
-    return new QF\Routing($routes, $c['controller'], $c['user']);
-});
-
-$c['controller'] = $c->share(function ($c) {
-    require QF_BASEPATH.'/data/config.php';
-    return new QF\FrontController($config);
+    $config = $c['cfg_routing'];
+    
+    $routing = new QF\Routing($routes, $c['controller'], $c['user'], $c['i18n']);
+    
+    if (!empty($config['home_route'])) { $routing->setHomeRoute($config['home_route']); }
+    if (!empty($config['base_url'])) { $routing->setBaseUrl($config['base_url']); }
+    if (!empty($config['base_url_i18n'])) { $routing->setBaseUrlI18n($config['base_url_i18n']); }
+    if (!empty($config['static_url'])) { $routing->setStaticUrl($config['static_url']); }
+    
+    return $routing;
 });
 
 $c['cli'] = $c->share(function ($c) {
+    $tasks = array();
     require QF_BASEPATH.'/data/tasks.php';
     return new QF\Cli($tasks);
 });
 
 $c['user'] = $c->share(function ($c) {
-    require QF_BASEPATH.'/data/roles.php';
-    return new QF\User($roles);
+    return new QF\User($c['cfg_roles']);
 });
 
 //i18n
-$c['i18n'] = $c->share(function ($c) {    
-    $currentLanguage = $c['controller']->current_language;
-    $defaultLanguage = $c['controller']->default_language ?: 'en';
-    $languages = $c['controller']->languages ?: array();
-    if (!$currentLanguage || !in_array($currentLanguage, $languages)) {
-        $currentLanguage = $defaultLanguage;
-        $c['controller']->current_language = $currentLanguage;
-    }
-
-    return new QF\I18n(QF_BASEPATH . '/data/i18n', $currentLanguage);
+$c['i18n'] = $c->share(function ($c) {  
+    $config = $c['cfg_i18n'];
+    return new QF\I18n(QF_BASEPATH . '/data/i18n', $config['languages'], $config['current_language'], $config['default_language']);
 });
 
 //default translations
@@ -67,14 +77,12 @@ $c['t'] = $c->share(function ($c) {
 //init database
 /* PDO
 $c['db'] = $c->share(function ($c) {
-    require QF_BASEPATH.'/data/db.php';
-    return new QF\DB\DB($db['default']);
+    return new QF\DB\DB($c['cfg_db']['default']);
 });
 */   
 /* mongoDB
 $c['db'] = $c->share(function ($c) {
-    require QF_BASEPATH.'/data/db.php';
-    return new QF\Mongo\DB($db['mongo']);
+    return new QF\Mongo\DB($c['cfg_db']['mongo']);
 });
 */
 
@@ -85,16 +93,18 @@ if (QF_CLI === true) {
 //cli
     
     chdir(__DIR__);
-    $c['controller']->format = 'plain'; //use the plain format for views  
+    $c['controller']->setFormat('plain'); //use the plain format for views  
     
 } else {
 //web
 
     //init i18n
     $language = isset($_GET['language']) ? $_GET['language'] : '';
-    $c['controller']->current_language = $language;
+    if ($language) {
+        $c['i18n']->setCurrentLanguage($language);
+    }
     
-    //set i18n title/description
+    //set i18n title/description as frontController parameter
     $c['controller']->website_title = $c['t']->website_title;
     $c['controller']->meta_description = $c['t']->meta_description;    
 

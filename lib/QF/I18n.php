@@ -9,7 +9,9 @@ class I18n
      */
     protected $translations = null;
     
+    protected $languages = array();
     protected $currentLanguage = null;
+    protected $defaultLanguage = null;
     
     protected $data = array();
 
@@ -19,9 +21,11 @@ class I18n
      * @param string $translationDir the path to the translation files
      * @param string $language the target language
      */
-    function __construct($translationDir, $language)
+    function __construct($translationDir, $languages, $currentLanguage, $defaultLanguage)
     {
-        $this->currentLanguage = $language;
+        $this->languages = $languages;
+        $this->currentLanguage = $currentLanguage;
+        $this->defaultLanguage = $defaultLanguage;
         
         $i18n = &$this->data;
         if (file_exists($translationDir . '/' .$language . '.php')) {
@@ -39,6 +43,36 @@ class I18n
             $i18n = &$this->data[$module];
             include \QF_BASEPATH . '/modules/'.$module.'/data/i18n/'.$this->currentLanguage . '.php';
         }
+    }
+    
+    public function getLanguages()
+    {
+        return $this->languages;
+    }
+    
+    public function getCurrentLanguage()
+    {
+        return $this->currentLanguage;
+    }
+    
+    public function getDefaultLanguage()
+    {
+        return $this->defaultLanguage;
+    }
+    
+    public function setLanguages($languages)
+    {
+        $this->languages = $languages;
+    }
+    
+    public function setCurrentLanguage($currentLanguage)
+    {
+        $this->currentLanguage = $currentLanguage;
+    }
+    
+    public function setDefaultLanguage($defaultLanguage)
+    {
+        $this->defaultLanguage = $defaultLanguage;
     }
 
     /**

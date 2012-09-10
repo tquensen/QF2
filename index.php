@@ -20,7 +20,7 @@ try {
     //throws 404 QF\Exception\HttpException for invalid routes
     $routeData = $c['routing']->parseRoute($route);
     $pageContent = $c['routing']->callRoute($routeData['route'], $routeData['parameter'], true);
-    echo $c['controller']->parseTemplate($pageContent, array('config' => $c['config']));
+    echo $c['controller']->parseTemplate($pageContent);
 
 } catch (Exception $e) {    
     try {
