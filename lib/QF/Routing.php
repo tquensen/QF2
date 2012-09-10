@@ -71,7 +71,7 @@ class Routing
                 
                 $routePattern = $this->generateRoutePattern($routeData);
                 
-                if (preg_match($this->generateRoutePattern($routeData), $route, $matches)) {
+                if (preg_match($routePattern, $route, $matches)) {
                     $routeParameters = array();
                     foreach ($matches as $paramKey => $paramValue) {
                         if (!is_numeric($paramKey)) {
@@ -105,13 +105,13 @@ class Routing
         
         if (!empty($routeData['rights'])) {
             if (!$this->user) {
-                throw new Exception\HttpException('permission denied', 403);
+                throw new HttpException('permission denied', 403);
             }
             if (!$this->user->userHasRight($routeData['rights'])) {        
                 if ($this->user->getRole() === 'GUEST') {
-                    throw new Exception\HttpException('login required', 401);
+                    throw new HttpException('login required', 401);
                 } else {
-                    throw new Exception\HttpException('permission denied', 403);
+                    throw new HttpException('permission denied', 403);
                 }
             }
         }
