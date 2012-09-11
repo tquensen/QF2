@@ -2,7 +2,8 @@
 //example controller routes
 
 $routes['example.index'] = array(
-    'url' => 'example(.:_format:)',
+    'url' => 'example(.:_format:)', 
+    //'url' => array('de' => 'beispiel(.:_format:)', 'default' => 'example(.:_format:)'), //i18n urls: array('language' => 'url', 'default' => 'fallback url')
     'controller' => '\\ExampleModule\\Controller\\Example',
     'action' => 'index',
     'method' => 'GET',

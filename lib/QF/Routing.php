@@ -19,7 +19,7 @@ class Routing
     /**
      * @var \QF\I18n
      */
-    protected $user = null;
+    protected $i18n = null;
     
     protected $homeRoute = null;
     protected $baseUrl = null;
@@ -58,6 +58,8 @@ class Routing
     {
         $method = $this->requestMethod;
         
+        $language = $this->i18n ? $this->i18n->getCurrentLanguage() : false;
+        
         if (empty($route) && ($homeRoute = $this->homeRoute) && $routeData = $this->getRoute($homeRoute)) {
             return array('route' => $homeRoute, 'parameter' => array());
         } else {
@@ -65,11 +67,14 @@ class Routing
                 if (!isset($routeData['url'])) {
                     continue;
                 }
+                
                 if (isset($routeData['method']) && ((is_string($routeData['method']) && strtoupper($routeData['method']) != $method) || (is_array($routeData['method']) && !in_array($method, array_map('strtoupper', $routeData['method']))))) {
                     continue;
                 }
                 
-                $routePattern = $this->generateRoutePattern($routeData);
+                if (!$routePattern = $this->generateRoutePattern($routeData, $language)) {
+                    continue;
+                }
                 
                 if (preg_match($routePattern, $route, $matches)) {
                     $routeParameters = array();
@@ -200,14 +205,9 @@ class Routing
         $baseurl = $this->baseUrl ?: '/';
         
         if ($language === null && $this->i18n) {
-            $currentLanguage = $this->i18n->getCurrentLanguage();
-            $defaultLanguage = $this->i18n->getDefaultLanguage();
-            if ($currentLanguage && $currentLanguage != $defaultLanguage) {
-                if ($baseurlI18n = $this->baseUrlI18n) {
-                    $baseurl = str_replace(':lang:', $currentLanguage, $baseurlI18n);
-                }
-            }
-        } elseif ($language && $this->i18n && in_array($language, $this->i18n->getLanguages()) && $language != $defaultLanguage) {
+            $language = $this->i18n->getCurrentLanguage();
+        }
+        if ($language && $this->i18n && in_array($language, $this->i18n->getLanguages()) && $language != $this->i18n->getDefaultLanguage()) {
             if ($baseurlI18n = $this->baseUrlI18n) {
                 $baseurl = str_replace(':lang:', $language, $baseurlI18n);
             }
@@ -217,14 +217,24 @@ class Routing
             return $baseurl;
         }
         if (!($routeData = $this->getRoute($route)) || empty($routeData['url'])) {
-            return $baseurl;
+            return false;
         }
-        
+
         $search = array('(',')');
 		$replace = array('','');
         $regexSearch =  array();
 
-        $url = $routeData['url'];
+        if (is_array($routeData['url'])) {
+            if ($language && isset($routeData['url'][$language])) {
+                $url = $routeData['url'][$language];
+            } elseif (isset($routeData['url']['default'])) {
+                $url = $routeData['url']['default'];
+            } else {
+                return false;
+            } 
+        } else {
+            $url = $routeData['url'];
+        }
         
         $allParameter = array_merge(isset($routeData['parameter']) ? $routeData['parameter'] : array(), $params);
 		foreach ($allParameter as $param=>$value)
@@ -356,9 +366,9 @@ class Routing
         return $this->currentRouteParameter;
     }
     
-    public function getRequestHash()
+    public function getRequestHash($includeI18n = false)
     {
-        return md5(serialize(array($this->currentRoute, $this->currentRouteParameter, $this->requestMethod)));
+        return md5(serialize(array($this->currentRoute, $this->currentRouteParameter, $this->requestMethod, $includeI18n && $this->i18n ? $this->i18n->getCurrentLanguage() : '')));
     }
 
     public function setHomeRoute($homeRoute)
@@ -396,8 +406,19 @@ class Routing
         $this->currentRouteParameter = $currentRouteParameter;
     }
     
-    protected function generateRoutePattern($routeData) {
-        $routePattern = str_replace(array('?','(',')','[',']','.'), array('\\?','(',')?','\\[','\\]','\\.'), $routeData['url']);
+    protected function generateRoutePattern($routeData, $language) {
+        if (is_array($routeData['url'])) {
+            if ($language && isset($routeData['url'][$language])) {
+                $url = $routeData['url'][$language];
+            } elseif (isset($routeData['url']['default'])) {
+                $url = $routeData['url']['default'];
+            } else {
+                return false;
+            }        
+        } else {
+            $url = $routeData['url'];
+        }
+        $routePattern = str_replace(array('?','(',')','[',']','.'), array('\\?','(',')?','\\[','\\]','\\.'), $url);
         if (isset($routeData['patterns'])) {
             $search = array();
             $replace = array();

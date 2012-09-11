@@ -13,71 +13,84 @@ class Example extends Controller
     
     public function index($parameter, $c)
     {   
-        $cacheKey = $c['routing']->getRequestHash(); //unique hash for current route (url+request method)
+        $cacheKey = 'view_'.$c['routing']->getRequestHash(true); //unique hash for current route (url+request method+current language)
         
-        $data = $c['cache']->getOrSet('view_'.$cacheKey, function($parameter) use ($c) {  
-            $t = $c['i18n']->get('ExampleModule');
+        //
+        if ($cachedData = $c['cache']->get($cacheKey)) {
+            $c['controller']->page_title = $cachedData['pageTitle'];
+            $c['controller']->meta_description = $cachedData['metaDescription'];
 
-            $showPerPage = 20;
-            $currentPage = !empty($_GET['p']) ? $_GET['p'] : 1;
-            
-            $pageTitle = $t->indexTitle(array('page' => $currentPage));
-            $metaDescription = $t->indexDescription;
-
-            $entities = Foo::getRepository($c['db']->get())->load(null, null, 'id DESC', $showPerPage, ($currentPage - 1) * $showPerPage);
-
-            $pager = new \QF\Utils\Pager(
-                Foo::getRepository($c['db']->get())->count(),
-                $showPerPage,
-                $c['routing']->getUrl('example.index') . '(?p={page})',
-                $currentPage,
-                7,
-                false
-            );
-
-            $response = $c['controller']->parse('ExampleModule', 'example/index', array('t' => $t, 'entities' => $entities, 'pager' => $pager));
-            return array(
-                'response' => $response,
-                'pageTitle' => $pageTitle,
-                'metaDescription' => $metaDescription
-            );
-            
-        }, $parameter, 60*60, false, array('view', 'view_Example', 'view_Example_index', 'view_Example_index_page_'.(!empty($_GET['p']) ? $_GET['p'] : 1)));
-            
-        $c['controller']->page_title = $data['pageTitle'];
-        $c['controller']->meta_description = $data['metaDescription'];
+            return $cachedData['response'];
+        }
         
-        return $data['response'];
+        $t = $c['i18n']->get('ExampleModule');
+
+        $showPerPage = 20;
+        $currentPage = !empty($_GET['p']) ? $_GET['p'] : 1;
+
+        $pageTitle = $t->indexTitle(array('page' => $currentPage));
+        $metaDescription = $t->indexDescription;
+
+        $c['controller']->page_title = $pageTitle;
+        $c['controller']->meta_description = $metaDescription;
+        
+        $entities = Foo::getRepository($c['db']->get())->load(null, null, 'id DESC', $showPerPage, ($currentPage - 1) * $showPerPage);
+
+        $pager = new \QF\Utils\Pager(
+            Foo::getRepository($c['db']->get())->count(),
+            $showPerPage,
+            $c['routing']->getUrl('example.index') . '(?p={page})',
+            $currentPage,
+            7,
+            false
+        );
+
+        $response = $c['controller']->parse('ExampleModule', 'example/index', array('t' => $t, 'entities' => $entities, 'pager' => $pager));
+        $cache = array(
+            'response' => $response,
+            'pageTitle' => $pageTitle,
+            'metaDescription' => $metaDescription
+        );
+        
+        $c['cache']->set($cacheKey, $cache, 60*60, false, array('view', 'view_Example', 'view_Example_index', 'view_Example_index_page_'.$currentPage));;
+            
+        return $response;
     }
     
     public function show($parameter, $c)
     {
-        $cacheKey = $c['routing']->getRequestHash(); //unique hash for current route (url+request method)
+        $cacheKey = 'view_'.$c['routing']->getRequestHash(true); //unique hash for current route (url+request method)
         
-        $data = $c['cache']->getOrSet('view_'.$cacheKey, function($parameter) use ($c) {  
-            $t = $c['i18n']->get('ExampleModule');
-            
-            $foo = Foo::getRepository($c['db']->get())->loadOne('id', $parameter['id']);
-            if (!$foo) {
-                throw new HttpException('Foo with id '.$parameter['id'].' not found.', 404);
-            }
+        if ($cachedData = $c['cache']->get($cacheKey)) {
+            $c['controller']->page_title = $cachedData['pageTitle'];
+            $c['controller']->meta_description = $cachedData['metaDescription'];
 
-            $pageTitle = $t->showTitle(array('title' => htmlspecialchars($foo->title)));
-            $metaDescription = $t->showDescription(array('title' => htmlspecialchars($foo->title))); 
-
-            $response = $c['controller']->parse('ExampleModule', 'example/show', array('t' => $t, 'entity' => $foo));
-            return array(
-                'response' => $response,
-                'pageTitle' => $pageTitle,
-                'metaDescription' => $metaDescription
-            );
-            
-        }, $parameter, 60*60, false, array('view', 'view_Example', 'view_Example_show', 'view_Example_show_'.$parameter['id']));   
+            return $cachedData['response'];
+        }
         
+        $t = $c['i18n']->get('ExampleModule');
+
+        $foo = Foo::getRepository($c['db']->get())->loadOne('id', $parameter['id']);
+        if (!$foo) {
+            throw new HttpException('Foo with id '.$parameter['id'].' not found.', 404);
+        }
+
+        $pageTitle = $t->showTitle(array('title' => htmlspecialchars($foo->title)));
+        $metaDescription = $t->showDescription(array('title' => htmlspecialchars($foo->title))); 
+
         $c['controller']->page_title = $pageTitle;
         $c['controller']->meta_description = $metaDescription;
         
-        return $data['response'];
+        $response = $c['controller']->parse('ExampleModule', 'example/show', array('t' => $t, 'entity' => $foo));
+        $cache = array(
+            'response' => $response,
+            'pageTitle' => $pageTitle,
+            'metaDescription' => $metaDescription
+        );
+            
+        $c['cache']->set($cacheKey, $cache, 60*60, false, array('view', 'view_Example', 'view_Example_show', 'view_Example_show_'.$parameter['id']));   
+        
+        return $response;
     }
     
     public function create($parameter, $c)
@@ -184,8 +197,8 @@ class Example extends Controller
         }
 
         if ($success) {
+            $c['cache']->removeByTag('view_Example_show_'.$parameter['id']);
             $message = $t->deleteSuccessMessage(array('title' => htmlspecialchars($foo->title)));
-
             if ($c['controller']->format === null) {
                 //$this->registry->helper->messages->add($message, 'success');
                 return $c['routing']->redirect('example.index');
