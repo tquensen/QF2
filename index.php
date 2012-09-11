@@ -16,7 +16,18 @@ require_once __DIR__.'/bootstrap.php';
 try {
     
     $route = isset($_GET['route']) ? $_GET['route'] : '';
-    
+    $language = isset($_GET['language']) ? $_GET['language'] : '';
+    if ($language) {
+        $c['i18n']->setCurrentLanguage($language);
+    }
+    //set i18n title/description as frontController parameter
+    $c['controller']->website_title = $c['t']->website_title;
+    $c['controller']->meta_description = $c['t']->meta_description;    
+
+    //session for user handling
+    session_name('qf_session');
+    session_start();
+        
     //throws 404 QF\Exception\HttpException for invalid routes
     $routeData = $c['routing']->parseRoute($route);
     $pageContent = $c['routing']->callRoute($routeData['route'], $routeData['parameter'], true);

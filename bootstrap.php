@@ -85,31 +85,3 @@ $c['db'] = $c->share(function ($c) {
     return new QF\Mongo\DB($c['cfg_db']['mongo']);
 });
 */
-
-
-
-
-if (QF_CLI === true) {
-//cli
-    
-    chdir(__DIR__);
-    $c['controller']->setFormat('plain'); //use the plain format for views  
-    
-} else {
-//web
-
-    //init i18n
-    $language = isset($_GET['language']) ? $_GET['language'] : '';
-    if ($language) {
-        $c['i18n']->setCurrentLanguage($language);
-    }
-    
-    //set i18n title/description as frontController parameter
-    $c['controller']->website_title = $c['t']->website_title;
-    $c['controller']->meta_description = $c['t']->meta_description;    
-
-    //user handling
-    session_name('qf_session');
-    session_start();
-    
-}

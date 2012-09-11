@@ -300,11 +300,12 @@ class Routing
     /**
      * builds an url to a public file (js, css, images, ...)
      *
-     * @param string $file path to the file (relative from the baseurl or the given module)
+     * @param string $file path to the file (relative from {baseurl}/public/ or modules/{module}/public/)
      * @param string $module the module containing the file
+     * @param bool $cacheBuster add the last modified time as parameter to the url to prevent caching if ressource has changed
      * @return string returns the url to the file including base_url (if available)
      */
-    public function getAsset($file, $module = null)
+    public function getAsset($file, $module = null, $cacheBuster = false)
     {
         $theme = $this->controller->getTheme();
         $themeString = $theme ? 'themes/'.$theme . '/' : '';
@@ -314,17 +315,19 @@ class Routing
         }
         if ($module) {
             if ($theme && file_exists(\QF_BASEPATH . '/templates/' . $themeString . 'modules/'.$module.'/public/'.$file)) {
-                return $baseurl . 'templates/' . $themeString . 'modules/'.$module.'/public/'.$file;
+                return $baseurl . 'templates/' . $themeString . 'modules/'.$module.'/public/'.$file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/templates/' . $themeString . 'modules/'.$module.'/public/'.$file) : '');
             } elseif (file_exists(\QF_BASEPATH . '/templates/modules/'.$module.'/public/'.$file)) {
-                return $baseurl . 'templates/modules/'.$module.'/public/'.$file;
+                return $baseurl . 'templates/modules/'.$module.'/public/'.$file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/templates/modules/'.$module.'/public/'.$file) : '');
+            } elseif (file_exists(\QF_BASEPATH . '/modules/'.$module.'/public/'.$file)) {
+                return $baseurl . 'modules/'.$module.'/public/'.$file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/modules/'.$module.'/public/'.$file) : '');
             } else {
                 return $baseurl . 'modules/'.$module.'/public/'.$file;
             }
         } else {
             if ($theme && file_exists(\QF_BASEPATH . '/templates/' . $themeString . 'public/'.$file)) {
-                return $baseurl . 'templates/' . $themeString . 'public/'.$file;
+                return $baseurl . 'templates/' . $themeString . 'public/'.$file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/templates/' . $themeString . 'public/'.$file) : '');
             } elseif (file_exists(\QF_BASEPATH . '/templates/public/'.$file)) {
-                return $baseurl . 'templates/public/'.$file;
+                return $baseurl . 'templates/public/'.$file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/templates/public/'.$file) : '');
             } else {
                 return $baseurl . 'public/' . $file;
             }
