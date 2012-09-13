@@ -12,7 +12,7 @@ require_once __DIR__.'/bootstrap.php';
 
 try {
     chdir(__DIR__);
-    $c['controller']->setFormat('plain'); //use the plain format for views  
+    $c['core']->setFormat('plain'); //use the plain format for views  
     
     $taskData = $c['cli']->parseArgs($argv);    
     $output = $c['cli']->callTask($taskData['class'], $taskData['task'], $taskData['parameter']);

@@ -13,12 +13,12 @@ class Example extends Controller
     
     public function index($parameter, $c)
     {   
-        $cacheKey = 'view_'.$c['routing']->getRequestHash(true); //unique hash for current route (url+request method+current language)
+        $cacheKey = 'view_'.$c['core']->getRequestHash(true); //unique hash for current route (url+request method+current language)
         
         //
         if ($cachedData = $c['cache']->get($cacheKey)) {
-            $c['controller']->page_title = $cachedData['pageTitle'];
-            $c['controller']->meta_description = $cachedData['metaDescription'];
+            $c['core']->page_title = $cachedData['pageTitle'];
+            $c['core']->meta_description = $cachedData['metaDescription'];
 
             return $cachedData['response'];
         }
@@ -31,21 +31,21 @@ class Example extends Controller
         $pageTitle = $t->indexTitle(array('page' => $currentPage));
         $metaDescription = $t->indexDescription;
 
-        $c['controller']->page_title = $pageTitle;
-        $c['controller']->meta_description = $metaDescription;
+        $c['core']->page_title = $pageTitle;
+        $c['core']->meta_description = $metaDescription;
         
         $entities = Foo::getRepository($c['db']->get())->load(null, null, 'id DESC', $showPerPage, ($currentPage - 1) * $showPerPage);
 
         $pager = new \QF\Utils\Pager(
             Foo::getRepository($c['db']->get())->count(),
             $showPerPage,
-            $c['routing']->getUrl('example.index') . '(?p={page})',
+            $c['core']->getUrl('example.index') . '(?p={page})',
             $currentPage,
             7,
             false
         );
 
-        $response = $c['controller']->parse('ExampleModule', 'example/index', array('t' => $t, 'entities' => $entities, 'pager' => $pager));
+        $response = $c['core']->parse('ExampleModule', 'example/index', array('t' => $t, 'entities' => $entities, 'pager' => $pager));
         $cache = array(
             'response' => $response,
             'pageTitle' => $pageTitle,
@@ -59,11 +59,11 @@ class Example extends Controller
     
     public function show($parameter, $c)
     {
-        $cacheKey = 'view_'.$c['routing']->getRequestHash(true); //unique hash for current route (url+request method)
+        $cacheKey = 'view_'.$c['core']->getRequestHash(true); //unique hash for current route (url+request method)
         
         if ($cachedData = $c['cache']->get($cacheKey)) {
-            $c['controller']->page_title = $cachedData['pageTitle'];
-            $c['controller']->meta_description = $cachedData['metaDescription'];
+            $c['core']->page_title = $cachedData['pageTitle'];
+            $c['core']->meta_description = $cachedData['metaDescription'];
 
             return $cachedData['response'];
         }
@@ -78,10 +78,10 @@ class Example extends Controller
         $pageTitle = $t->showTitle(array('title' => htmlspecialchars($foo->title)));
         $metaDescription = $t->showDescription(array('title' => htmlspecialchars($foo->title))); 
 
-        $c['controller']->page_title = $pageTitle;
-        $c['controller']->meta_description = $metaDescription;
+        $c['core']->page_title = $pageTitle;
+        $c['core']->meta_description = $metaDescription;
         
-        $response = $c['controller']->parse('ExampleModule', 'example/show', array('t' => $t, 'entity' => $foo));
+        $response = $c['core']->parse('ExampleModule', 'example/show', array('t' => $t, 'entity' => $foo));
         $cache = array(
             'response' => $response,
             'pageTitle' => $pageTitle,
@@ -97,8 +97,8 @@ class Example extends Controller
     {
         $t = $c['i18n']->get('ExampleModule');
         
-        $c['controller']->page_title = $t->createTitle;
-        $c['controller']->meta_description = $t->createDescription;
+        $c['core']->page_title = $t->createTitle;
+        $c['core']->meta_description = $t->createDescription;
         
         $form = new ExampleForm(array(
             'entity' => new Foo($c['db']->get()),
@@ -114,9 +114,9 @@ class Example extends Controller
                 $success = true;
                 $message = $t->createSuccessMessage(array('title' => htmlspecialchars($foo->title)));
 
-                if ($c['controller']->format === null) {
+                if ($c['core']->format === null) {
                     //$this->registry->helper->messages->add($message, 'success');
-                    return $c['routing']->redirect($c['routing']->getUrl('example.show', array('id' => $foo->id)));
+                    return $c['core']->redirect($c['core']->getUrl('example.show', array('id' => $foo->id)));
                 }
                 
                 $view['message'] = $message;
@@ -131,7 +131,7 @@ class Example extends Controller
         
         $view['t'] = $t;
         
-        return $c['controller']->parse('ExampleModule', 'example/create', $view);
+        return $c['core']->parse('ExampleModule', 'example/create', $view);
     }
     
     public function update($parameter, $c)
@@ -143,8 +143,8 @@ class Example extends Controller
             throw new HttpException('Foo with id '.$parameter['id'].' not found.', 404);
         }
         
-        $c['controller']->page_title = $t->updateTitle;
-        $c['controller']->meta_description = $t->updateDescription;
+        $c['core']->page_title = $t->updateTitle;
+        $c['core']->meta_description = $t->updateDescription;
 
         $form = new ExampleForm(array(
             'entity' => $foo,
@@ -161,9 +161,9 @@ class Example extends Controller
                 $success = true;
                 $message = $t->updateSuccessMessage(array('title' => htmlspecialchars($foo->title)));
 
-                if ($c['controller']->format === null) {
+                if ($c['core']->format === null) {
                     //$this->registry->helper->messages->add($message, 'success');
-                    return $c['routing']->redirect($c['routing']->getUrl('example.show', array('id' => $foo->id)));
+                    return $c['core']->redirect($c['core']->getUrl('example.show', array('id' => $foo->id)));
                 }
                 
                 $view['message'] = $message;
@@ -178,7 +178,7 @@ class Example extends Controller
         
         $view['t'] = $t;
         
-        return $c['controller']->parse('ExampleModule', 'example/update', $view);
+        return $c['core']->parse('ExampleModule', 'example/update', $view);
     }
     
     public function delete($parameter, $c)
@@ -199,15 +199,15 @@ class Example extends Controller
         if ($success) {
             $c['cache']->removeByTag('view_Example_show_'.$parameter['id']);
             $message = $t->deleteSuccessMessage(array('title' => htmlspecialchars($foo->title)));
-            if ($c['controller']->format === null) {
+            if ($c['core']->format === null) {
                 //$this->registry->helper->messages->add($message, 'success');
-                return $c['routing']->redirect('example.index');
+                return $c['core']->redirect('example.index');
             }
         } else {
             $message = $t->deleteErrorMessage(array('title' => htmlspecialchars($foo->title)));
-            if ($c['controller']->format === null) {
+            if ($c['core']->format === null) {
                 //$this->registry->helper->messages->add($message, 'error');
-                return $c['routing']->redirect('example.index');
+                return $c['core']->redirect('example.index');
             }
         }
 
@@ -215,6 +215,6 @@ class Example extends Controller
         $view['success'] = $success;
         $view['message'] = $message;
 
-        return $c['controller']->parse('ExampleModule', 'example/delete', $view);
+        return $c['core']->parse('ExampleModule', 'example/delete', $view);
     }
 }

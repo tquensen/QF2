@@ -19,7 +19,7 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $c['controller']->parse('DefaultModule', 'error/error401'.$debugStr, $parameter);
+        return $c['core']->parse('DefaultModule', 'error/error401'.$debugStr, $parameter);
     }
     
     public function error403($parameter, $c)
@@ -36,7 +36,7 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $c['controller']->parse('DefaultModule', 'error/error403'.$debugStr, $parameter);
+        return $c['core']->parse('DefaultModule', 'error/error403'.$debugStr, $parameter);
     }
     
     public function error404($parameter, $c)
@@ -53,7 +53,7 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $c['controller']->parse('DefaultModule', 'error/error404'.$debugStr, $parameter);
+        return $c['core']->parse('DefaultModule', 'error/error404'.$debugStr, $parameter);
     }
     
     public function error500($parameter, $c)
@@ -70,6 +70,6 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $c['controller']->parse('DefaultModule', 'error/error500'.$debugStr, $parameter);
+        return $c['core']->parse('DefaultModule', 'error/error500'.$debugStr, $parameter);
     }
 }

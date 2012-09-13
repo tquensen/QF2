@@ -3,23 +3,16 @@ namespace QF;
 
 use \QF\Exception\HttpException;
 
-class Routing
+class Core
 {
-
-    protected $routes = null;
-    /**
-     * @var \QF\FrontController
-     */
-    protected $controller = null;
-    /**
-     * @var \QF\User
-     */
-    protected $user = null;
     
-    /**
-     * @var \QF\I18n
-     */
-    protected $i18n = null;
+    protected $parameter = array();
+    protected $routes = array();
+    
+    protected $theme = null;
+    protected $format = null;
+    protected $defaultFormat = null;
+    protected $template = null;
     
     protected $homeRoute = null;
     protected $baseUrl = null;
@@ -28,18 +21,13 @@ class Routing
     protected $currentRoute = null;
     protected $currentRouteParameter = null;
     protected $requestMethod = null;
-
-    public function __construct($routes, $config, $controller, $user = null, $i18n = null)
+    
+    public function __construct($parameter, $routes, $user = null, $i18n = null)
     {
+        $this->parameter = $parameter;
         $this->routes = $routes;
-        $this->controller = $controller;        
         $this->user = $user;
         $this->i18n = $i18n;
-        
-        $this->homeRoute = !empty($config['home_route']) ? $config['home_route'] : false;
-        $this->baseUrl = !empty($config['base_url']) ? $config['base_url'] : false;
-        $this->BaseUrlI18n = !empty($config['base_url_i18n']) ? $config['base_url_i18n'] : false;
-        $this->staticUrl = !empty($config['static_url']) ? $config['static_url'] : false;
         
         if (isset($_REQUEST['REQUEST_METHOD'])) {
             $this->requestMethod = strtoupper($_REQUEST['REQUEST_METHOD']);
@@ -47,7 +35,17 @@ class Routing
             $this->requestMethod = !empty($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET';
         }
     }
-
+    
+    public function __get($key)
+    {
+        return !empty($this->parameter[$key]) ? $this->parameter[$key] : null;
+    }
+    
+    public function __set($key, $value)
+    {
+        $this->parameter[$key] = $value;
+    }
+    
     /**
      * gets the routename and parameters from the requested route
      *
@@ -97,65 +95,6 @@ class Routing
     /**
      *
      * @param string $route the key of the route to get
-     * @param array $parameter parameters for the page
-     * @param bool $setAsMainRoute whether this route is the main call (set format, current_route and current_route_parameter config values) or not
-     * @return @return string the parsed output of the page
-     */
-    public function callRoute($route, $parameter = array(), $setAsMainRoute = false)
-    {
-        $routeData = $this->getRoute($route);
-        if (!$routeData || empty($routeData['controller']) || empty($routeData['action'])) {
-            throw new HttpException('page not found', 404);
-        }
-        
-        if (!empty($routeData['rights'])) {
-            if (!$this->user) {
-                throw new HttpException('permission denied', 403);
-            }
-            if (!$this->user->userHasRight($routeData['rights'])) {        
-                if ($this->user->getRole() === 'GUEST') {
-                    throw new HttpException('login required', 401);
-                } else {
-                    throw new HttpException('permission denied', 403);
-                }
-            }
-        }
-
-
-        if (!empty($routeData['parameter'])) {
-            $parameter = array_merge($routeData['parameter'], $parameter);
-        }
-        
-        if ($setAsMainRoute) {
-            $this->currentRoute = $route;
-            $this->currentRouteParameter = $parameter;
-            if (!empty($parameter['_format'])) {
-                $this->controller->setFormat($parameter['_format']);
-            }
-            if (!empty($parameter['_template'])) {
-                $this->controller->setTemplate($parameter['_template']);
-            }
-        }
-        return $this->controller->callAction($routeData['controller'], $routeData['action'], $parameter);       
-    }
-    
-    /**
-     * calls the error page defined by $errorCode and shows $message
-     *
-     * @param string $errorCode the error page name (default error pages are 401, 403, 404, 500)
-     * @param string $message a message to show on the error page, leave empty for default message depending on error code
-     * @param Exception $exception an exception to display (only if QF_DEBUG = true)
-     * @return string the parsed output of the error page
-     */
-    public function callError($errorCode = 404, $message = '', $exception = null)
-    {
-        return $this->callRoute('error'.$errorCode, array('message' => $message, 'exception' => $exception));
-    }
-    
-
-    /**
-     *
-     * @param string $route the key of the route to get
      * @return mixed the routes array or a specifig route (if $route is set)
      */
     public function getRoute($route = null)
@@ -191,7 +130,84 @@ class Routing
     {
         $this->redirect($this->getUrl($route, $params, $language), $code);
     }
+    
+    /**
+     *
+     * @param string $route the key of the route to get
+     * @param array $parameter parameters for the page
+     * @param bool $setAsMainRoute whether this route is the main call (set format, current_route and current_route_parameter config values) or not
+     * @return @return string the parsed output of the page
+     */
+    public function callRoute($route, $parameter = array(), $setAsMainRoute = false)
+    {
+        $routeData = $this->getRoute($route);
+        if (!$routeData || empty($routeData['controller']) || empty($routeData['action'])) {
+            throw new HttpException('page not found', 404);
+        }
+        
+        if (!empty($routeData['rights'])) {
+            if (!$this->user) {
+                throw new HttpException('permission denied', 403);
+            }
+            if (!$this->user->userHasRight($routeData['rights'])) {        
+                if ($this->user->getRole() === 'GUEST') {
+                    throw new HttpException('login required', 401);
+                } else {
+                    throw new HttpException('permission denied', 403);
+                }
+            }
+        }
 
+
+        if (!empty($routeData['parameter'])) {
+            $parameter = array_merge($routeData['parameter'], $parameter);
+        }
+        
+        if ($setAsMainRoute) {
+            $this->currentRoute = $route;
+            $this->currentRouteParameter = $parameter;
+            if (!empty($parameter['_format'])) {
+                $this->format = $parameter['_format'];
+            }
+            if (!empty($parameter['_template'])) {
+                $this->template = $parameter['_template'];
+            }
+        }
+        return $this->callAction($routeData['controller'], $routeData['action'], $parameter);       
+    }
+    
+    /**
+     * calls the error page defined by $errorCode and shows $message
+     *
+     * @param string $errorCode the error page name (default error pages are 401, 403, 404, 500)
+     * @param string $message a message to show on the error page, leave empty for default message depending on error code
+     * @param Exception $exception an exception to display (only if QF_DEBUG = true)
+     * @return string the parsed output of the error page
+     */
+    public function callError($errorCode = 404, $message = '', $exception = null)
+    {
+        return $this->callRoute('error'.$errorCode, array('message' => $message, 'exception' => $exception));
+    }
+    
+    /**
+     * calls the action defined by $controller and $action and returns the output
+     *
+     * @param string $controller the controller
+     * @param string $action the action
+     * @param array $parameter parameters for the page
+     * @param mixed $c the DI container
+     * @return string the parsed output of the page
+     */
+    public function callAction($controller, $action, $parameter = array(), $c = null)
+    {
+        if (!class_exists($controller) || !method_exists($controller, $action)) {
+            throw new HttpException('action not found', 404);
+        }
+        
+        $controller = new $controller();
+        return $controller->$action($parameter, $c);
+    }
+    
     /**
      * builds an internal url
      *
@@ -293,7 +309,7 @@ class Routing
             foreach ((array) $postData as $postKey => $postValue) {
                 $form->setElement(new \QF\Form\Element\Hidden($postKey, array('alwaysDisplayDefault' => true, 'defaultValue' => $postValue)));
             }
-            return $this->controller->parse('DefaultModule', 'form/form', array('form' => $form));
+            return $this->parse('DefaultModule', 'form/form', array('form' => $form));
         }
     }
 
@@ -307,7 +323,7 @@ class Routing
      */
     public function getAsset($file, $module = null, $cacheBuster = false)
     {
-        $theme = $this->controller->getTheme();
+        $theme = $this->theme;
         $themeString = $theme ? 'themes/'.$theme . '/' : '';
         
         if (!$baseurl = $this->staticUrl) {
@@ -332,6 +348,131 @@ class Routing
                 return $baseurl . 'public/' . $file;
             }
         }
+    }
+    
+    /**
+     * parses the given page and returns the output
+     *
+     * inside the page, you have direct access to any given parameter
+     *
+     * @param string $module the module containing the page
+     * @param string $view the name of the view file
+     * @param array $parameter parameters for the page
+     * @return string the parsed output of the page
+     */
+    public function parse($module, $view, $parameter = array())
+    {
+        $_theme = $this->theme;
+        $_themeString = $_theme ? 'themes/'.$_theme . '/' : '';
+        $_format = isset($parameter['_format']) ? $parameter['_format'] : $this->format;
+        $_formatString = $_format ? '.' . $_format : '';
+
+        if ($_theme && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php';
+        } elseif ($_theme && !$_format && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php';
+        } elseif (file_exists(\QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . $_formatString . '.php';
+        } elseif (!$_format && file_exists(\QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php';
+        } elseif (file_exists(\QF_BASEPATH . '/modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
+            $_file = \QF_BASEPATH . '/modules/' . $module . '/views/' . $view . $_formatString . '.php';
+        } elseif (!$_format && file_exists(\QF_BASEPATH . '/modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php')) {
+            $_file = \QF_BASEPATH . '/modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php';
+        } else {
+            throw new HttpException('view not found', 404);
+        }
+
+        extract($parameter, \EXTR_OVERWRITE);
+        ob_start();
+        require($_file);
+        return ob_get_clean();
+    }
+
+    /**
+     * parses the template with the given content
+     *
+     * inside the template, you have direct access to the page content $content
+     *
+     * @param string $content the parsed output of the current page
+     * @param array $parameter parameters for the page
+     * @return string the output of the template
+     */
+    public function parseTemplate($content, $parameter = array())
+    {
+        $_templateName = $this->template;
+        $_theme = $this->theme;
+        $_themeString = $_theme ? 'themes/'.$_theme . '/' : '';
+        $_format = $this->format;
+        $_defaultFormat = $this->defaultFormat;
+        $_file = false;
+
+        if (is_array($_templateName)) {
+            if ($_format) {
+                $_templateName = isset($_templateName[$_format]) ? $_templateName[$_format] : (isset($_templateName['all']) ? $_templateName['all'] : null);
+            } else {
+                if (isset($_templateName['default'])) {
+                    $_templateName = $_templateName['default'];
+                } else {
+                    $_templateName = isset($_templateName[$_defaultFormat]) ? $_templateName[$_defaultFormat] : (isset($_templateName['all']) ? $_templateName['all'] : null);
+                }
+            }
+        }
+
+        if ($_templateName === false) {
+            return $content;
+        }
+
+        if ($_format) {
+            if ($_theme && $_templateName && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . '/' . $_templateName . '.' . $_format . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_themeString . '/' .$_templateName . '.' . $_format . '.php';
+            } elseif ($_templateName && file_exists(\QF_BASEPATH . '/templates/' . $_templateName . '.' . $_format . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_templateName . '.' . $_format . '.php';
+            } elseif ($_theme && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . 'default.' . $_format . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/'. $_themeString . 'default.' . $_format . '.php';
+            } elseif (file_exists(\QF_BASEPATH . '/templates/default.' . $_format . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/default.' . $_format . '.php';
+            }
+        } elseif ($_templateName) {
+            if ($_theme && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . $_templateName . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_themeString . $_templateName . '.php';
+            } elseif (file_exists(\QF_BASEPATH . '/templates/' . $_templateName . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_templateName . '.php';
+            } elseif ($_theme && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . $_templateName . '.' . $_defaultFormat . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_themeString . $_templateName . '.' . $_defaultFormat . '.php';
+            } elseif (file_exists(\QF_BASEPATH . '/templates/' . $_templateName . '.' . $_defaultFormat . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_templateName . '.' . $_defaultFormat . '.php';
+            }
+        }
+
+        if (!$_file) {
+            throw new HttpException('template not found', 404);
+        }
+
+        extract($parameter, \EXTR_OVERWRITE);
+        ob_start();
+        require($_file);
+        return ob_get_clean();
+    }
+    
+    public function getTheme()
+    {
+        return $this->theme;
+    }
+    
+    public function getFormat()
+    {
+        return $this->format;
+    }
+    
+    public function getDefaultFormat()
+    {
+        return $this->defaultFormat;
+    }
+    
+    public function getTemplate()
+    {
+        return $this->template;
     }
     
     public function getHomeRoute()
@@ -372,6 +513,26 @@ class Routing
     public function getRequestHash($includeI18n = false)
     {
         return md5(serialize(array($this->currentRoute, $this->currentRouteParameter, $this->requestMethod, $includeI18n && $this->i18n ? $this->i18n->getCurrentLanguage() : '')));
+    }
+
+    public function setTheme($theme)
+    {
+        $this->theme = $theme;
+    }
+    
+    public function setFormat($format)
+    {
+        $this->format = $format;
+    }
+    
+    public function setDefaultFormat($defaultFormat)
+    {
+        $this->defaultFormat = $defaultFormat;
+    }
+    
+    public function setTemplate($template)
+    {
+        $this->template = $template;
     }
 
     public function setHomeRoute($homeRoute)
@@ -438,4 +599,5 @@ class Routing
 
         return $routePattern;
     }
+
 }

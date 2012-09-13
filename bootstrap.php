@@ -26,31 +26,22 @@ foreach ($config as $k => $v) {
     $c['cfg_'.$k] = $v;
 }
 
-$c['controller'] = $c->share(function ($c) {
-    $config = $c['cfg_controller'];
-    $controller = new QF\FrontController(!empty($config['parameter']) ? $config['parameter'] : array());
+$c['qf'] = $c->share(function ($c) {
+    $routes = array();
+    require QF_BASEPATH.'/data/routes.php';
+    $config = $c['cfg_qf'];
+    $controller = new QF\FrontController(!empty($config['parameter']) ? $config['parameter'] : array(), $routes, $c['user'], $c['i18n']);
     
     if (!empty($config['theme'])) { $controller->setTheme($config['theme']); }
     if (!empty($config['template'])) { $controller->setTemplate($config['template']); }
     if (!empty($config['format'])) { $controller->setFormat($config['format']); }
     if (!empty($config['default_format'])) { $controller->setDefaultFormat($config['default_format']); }
-    
-    return $controller;
-});
-
-$c['routing'] = $c->share(function ($c) {
-    $routes = array();
-    require QF_BASEPATH.'/data/routes.php';
-    $config = $c['cfg_routing'];
-    
-    $routing = new QF\Routing($routes, $c['controller'], $c['user'], $c['i18n']);
-    
     if (!empty($config['home_route'])) { $routing->setHomeRoute($config['home_route']); }
     if (!empty($config['base_url'])) { $routing->setBaseUrl($config['base_url']); }
     if (!empty($config['base_url_i18n'])) { $routing->setBaseUrlI18n($config['base_url_i18n']); }
     if (!empty($config['static_url'])) { $routing->setStaticUrl($config['static_url']); }
     
-    return $routing;
+    return $controller;
 });
 
 $c['cli'] = $c->share(function ($c) {

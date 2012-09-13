@@ -1,16 +1,16 @@
 <?php
-$config['controller']['parameter']['website_title'] = 'QF Website';
-$config['controller']['parameter']['meta_description'] = 'Default meta description.';
+$config['qf']['parameter']['website_title'] = 'QF Website';
+$config['qf']['parameter']['meta_description'] = 'Default meta description.';
 
-$config['controller']['theme'] = ''; //no theme
-$config['controller']['template'] = 'default';
-$config['controller']['default_format'] = 'html';
+$config['qf']['theme'] = ''; //no theme
+$config['qf']['template'] = 'default';
+$config['qf']['default_format'] = 'html';
 
 
-$config['routing']['home_route'] = 'home';
-$config['routing']['base_url'] = '/'; //http://example.com/;
-//$config['routing']['base_url_i18n'] = '/'; //http://:lang:.example.com/;
-//$config['routing']['static_url'] = 'http://static.example.com/';
+$config['qf']['home_route'] = 'home';
+$config['qf']['base_url'] = '/'; //http://example.com/;
+//$config['qf']['base_url_i18n'] = '/'; //http://:lang:.example.com/;
+//$config['qf']['static_url'] = 'http://static.example.com/';
 
 
 //user roles

@@ -10,7 +10,7 @@ class Base extends Controller
     public function home($parameter, $c)
     {
         $t = $c['i18n']->get('ExampleModule');
-        return $c['controller']->parse('ExampleModule', 'home', array('t' => $t));
+        return $c['core']->parse('ExampleModule', 'home', array('t' => $t));
     }
     
     public function staticPage($parameter, $c)
@@ -26,13 +26,13 @@ class Base extends Controller
         $title = $t->get($titleKey);
         $description = $t->get($descriptionKey);
         if ($title && $title != $titleKey) {
-            $c['controller']->page_title = $title;
+            $c['core']->page_title = $title;
         }
         if ($description && $description != $descriptionKey) {
-            $c['controller']->meta_description = $description;
+            $c['core']->meta_description = $description;
         }
 
-        return $c['controller']->parse('ExampleModule', 'pages/'.$parameter['page'], array('t' => $t));
+        return $c['core']->parse('ExampleModule', 'pages/'.$parameter['page'], array('t' => $t));
     }
     
     
