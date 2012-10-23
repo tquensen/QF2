@@ -5,6 +5,7 @@ use \QF\Exception\HttpException;
 
 class Core
 {
+    protected $c;
     
     protected $parameter = array();
     protected $routes = array();
@@ -22,12 +23,18 @@ class Core
     protected $currentRouteParameter = null;
     protected $requestMethod = null;
     
-    public function __construct($parameter, $routes, $user = null, $i18n = null)
+    protected $templatePath = null;
+    protected $modulePath = null;
+    
+    public function __construct($c, $parameter, $routes)
     {
+        $this->c = $c;
+        
         $this->parameter = $parameter;
         $this->routes = $routes;
-        $this->user = $user;
-        $this->i18n = $i18n;
+        
+        $this->templatePath = __DIR__.'../../templates';
+        $this->modulePath = __DIR__.'../../modules';
         
         if (isset($_REQUEST['REQUEST_METHOD'])) {
             $this->requestMethod = strtoupper($_REQUEST['REQUEST_METHOD']);
@@ -56,7 +63,7 @@ class Core
     {
         $method = $this->requestMethod;
         
-        $language = $this->i18n ? $this->i18n->getCurrentLanguage() : false;
+        $language = !empty($this->c['i18n']) ? $this->c['i18n']->getCurrentLanguage() : false;
         
         if (empty($route) && ($homeRoute = $this->homeRoute) && $routeData = $this->getRoute($homeRoute)) {
             return array('route' => $homeRoute, 'parameter' => array());
@@ -146,11 +153,11 @@ class Core
         }
         
         if (!empty($routeData['rights'])) {
-            if (!$this->user) {
+            if (empty($this->c['user'])) {
                 throw new HttpException('permission denied', 403);
             }
-            if (!$this->user->userHasRight($routeData['rights'])) {        
-                if ($this->user->getRole() === 'GUEST') {
+            if (!$this->c['user']->userHasRight($routeData['rights'])) {        
+                if ($this->c['user']->getRole() === 'GUEST') {
                     throw new HttpException('login required', 401);
                 } else {
                     throw new HttpException('permission denied', 403);
@@ -195,17 +202,16 @@ class Core
      * @param string $controller the controller
      * @param string $action the action
      * @param array $parameter parameters for the page
-     * @param mixed $c the DI container
      * @return string the parsed output of the page
      */
-    public function callAction($controller, $action, $parameter = array(), $c = null)
+    public function callAction($controller, $action, $parameter = array())
     {
         if (!class_exists($controller) || !method_exists($controller, $action)) {
             throw new HttpException('action not found', 404);
         }
         
         $controller = new $controller();
-        return $controller->$action($parameter, $c);
+        return $controller->$action($parameter, $this->c);
     }
     
     /**
@@ -220,10 +226,10 @@ class Core
     {
         $baseurl = $this->baseUrl ?: '/';
         
-        if ($language === null && $this->i18n) {
-            $language = $this->i18n->getCurrentLanguage();
+        if ($language === null && !empty($this->c['i18n'])) {
+            $language = $this->c['i18n']->getCurrentLanguage();
         }
-        if ($language && $this->i18n && in_array($language, $this->i18n->getLanguages()) && $language != $this->i18n->getDefaultLanguage()) {
+        if ($language && !empty($this->c['i18n']) && in_array($language, $this->c['i18n']->getLanguages()) && $language != $this->c['i18n']->getDefaultLanguage()) {
             if ($baseurlI18n = $this->baseUrlI18n) {
                 $baseurl = str_replace(':lang:', $language, $baseurlI18n);
             }
@@ -366,8 +372,21 @@ class Core
         $_themeString = $_theme ? 'themes/'.$_theme . '/' : '';
         $_format = isset($parameter['_format']) ? $parameter['_format'] : $this->format;
         $_formatString = $_format ? '.' . $_format : '';
+        $_lang = !empty($this->c['i18n']) ? $this->c['i18n']->getCurrentLanguage() : false;
 
-        if ($_theme && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
+        if ($_lang && $_theme && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $_lang . '/' . $view . $_formatString . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $_lang . '/' . $view . $_formatString . '.php';
+        } elseif ($_lang && $_theme && !$_format && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $_lang . '/' . $view . '.' . $this->defaultFormat . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $_lang . '/' . $view . '.' . $this->defaultFormat . '.php';
+        } elseif ($_lang && file_exists(\QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $_lang . '/' . $view . $_formatString . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $_lang . '/' . $view . $_formatString . '.php';
+        } elseif ($_lang && !$_format && file_exists(\QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $_lang . '/' . $view . '.' . $this->defaultFormat . '.php')) {
+            $_file = \QF_BASEPATH . '/templates/modules/' . $module . '/views/' . $_lang . '/' . $view . '.' . $this->defaultFormat . '.php';
+        } elseif ($_lang && file_exists(\QF_BASEPATH . '/modules/' . $module . '/views/' . $_lang . '/' . $view . $_formatString . '.php')) {
+            $_file = \QF_BASEPATH . '/modules/' . $module . '/views/' . $_lang . '/' . $view . $_formatString . '.php';
+        } elseif ($_lang && !$_format && file_exists(\QF_BASEPATH . '/modules/' . $module . '/views/' . $_lang . '/' . $view . '.' . $this->defaultFormat . '.php')) {
+            $_file = \QF_BASEPATH . '/modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php';
+        } elseif ($_theme && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php')) {
             $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . $_formatString . '.php';
         } elseif ($_theme && !$_format && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php')) {
             $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $view . '.' . $this->defaultFormat . '.php';
@@ -405,6 +424,7 @@ class Core
         $_themeString = $_theme ? 'themes/'.$_theme . '/' : '';
         $_format = $this->format;
         $_defaultFormat = $this->defaultFormat;
+        $_lang = !empty($this->c['i18n']) ? $this->c['i18n']->getCurrentLanguage() : false;
         $_file = false;
 
         if (is_array($_templateName)) {
@@ -424,8 +444,16 @@ class Core
         }
 
         if ($_format) {
-            if ($_theme && $_templateName && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . '/' . $_templateName . '.' . $_format . '.php')) {
-                $_file = \QF_BASEPATH . '/templates/' . $_themeString . '/' .$_templateName . '.' . $_format . '.php';
+            if ($_lang && $_theme && $_templateName && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . $_lang . '/' . $_templateName . '.' . $_format . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_themeString . $_lang . '/' . $_templateName . '.' . $_format . '.php';
+            } elseif ($_lang && $_templateName && file_exists(\QF_BASEPATH . '/templates/' . $_lang . '/' . $_templateName . '.' . $_format . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_lang . '/' . $_templateName . '.' . $_format . '.php';
+            } elseif ($_lang && $_theme && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . $_lang . '/' . 'default.' . $_format . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/'. $_themeString . $_lang . '/' . 'default.' . $_format . '.php';
+            } elseif ($_lang && file_exists(\QF_BASEPATH . '/templates/' . $_lang . '/default.' . $_format . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_lang . '/default.' . $_format . '.php';
+            } else if ($_theme && $_templateName && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . $_templateName . '.' . $_format . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_themeString . $_templateName . '.' . $_format . '.php';
             } elseif ($_templateName && file_exists(\QF_BASEPATH . '/templates/' . $_templateName . '.' . $_format . '.php')) {
                 $_file = \QF_BASEPATH . '/templates/' . $_templateName . '.' . $_format . '.php';
             } elseif ($_theme && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . 'default.' . $_format . '.php')) {
@@ -433,8 +461,16 @@ class Core
             } elseif (file_exists(\QF_BASEPATH . '/templates/default.' . $_format . '.php')) {
                 $_file = \QF_BASEPATH . '/templates/default.' . $_format . '.php';
             }
-        } elseif ($_templateName) {
-            if ($_theme && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . $_templateName . '.php')) {
+        } elseif ($_templateName) { 
+            if ($_lang && $_theme && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . $_lang . '/' . $_templateName . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_themeString . $_lang . '/' . $_templateName . '.php';
+            } elseif ($_lang && file_exists(\QF_BASEPATH . '/templates/' . $_lang . '/' . $_templateName . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_lang . '/' . $_templateName . '.php';
+            } elseif ($_lang && $_theme && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . $_lang . '/' . $_templateName . '.' . $_defaultFormat . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_themeString . $_lang . '/' . $_templateName . '.' . $_defaultFormat . '.php';
+            } elseif ($_lang && file_exists(\QF_BASEPATH . '/templates/' . $_lang . '/' . $_templateName . '.' . $_defaultFormat . '.php')) {
+                $_file = \QF_BASEPATH . '/templates/' . $_lang . '/' . $_templateName . '.' . $_defaultFormat . '.php';
+            } elseif ($_theme && file_exists(\QF_BASEPATH . '/templates/' . $_themeString . $_templateName . '.php')) {
                 $_file = \QF_BASEPATH . '/templates/' . $_themeString . $_templateName . '.php';
             } elseif (file_exists(\QF_BASEPATH . '/templates/' . $_templateName . '.php')) {
                 $_file = \QF_BASEPATH . '/templates/' . $_templateName . '.php';
@@ -455,6 +491,16 @@ class Core
         return ob_get_clean();
     }
     
+    public function getParameter()
+    {
+        return $this->parameter;
+    }
+
+    public function getRoutes()
+    {
+        return $this->routes;
+    }
+
     public function getTheme()
     {
         return $this->theme;
@@ -510,9 +556,29 @@ class Core
         return $this->currentRouteParameter;
     }
     
+    public function getTemplatePath()
+    {
+        return $this->templatePath;
+    }
+
+    public function getModulePath()
+    {
+        return $this->modulePath;
+    }
+
     public function getRequestHash($includeI18n = false)
     {
-        return md5(serialize(array($this->currentRoute, $this->currentRouteParameter, $this->requestMethod, $includeI18n && $this->i18n ? $this->i18n->getCurrentLanguage() : '')));
+        return md5(serialize(array($this->currentRoute, $this->currentRouteParameter, $this->requestMethod, $includeI18n && !empty($this->c['i18n']) ? $this->c['i18n']->getCurrentLanguage() : '')));
+    }
+
+    public function setParameter($parameter)
+    {
+        $this->parameter = $parameter;
+    }
+
+    public function setRoutes($routes)
+    {
+        $this->routes = $routes;
     }
 
     public function setTheme($theme)
@@ -568,6 +634,16 @@ class Core
     public function setCurrentRouteParameter($currentRouteParameter)
     {
         $this->currentRouteParameter = $currentRouteParameter;
+    }
+    
+    public function setTemplatePath($templatePath)
+    {
+        $this->templatePath = $templatePath;
+    }
+
+    public function setModulePath($modulePath)
+    {
+        $this->modulePath = $modulePath;
     }
     
     protected function generateRoutePattern($routeData, $language) {

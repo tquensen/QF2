@@ -13,6 +13,8 @@ class I18n
     protected $currentLanguage = null;
     protected $defaultLanguage = null;
     
+    protected $moduleDir = '';
+    
     protected $data = array();
 
     /**
@@ -21,11 +23,13 @@ class I18n
      * @param string $translationDir the path to the translation files
      * @param string $language the target language
      */
-    function __construct($translationDir, $languages, $currentLanguage, $defaultLanguage)
+    function __construct($translationDir, $moduleDir, $languages, $currentLanguage, $defaultLanguage)
     {
         $this->languages = $languages;
         $this->currentLanguage = $currentLanguage;
         $this->defaultLanguage = $defaultLanguage;
+        
+        $this->moduleDir = rtrim($moduleDir, '/');
         
         $i18n = &$this->data;
         if (file_exists($translationDir . '/' .$language . '.php')) {
@@ -36,12 +40,12 @@ class I18n
     
     public function loadModule($module)
     {
-        if (file_exists(\QF_BASEPATH . '/modules/'.$module.'/data/i18n/'.$this->currentLanguage . '.php')) {
+        if (file_exists($this->moduleDir.'/'.$module.'/data/i18n/'.$this->currentLanguage . '.php')) {
             if (!isset($this->data[$module])) {
                 $this->data[$module] = array();
             }
             $i18n = &$this->data[$module];
-            include \QF_BASEPATH . '/modules/'.$module.'/data/i18n/'.$this->currentLanguage . '.php';
+            include $this->moduleDir . '/'.$module.'/data/i18n/'.$this->currentLanguage . '.php';
         }
     }
     

@@ -14,7 +14,7 @@ $routes['projects'] = array(
 */
 
 //load error routes
-require __DIR__.'/../modules/DefaultModule/data/errorRoutes.php';
+require $config['module_path'] . '/DefaultModule/data/errorRoutes.php';
 
 //load routes from Example module
-require __DIR__.'/../modules/ExampleModule/data/routes.php';
+require $config['module_path'] . '/ExampleModule/data/routes.php';

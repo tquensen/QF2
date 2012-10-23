@@ -12,5 +12,5 @@ $tasks['example'] = array(
 
 //load development Tasks on CLI access
 if (QF_CLI === true) {
-    require __DIR__.'/../modules/DevModule/data/tasks.php';
+    require $config['module_path'] . '/DevModule/data/tasks.php';
 }

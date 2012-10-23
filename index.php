@@ -17,10 +17,10 @@ try {
     
     $route = isset($_GET['route']) ? $_GET['route'] : '';
     $language = isset($_GET['language']) ? $_GET['language'] : '';
-    if ($language) {
+    if ($language && !empty($c['i18n'])) {
         $c['i18n']->setCurrentLanguage($language);
     }
-    //set i18n title/description as frontController parameter
+    //set i18n title/description as template parameter
     $c['core']->website_title = $c['t']->website_title;
     $c['core']->meta_description = $c['t']->meta_description;    
 
@@ -44,6 +44,6 @@ try {
     } catch (Exception $e) {
         //seems like the error was inside the template or error page
         //display a fallback page
-        require(QF_BASEPATH.'/templates/error.php');  
+        require(__DIR__.'/templates/error.php');  
     }     
 }

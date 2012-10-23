@@ -1,13 +1,13 @@
 <?php
 define('QF_CLI', isset($_SERVER['argc']) && $_SERVER['argc'] > 1 ? true : false);
 define('QF_DEBUG', QF_CLI || QF_ENV === 'dev' ? true : false);
-define('QF_BASEPATH', __DIR__);
 
 error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', QF_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
 
-require_once(QF_BASEPATH.'/lib/Symfony/Component/ClassLoader/UniversalClassLoader.php');
+//initialize PSR-0 compatible autooader
+require_once(__DIR__.'/lib/Symfony/Component/ClassLoader/UniversalClassLoader.php');
 $loader = new Symfony\Component\ClassLoader\UniversalClassLoader();
 //autoload all namespaced classes inside the lib and modules folder
 $loader->registerNamespace('QF', __DIR__.'/lib');
@@ -17,47 +17,57 @@ $loader->registerPrefix('Pimple', __DIR__.'/lib/Pimple');
 $loader->registerPrefixFallbacks(array(__DIR__.'/lib'));
 $loader->register();
 
-//require_once(QF_BASEPATH.'/lib/functions.php');
+//require_once(__DIR__.'/lib/functions.php');
 
-require QF_BASEPATH.'/data/config.php';
+//load config
+require __DIR__.'/data/config.php';
 
+//define and initialize dependencies
 $c = new Pimple();
-foreach ($config as $k => $v) {
-    $c['cfg_'.$k] = $v;
-}
+$c['config'] = $config;
 
-$c['qf'] = $c->share(function ($c) {
+//initialize QF\Core class
+$c['core'] = $c->share(function ($c) {
+    $config = $c['config'];
+
     $routes = array();
-    require QF_BASEPATH.'/data/routes.php';
-    $config = $c['cfg_qf'];
-    $controller = new QF\FrontController(!empty($config['parameter']) ? $config['parameter'] : array(), $routes, $c['user'], $c['i18n']);
+    require __DIR__.'/data/routes.php';
     
-    if (!empty($config['theme'])) { $controller->setTheme($config['theme']); }
-    if (!empty($config['template'])) { $controller->setTemplate($config['template']); }
-    if (!empty($config['format'])) { $controller->setFormat($config['format']); }
-    if (!empty($config['default_format'])) { $controller->setDefaultFormat($config['default_format']); }
-    if (!empty($config['home_route'])) { $routing->setHomeRoute($config['home_route']); }
-    if (!empty($config['base_url'])) { $routing->setBaseUrl($config['base_url']); }
-    if (!empty($config['base_url_i18n'])) { $routing->setBaseUrlI18n($config['base_url_i18n']); }
-    if (!empty($config['static_url'])) { $routing->setStaticUrl($config['static_url']); }
+    $qf = new QF\Core($c, !empty($config['parameter']) ? $config['parameter'] : array(), $routes);
     
-    return $controller;
+    if (!empty($config['theme'])) { $qf->setTheme($config['theme']); }
+    if (!empty($config['template'])) { $qf->setTemplate($config['template']); }
+    if (!empty($config['format'])) { $qf->setFormat($config['format']); }
+    if (!empty($config['default_format'])) { $qf->setDefaultFormat($config['default_format']); }
+    if (!empty($config['home_route'])) { $qf->setHomeRoute($config['home_route']); }
+    if (!empty($config['base_url'])) { $qf->setBaseUrl($config['base_url']); }
+    if (!empty($config['base_url_i18n'])) { $qf->setBaseUrlI18n($config['base_url_i18n']); }
+    if (!empty($config['static_url'])) { $qf->setStaticUrl($config['static_url']); }
+    if (!empty($config['template_path'])) { $qf->setTemplatePath($config['template_path']); }
+    if (!empty($config['module_path'])) { $qf->setModulePath($config['module_path']); }
+    
+    return $qf;
 });
 
 $c['cli'] = $c->share(function ($c) {
+    $config = $c['config'];
+    
     $tasks = array();
-    require QF_BASEPATH.'/data/tasks.php';
+    require __DIR__.'/data/tasks.php';
+    
     return new QF\Cli($tasks);
 });
 
 $c['user'] = $c->share(function ($c) {
-    return new QF\User($c['cfg_roles']);
+    //return null; //user/session is optional, return null to deactivate
+    return new QF\User($c['config']['roles']);
 });
 
 //i18n
 $c['i18n'] = $c->share(function ($c) {  
-    $config = $c['cfg_i18n'];
-    return new QF\I18n(QF_BASEPATH . '/data/i18n', $config['languages'], $config['current_language'], $config['default_language']);
+    //return null; //i18n is optional, return null to deactivate
+    $config = $c['config'];
+    return new QF\I18n($config['i18n_path'], $config['module_path'], $config['languages'], $config['current_language'], $config['default_language']);
 });
 
 //default translations

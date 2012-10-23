@@ -1,16 +1,19 @@
 <?php
-$config['qf']['parameter']['website_title'] = 'QF Website';
-$config['qf']['parameter']['meta_description'] = 'Default meta description.';
+$config['parameter']['website_title'] = 'QF Website';
+$config['parameter']['meta_description'] = 'Default meta description.';
 
-$config['qf']['theme'] = ''; //no theme
-$config['qf']['template'] = 'default';
-$config['qf']['default_format'] = 'html';
+$config['theme'] = ''; //no theme
+$config['template'] = 'default';
+$config['default_format'] = 'html';
 
+$config['template_path'] = __DIR__.'/../templates';
+$config['module_path'] = __DIR__.'/../modules';
+$config['i18n_path'] = __DIR__.'/i18n';
 
-$config['qf']['home_route'] = 'home';
-$config['qf']['base_url'] = '/'; //http://example.com/;
-//$config['qf']['base_url_i18n'] = '/'; //http://:lang:.example.com/;
-//$config['qf']['static_url'] = 'http://static.example.com/';
+$config['home_route'] = 'home';
+$config['base_url'] = '/'; //http://example.com/;
+//$config['base_url_i18n'] = '/'; //http://:lang:.example.com/;
+//$config['static_url'] = 'http://static.example.com/';
 
 
 //user roles
@@ -21,10 +24,10 @@ $config['roles']['ADMIN'] = array('admin', 'user');
 
 
 //i18n
-$config['i18n']['languages'] = array('en', 'de');
-$config['i18n']['default_language'] = $config['i18n']['languages'][0];
+$config['languages'] = array('en', 'de');
+$config['default_language'] = $config['languages'][0];
 //fallback for current_language
-$config['i18n']['current_language'] = $config['i18n']['default_language'];
+$config['current_language'] = $config['default_language'];
 
 
 //database
@@ -37,7 +40,7 @@ $config['db']['default'] = array(
 
 
 //add module config files
-//require __DIR__.'/../modules/ExampleModule/data/config.php';
+//require $config['module_path'] . '/ExampleModule/data/config.php';
 
 
 //load environment specific config
