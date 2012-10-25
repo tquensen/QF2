@@ -5,7 +5,9 @@ use \QF\Exception\HttpException;
 
 class Core
 {
-    protected $c;
+    protected $container = null;
+    protected $i18n = null;
+    protected $user = null;
     
     protected $parameter = array();
     protected $routes = array();
@@ -26,10 +28,8 @@ class Core
     protected $templatePath = null;
     protected $modulePath = null;
     
-    public function __construct($c, $parameter, $routes)
-    {
-        $this->c = $c;
-        
+    public function __construct($parameter, $routes)
+    {       
         $this->parameter = $parameter;
         $this->routes = $routes;
         
@@ -63,7 +63,7 @@ class Core
     {
         $method = $this->requestMethod;
         
-        $language = !empty($this->c['i18n']) ? $this->c['i18n']->getCurrentLanguage() : false;
+        $language = !empty($this->i18n) ? $this->i18n->getCurrentLanguage() : false;
         
         if (empty($route) && ($homeRoute = $this->homeRoute) && $routeData = $this->getRoute($homeRoute)) {
             return array('route' => $homeRoute, 'parameter' => array());
@@ -153,11 +153,11 @@ class Core
         }
         
         if (!empty($routeData['rights'])) {
-            if (empty($this->c['user'])) {
+            if (empty($this->user)) {
                 throw new HttpException('permission denied', 403);
             }
-            if (!$this->c['user']->userHasRight($routeData['rights'])) {        
-                if ($this->c['user']->getRole() === 'GUEST') {
+            if (!$this->user->userHasRight($routeData['rights'])) {        
+                if ($this->user->getRole() === 'GUEST') {
                     throw new HttpException('login required', 401);
                 } else {
                     throw new HttpException('permission denied', 403);
@@ -211,7 +211,7 @@ class Core
         }
         
         $controller = new $controller();
-        return $controller->$action($parameter, $this->c);
+        return $controller->$action($parameter, $this);
     }
     
     /**
@@ -226,10 +226,10 @@ class Core
     {
         $baseurl = $this->baseUrl ?: '/';
         
-        if ($language === null && !empty($this->c['i18n'])) {
-            $language = $this->c['i18n']->getCurrentLanguage();
+        if ($language === null && !empty($this->i18n)) {
+            $language = $this->i18n->getCurrentLanguage();
         }
-        if ($language && !empty($this->c['i18n']) && in_array($language, $this->c['i18n']->getLanguages()) && $language != $this->c['i18n']->getDefaultLanguage()) {
+        if ($language && !empty($this->i18n) && in_array($language, $this->i18n->getLanguages()) && $language != $this->i18n->getDefaultLanguage()) {
             if ($baseurlI18n = $this->baseUrlI18n) {
                 $baseurl = str_replace(':lang:', $language, $baseurlI18n);
             }
@@ -372,7 +372,7 @@ class Core
         $_themeString = $_theme ? 'themes/'.$_theme . '/' : '';
         $_format = isset($parameter['_format']) ? $parameter['_format'] : $this->format;
         $_formatString = $_format ? '.' . $_format : '';
-        $_lang = !empty($this->c['i18n']) ? $this->c['i18n']->getCurrentLanguage() : false;
+        $_lang = !empty($this->i18n) ? $this->i18n->getCurrentLanguage() : false;
 
         if ($_lang && $_theme && file_exists(\QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $_lang . '/' . $view . $_formatString . '.php')) {
             $_file = \QF_BASEPATH . '/templates/' .$_themeString. 'modules/' . $module . '/views/' . $_lang . '/' . $view . $_formatString . '.php';
@@ -403,6 +403,7 @@ class Core
         }
 
         extract($parameter, \EXTR_OVERWRITE);
+        $qf = $this;
         ob_start();
         require($_file);
         return ob_get_clean();
@@ -424,7 +425,7 @@ class Core
         $_themeString = $_theme ? 'themes/'.$_theme . '/' : '';
         $_format = $this->format;
         $_defaultFormat = $this->defaultFormat;
-        $_lang = !empty($this->c['i18n']) ? $this->c['i18n']->getCurrentLanguage() : false;
+        $_lang = !empty($this->i18n) ? $this->i18n->getCurrentLanguage() : false;
         $_file = false;
 
         if (is_array($_templateName)) {
@@ -485,10 +486,27 @@ class Core
             throw new HttpException('template not found', 404);
         }
 
+        extract($this->parameter, \EXTR_OVERWRITE);
         extract($parameter, \EXTR_OVERWRITE);
+        $qf = $this;
         ob_start();
         require($_file);
         return ob_get_clean();
+    }
+    
+    public function getContainer()
+    {
+        return $this->container;
+    }
+
+    public function getI18n()
+    {
+        return $this->i18n;
+    }
+
+    public function getUser()
+    {
+        return $this->user;
     }
     
     public function getParameter()
@@ -571,6 +589,21 @@ class Core
         return md5(serialize(array($this->currentRoute, $this->currentRouteParameter, $this->requestMethod, $includeI18n && !empty($this->c['i18n']) ? $this->c['i18n']->getCurrentLanguage() : '')));
     }
 
+    public function setContainer($container)
+    {
+        $this->container = $container;
+    }
+
+    public function setI18n($i18n)
+    {
+        $this->i18n = $i18n;
+    }
+
+    public function setUser($user)
+    {
+        $this->user = $user;
+    }
+   
     public function setParameter($parameter)
     {
         $this->parameter = $parameter;

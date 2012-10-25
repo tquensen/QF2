@@ -7,32 +7,32 @@ use \QF\Controller,
 
 class Base extends Controller
 {
-    public function home($parameter, $c)
+    public function home($parameter, $qf)
     {
-        $t = $c['i18n']->get('ExampleModule');
-        return $c['core']->parse('ExampleModule', 'home', array('t' => $t));
+        $t = $qf->getI18n()->get('ExampleModule');
+        return $qf->parse('ExampleModule', 'home', array('t' => $t));
     }
     
-    public function staticPage($parameter, $c)
+    public function staticPage($parameter, $qf)
     {
         if (empty($parameter['page']) || !preg_match('/[\w\-\+]/i', $parameter['page'])) {
             throw new HttpException('invalid page '.$parameter['page'], 404);
         }
         
         //set title/description
-        $t = $c['i18n']->get('ExampleModule');
+        $t = $qf->getI18n()->get('ExampleModule');
         $titleKey = 'page_'.$parameter['page'].'_title';
         $descriptionKey = 'page_'.$parameter['page'].'_description';
         $title = $t->get($titleKey);
         $description = $t->get($descriptionKey);
         if ($title && $title != $titleKey) {
-            $c['core']->page_title = $title;
+            $qf->page_title = $title;
         }
         if ($description && $description != $descriptionKey) {
-            $c['core']->meta_description = $description;
+            $qf->meta_description = $description;
         }
 
-        return $c['core']->parse('ExampleModule', 'pages/'.$parameter['page'], array('t' => $t));
+        return $qf->parse('ExampleModule', 'pages/'.$parameter['page'], array('t' => $t));
     }
     
     

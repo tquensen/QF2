@@ -16,7 +16,7 @@ if (count($entities)) {
         $json['entities'][] = array(
             'id' => $entity->id,
             'title' => $entity->title,
-            'url' => $qf->routing->getUrl('example.show', array('id' => $entity->id))
+            'url' => $qf->getUrl('example.show', array('id' => $entity->id))
         );
     }
 }

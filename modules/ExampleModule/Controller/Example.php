@@ -11,19 +11,20 @@ class Example extends Controller
 {
     //default index, show, create, update, delete actions
     
-    public function index($parameter, $c)
+    public function index($parameter, $qf)
     {   
-        $cacheKey = 'view_'.$c['core']->getRequestHash(true); //unique hash for current route (url+request method+current language)
+        $c = $qf->getContainer();
+        $cacheKey = 'view_'.$qf->getRequestHash(true); //unique hash for current route (url+request method+current language)
         
         //
         if ($cachedData = $c['cache']->get($cacheKey)) {
-            $c['core']->page_title = $cachedData['pageTitle'];
-            $c['core']->meta_description = $cachedData['metaDescription'];
+            $qf->page_title = $cachedData['pageTitle'];
+            $qf->meta_description = $cachedData['metaDescription'];
 
             return $cachedData['response'];
         }
         
-        $t = $c['i18n']->get('ExampleModule');
+        $t = $qf->getI18n()->get('ExampleModule');
 
         $showPerPage = 20;
         $currentPage = !empty($_GET['p']) ? $_GET['p'] : 1;
@@ -31,21 +32,21 @@ class Example extends Controller
         $pageTitle = $t->indexTitle(array('page' => $currentPage));
         $metaDescription = $t->indexDescription;
 
-        $c['core']->page_title = $pageTitle;
-        $c['core']->meta_description = $metaDescription;
+        $qf->page_title = $pageTitle;
+        $qf->meta_description = $metaDescription;
         
         $entities = Foo::getRepository($c['db']->get())->load(null, null, 'id DESC', $showPerPage, ($currentPage - 1) * $showPerPage);
 
         $pager = new \QF\Utils\Pager(
             Foo::getRepository($c['db']->get())->count(),
             $showPerPage,
-            $c['core']->getUrl('example.index') . '(?p={page})',
+            $qf->getUrl('example.index') . '(?p={page})',
             $currentPage,
             7,
             false
         );
 
-        $response = $c['core']->parse('ExampleModule', 'example/index', array('t' => $t, 'entities' => $entities, 'pager' => $pager));
+        $response = $qf->parse('ExampleModule', 'example/index', array('t' => $t, 'entities' => $entities, 'pager' => $pager));
         $cache = array(
             'response' => $response,
             'pageTitle' => $pageTitle,
@@ -57,18 +58,19 @@ class Example extends Controller
         return $response;
     }
     
-    public function show($parameter, $c)
+    public function show($parameter, $qf)
     {
-        $cacheKey = 'view_'.$c['core']->getRequestHash(true); //unique hash for current route (url+request method)
+        $c = $qf->getContainer();
+        $cacheKey = 'view_'.$qf->getRequestHash(true); //unique hash for current route (url+request method)
         
         if ($cachedData = $c['cache']->get($cacheKey)) {
-            $c['core']->page_title = $cachedData['pageTitle'];
-            $c['core']->meta_description = $cachedData['metaDescription'];
+            $qf->page_title = $cachedData['pageTitle'];
+            $qf->meta_description = $cachedData['metaDescription'];
 
             return $cachedData['response'];
         }
         
-        $t = $c['i18n']->get('ExampleModule');
+        $t = $qf->getI18n()->get('ExampleModule');
 
         $foo = Foo::getRepository($c['db']->get())->loadOne('id', $parameter['id']);
         if (!$foo) {
@@ -78,10 +80,10 @@ class Example extends Controller
         $pageTitle = $t->showTitle(array('title' => htmlspecialchars($foo->title)));
         $metaDescription = $t->showDescription(array('title' => htmlspecialchars($foo->title))); 
 
-        $c['core']->page_title = $pageTitle;
-        $c['core']->meta_description = $metaDescription;
+        $qf->page_title = $pageTitle;
+        $qf->meta_description = $metaDescription;
         
-        $response = $c['core']->parse('ExampleModule', 'example/show', array('t' => $t, 'entity' => $foo));
+        $response = $qf->parse('ExampleModule', 'example/show', array('t' => $t, 'entity' => $foo));
         $cache = array(
             'response' => $response,
             'pageTitle' => $pageTitle,
@@ -93,12 +95,13 @@ class Example extends Controller
         return $response;
     }
     
-    public function create($parameter, $c)
+    public function create($parameter, $qf)
     {
-        $t = $c['i18n']->get('ExampleModule');
+        $c = $qf->getContainer();
+        $t = $qf->getI18n()->get('ExampleModule');
         
-        $c['core']->page_title = $t->createTitle;
-        $c['core']->meta_description = $t->createDescription;
+        $qf->page_title = $t->createTitle;
+        $qf->meta_description = $t->createDescription;
         
         $form = new ExampleForm(array(
             'entity' => new Foo($c['db']->get()),
@@ -114,9 +117,9 @@ class Example extends Controller
                 $success = true;
                 $message = $t->createSuccessMessage(array('title' => htmlspecialchars($foo->title)));
 
-                if ($c['core']->format === null) {
+                if ($qf->getFormat() === null) {
                     //$this->registry->helper->messages->add($message, 'success');
-                    return $c['core']->redirect($c['core']->getUrl('example.show', array('id' => $foo->id)));
+                    return $qf->redirect($qf->getUrl('example.show', array('id' => $foo->id)));
                 }
                 
                 $view['message'] = $message;
@@ -128,23 +131,23 @@ class Example extends Controller
 
         $view['success'] = $success;
         $view['form'] = $form;
-        
         $view['t'] = $t;
         
-        return $c['core']->parse('ExampleModule', 'example/create', $view);
+        return $qf->parse('ExampleModule', 'example/create', $view);
     }
     
-    public function update($parameter, $c)
+    public function update($parameter, $qf)
     {
-        $t = $c['i18n']->get('ExampleModule');
+        $c = $qf->getContainer();
+        $t = $qf->getI18n()->get('ExampleModule');
         
         $foo = Foo::getRepository($c['db']->get())->loadOne('id', $parameter['id']);
         if (!$foo) {
             throw new HttpException('Foo with id '.$parameter['id'].' not found.', 404);
         }
         
-        $c['core']->page_title = $t->updateTitle;
-        $c['core']->meta_description = $t->updateDescription;
+        $qf->page_title = $t->updateTitle;
+        $qf->meta_description = $t->updateDescription;
 
         $form = new ExampleForm(array(
             'entity' => $foo,
@@ -161,9 +164,9 @@ class Example extends Controller
                 $success = true;
                 $message = $t->updateSuccessMessage(array('title' => htmlspecialchars($foo->title)));
 
-                if ($c['core']->format === null) {
+                if ($qf->getFormat() === null) {
                     //$this->registry->helper->messages->add($message, 'success');
-                    return $c['core']->redirect($c['core']->getUrl('example.show', array('id' => $foo->id)));
+                    return $qf->redirect($qf->getUrl('example.show', array('id' => $foo->id)));
                 }
                 
                 $view['message'] = $message;
@@ -178,19 +181,20 @@ class Example extends Controller
         
         $view['t'] = $t;
         
-        return $c['core']->parse('ExampleModule', 'example/update', $view);
+        return $qf->parse('ExampleModule', 'example/update', $view);
     }
     
-    public function delete($parameter, $c)
+    public function delete($parameter, $qf)
     {
-        $t = $c['i18n']->get('ExampleModule');
+        $c = $qf->getContainer();
+        $t = $qf->getI18n()->get('ExampleModule');
         
         $foo = Foo::getRepository($c['db']->get())->loadOne('id', $parameter['id']);
         if (!$foo) {
             throw new HttpException('Foo with id '.$parameter['id'].' not found.', 404);
         }
         
-        if ($c['user']->checkFormToken('deleteExampleToken')) {
+        if ($qf->getUser()->checkFormToken('deleteExampleToken')) {
             $success = $foo->delete();
         } else {
             $success = false;
@@ -199,15 +203,13 @@ class Example extends Controller
         if ($success) {
             $c['cache']->removeByTag('view_Example_show_'.$parameter['id']);
             $message = $t->deleteSuccessMessage(array('title' => htmlspecialchars($foo->title)));
-            if ($c['core']->format === null) {
-                //$this->registry->helper->messages->add($message, 'success');
-                return $c['core']->redirect('example.index');
+            if ($qf->getFormat() === null) {
+                return $qf->redirect('example.index');
             }
         } else {
             $message = $t->deleteErrorMessage(array('title' => htmlspecialchars($foo->title)));
-            if ($c['core']->format === null) {
-                //$this->registry->helper->messages->add($message, 'error');
-                return $c['core']->redirect('example.index');
+            if ($qf->getFormat() === null) {
+                return $qf->redirect('example.index');
             }
         }
 
@@ -215,6 +217,6 @@ class Example extends Controller
         $view['success'] = $success;
         $view['message'] = $message;
 
-        return $c['core']->parse('ExampleModule', 'example/delete', $view);
+        return $qf->parse('ExampleModule', 'example/delete', $view);
     }
 }

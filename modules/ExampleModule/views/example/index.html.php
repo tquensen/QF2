@@ -5,7 +5,7 @@
     <?php foreach ($entities as $entity): ?>
     <li>
         <h3>
-            <a href="<?php $qf->routing->getUrl('example.show', array('id' => $entity->id)); ?>">
+            <a href="<?php $qf->getUrl('example.show', array('id' => $entity->id)); ?>">
                 <?php htmlspecialchars($entity->title); ?>
             </a>
         </h3>

@@ -1,7 +1,7 @@
 <h2><?php echo $t->updateHeadline; ?></h2>
 <?php if ($success): ?>
     <p>
-        <a href="<?php echo $qf->routing->getUrl('example.show', array('id' => $entity->id)); ?>">
+        <a href="<?php echo $qf->getUrl('example.show', array('id' => $entity->id)); ?>">
             <?php echo htmlspecialchars($message); ?>
         </a>
     </p>

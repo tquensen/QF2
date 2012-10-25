@@ -5,7 +5,7 @@ use \QF\Controller;
 
 class Install extends Controller
 {
-    public function install($parameter, $c)
+    public function install($parameter, $qf)
     {
         if (!$parameter['entity']) {
             return 'Error: no Entity given';
@@ -17,6 +17,7 @@ class Install extends Controller
         
        $type = $parameter['storageKey'];
        
+       $c = $qf->getContainer();
        $db = $c[$type]->get();
         
         

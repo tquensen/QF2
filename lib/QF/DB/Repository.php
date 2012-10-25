@@ -410,7 +410,7 @@ class Repository
                     array_push($values, $fromEntity->{$relData[1]});
                 }
                 
-                array_push($condition, $relData[2].' IN ('.implode(',', array_fill(0, count($entities['a']), '?')).')');
+                array_push($condition, $relData[2].' IN ('.implode(',', array_fill(0, count($entities[$rel[0]]), '?')).')');
 
                 $entities[$rel[2]] = $repository->load($condition, $values, !empty($options['order']) ? $options['order'] : null);
                 

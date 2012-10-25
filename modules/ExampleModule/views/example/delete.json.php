@@ -3,7 +3,7 @@
 $json = array(
     'success' => $success,
     'message' => $message,
-    'url' => $qf->routing->getUrl('example.index')
+    'url' => $qf->getUrl('example.index')
 );
 
 echo json_encode($json);

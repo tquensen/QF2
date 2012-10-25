@@ -33,7 +33,9 @@ $c['core'] = $c->share(function ($c) {
     $routes = array();
     require __DIR__.'/data/routes.php';
     
-    $qf = new QF\Core($c, !empty($config['parameter']) ? $config['parameter'] : array(), $routes);
+    $qf = new QF\Core(!empty($config['parameter']) ? $config['parameter'] : array(), $routes);
+    
+    $qf->setContainer($c);
     
     if (!empty($config['theme'])) { $qf->setTheme($config['theme']); }
     if (!empty($config['template'])) { $qf->setTemplate($config['template']); }
@@ -45,6 +47,12 @@ $c['core'] = $c->share(function ($c) {
     if (!empty($config['static_url'])) { $qf->setStaticUrl($config['static_url']); }
     if (!empty($config['template_path'])) { $qf->setTemplatePath($config['template_path']); }
     if (!empty($config['module_path'])) { $qf->setModulePath($config['module_path']); }
+    
+    //i18n (optional)
+    $qf->setI18n($c['i18n']);
+    
+    //user/session (optional)
+    $qf->setUser($c['user']);
     
     return $qf;
 });
@@ -59,13 +67,11 @@ $c['cli'] = $c->share(function ($c) {
 });
 
 $c['user'] = $c->share(function ($c) {
-    //return null; //user/session is optional, return null to deactivate
     return new QF\User($c['config']['roles']);
 });
 
 //i18n
 $c['i18n'] = $c->share(function ($c) {  
-    //return null; //i18n is optional, return null to deactivate
     $config = $c['config'];
     return new QF\I18n($config['i18n_path'], $config['module_path'], $config['languages'], $config['current_language'], $config['default_language']);
 });

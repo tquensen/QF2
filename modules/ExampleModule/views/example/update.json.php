@@ -4,7 +4,7 @@ if ($success) {
     $json = array(
         'success' => true,
         'message' => $message,
-        'url' => $qf->routing->getUrl('example.show', array('id' => $entity->id)),
+        'url' => $qf->getUrl('example.show', array('id' => $entity->id)),
         'id' => $entity->id,
         'title' => $entity->title
     );

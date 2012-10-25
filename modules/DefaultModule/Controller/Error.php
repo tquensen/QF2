@@ -5,13 +5,13 @@ use \QF\Controller;
 
 class Error extends Controller
 {
-    public function error401($parameter, $c)
+    public function error401($parameter, $qf)
     {
         header('HTTP/1.1 401 Unauthorized', true, 401);
         
-        $t = $c['i18n']->get('DefaultModule');
+        $t = $qf->getI18n()->get('DefaultModule');
         
-        $c['config']->page_title = $t->error401Title;
+        $qf->page_title = $t->error401Title;
         
         if (empty($parameter['message'])) {
             $parameter['message'] = 'login required';
@@ -19,16 +19,16 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $c['core']->parse('DefaultModule', 'error/error401'.$debugStr, $parameter);
+        return $qf->parse('DefaultModule', 'error/error401'.$debugStr, $parameter);
     }
     
-    public function error403($parameter, $c)
+    public function error403($parameter, $qf)
     {
         header('HTTP/1.1 403 Forbidden', true, 403);
         
-        $t = $c['i18n']->get('DefaultModule');
+        $t = $qf->getI18n()->get('DefaultModule');
         
-        $c['config']->page_title = $t->error403Title;
+        $qf->page_title = $t->error403Title;
         
         if (empty($parameter['message'])) {
             $parameter['message'] = 'permission denied';
@@ -36,16 +36,16 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $c['core']->parse('DefaultModule', 'error/error403'.$debugStr, $parameter);
+        return $qf->parse('DefaultModule', 'error/error403'.$debugStr, $parameter);
     }
     
-    public function error404($parameter, $c)
+    public function error404($parameter, $qf)
     {
         header('HTTP/1.1 404 Not Found', true, 404);
         
-        $t = $c['i18n']->get('DefaultModule');
+        $t = $qf->getI18n()->get('DefaultModule');
         
-        $c['config']->page_title = $t->error404Title;
+        $qf->page_title = $t->error404Title;
         
         if (empty($parameter['message'])) {
             $parameter['message'] = 'page not found';
@@ -53,16 +53,16 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $c['core']->parse('DefaultModule', 'error/error404'.$debugStr, $parameter);
+        return $qf->parse('DefaultModule', 'error/error404'.$debugStr, $parameter);
     }
     
-    public function error500($parameter, $c)
+    public function error500($parameter, $qf)
     {
         header('500 Internal Server Error', true, 500);
         
-        $t = $c['i18n']->get('DefaultModule');
+        $t = $qf->getI18n()->get('DefaultModule');
         
-        $c['config']->page_title = $t->error500Title;
+        $qf->page_title = $t->error500Title;
         
         if (empty($parameter['message'])) {
             $parameter['message'] = 'server error';
@@ -70,6 +70,6 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $c['core']->parse('DefaultModule', 'error/error500'.$debugStr, $parameter);
+        return $qf->parse('DefaultModule', 'error/error500'.$debugStr, $parameter);
     }
 }
