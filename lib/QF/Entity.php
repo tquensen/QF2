@@ -17,7 +17,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             'required' => false, //disallow unset(), clear(), and set(null), default = false (unset(), clear(), and set(null) is allowed regardles of type) - the property can still be null if not initialized!
             'collection' => true, //stores multiple values, activates add and remove methods, true to store values in an array, name of a class that implements ArrayAccess to store values in that class, default = false (single value),
             'collectionUnique' => true, //do not allow dublicate entries when using as collection, when type = array or an object and collectionUnique is a string, that property/key will be used as index of the collection
-            'collectionRemoveByValue' => true, //true to remove entries from a collection by value, false to remove by key, default = false, this only works if collection is an array or an object implementing Traversable
+            'collectionRemoveByValue' => true, //true to remove entries from a collection by value, false to remove by key, when type = array or an object and collectionRemoveByValue is a string, that property/key will be used to determine uniqueness, default = false, this only works if collection is an array or an object implementing Traversable
             'collectionSingleName' => false, //alternative property name to use for add/remove actions, default=false (e.g. if property = "children" and collectionSingleName = "child", you can use addChild/removeChild instead of addChildren/removeChildren)
             'exclude' => true, //set to true to exclude this property on toArray() and foreach(), default = false
             'default' => null // the default value to return by get if null, and to set by clear, default = null
@@ -158,10 +158,16 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             if (empty(static::$_properties[$property]['collectionUnique'])) {
                 $this->{static::$_properties[$property]['container']}[$property][] = $value;
             } elseif (static::$_properties[$property]['collectionUnique'] === true) {
-                if (false !== ($k = array_search($value, $this->{static::$_properties[$property]['container']}[$property], true))) {
-                    $this->{static::$_properties[$property]['container']}[$property][$k] = $value;
-                } else {
-                    $this->{static::$_properties[$property]['container']}[$property][] = $value;
+                $found = false;
+                foreach ($this->{static::$_properties[$property]['container']}[$property] as $k => $v) {
+                    if ($v === $value) {
+                        unset($this->{static::$_properties[$property]['container']}[$property][$k]);
+                        $this->{static::$_properties[$property]['container']}[$property][$k] = $value;
+                        $found = true;
+                    }
+                    if (!$found) {
+                        $this->{static::$_properties[$property]['container']}[$property][] = $value;
+                    }
                 }
             } else {
                 if (is_array($value) || (is_object($value) && $value instanceof ArrayAccess)) {
@@ -169,11 +175,10 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                 } elseif(is_object($value)) {
                     $this->{static::$_properties[$property]['container']}[$property][$value->{static::$_properties[$property]['collectionUnique']}] = $value;
                 } else {
-                    if (false !== ($k = array_search($value, $this->{static::$_properties[$property]['container']}[$property], true))) {
-                        $this->{static::$_properties[$property]['container']}[$property][$k] = $value;
-                    } else {
-                        $this->{static::$_properties[$property]['container']}[$property][] = $value;
-                    }
+                    $trace = debug_backtrace();
+                    throw new \UnexpectedValueException('Error adding to property: '.get_class($this).'::$' . $property .
+                        ' must be of type array or object as CollectionUnique is set to '.static::$_properties[$property]['collectionUnique'].' in ' . $trace[0]['file'] .
+                        ' on line ' . $trace[0]['line']);
                 }
             }
         } else {
@@ -183,22 +188,27 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             if (empty(static::$_properties[$property]['collectionUnique'])) {
                 $this->{$property}[] = $value;
             } elseif (static::$_properties[$property]['collectionUnique'] === true) {
-                if (false !== ($k = array_search($value, $this->$property, true))) {
-                    $this->{$property}[$k] = $value;
-                } else {
-                    $this->{$property}[] = $value;
-                }
+                $found = false;
+                foreach ($this->$property as $k => $v) {
+                    if ($v === $value) {
+                        unset($this->{$property}[$k]);
+                        $this->{$property}[$k] = $value;
+                        $found = true;
+                    }
+                    if (!$found) {
+                        $this->{$property}[] = $value;
+                    }
+                } 
             } else {
                 if (is_array($value) || (is_object($value) && $value instanceof ArrayAccess)) {
                     $this->{$property}[$value[static::$_properties[$property]['collectionUnique']]] = $value;
                 } elseif(is_object($value)) {
                     $this->{$property}[$value->{static::$_properties[$property]['collectionUnique']}] = $value;
                 } else {
-                    if (false !== ($k = array_search($value, $this->$property, true))) {
-                        $this->{$property}[$k] = $value;
-                    } else {
-                        $this->{$property}[] = $value;
-                    }
+                    $trace = debug_backtrace();
+                    throw new \UnexpectedValueException('Error adding to property: '.get_class($this).'::$' . $property .
+                        ' must be of type array or object as CollectionUnique is set to '.static::$_properties[$property]['collectionUnique'].' in ' . $trace[0]['file'] .
+                        ' on line ' . $trace[0]['line']);
                 }
             }
         }
@@ -216,7 +226,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                 }
             }
         }
-        
+         
         $method = 'remove'.ucfirst($property);
         if (method_exists($this, $method)) {
             return $this->$method($value);
@@ -244,16 +254,26 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             }
             if (empty(static::$_properties[$property]['collectionRemoveByValue'])) {
                 unset($this->{static::$_properties[$property]['container']}[$property]);
-            } else {
-                if ($this->{static::$_properties[$property]['container']}[$property]) {
-                    if (false !== ($k = array_search($value, $this->{static::$_properties[$property]['container']}[$property], true))) {
-                        unset($this->{static::$_properties[$property]['container']}[$property][$k]);
-                    }
-                } elseif (is_object($this->{static::$_properties[$property]['container']}[$property]) && $this->{static::$_properties[$property]['container']}[$property] instanceof Traversable) {
+            } elseif (static::$_properties[$property]['collectionRemoveByValue'] === true) {     
+                if (is_object($this->{static::$_properties[$property]['container']}[$property]) && !($this->{static::$_properties[$property]['container']}[$property] instanceof Traversable)) {
+                    $trace = debug_backtrace();
+                    throw new \Exception('Trying to remove by value from collection that is not Traversable on property: '.get_class($this).'::$'.$property .
+                        ' in ' . $trace[0]['file'] .
+                        ' on line ' . $trace[0]['line']);
+                } else {
                     foreach ($this->{static::$_properties[$property]['container']}[$property] as $k => $v) {
                         if ($v === $value) {
                             unset($this->{static::$_properties[$property]['container']}[$property][$k]);
-                            break;
+                        }
+                    }
+                }
+            } else {
+                if (is_array($this->{static::$_properties[$property]['container']}[$property]) || (is_object($this->{static::$_properties[$property]['container']}[$property]) && $this->{static::$_properties[$property]['container']}[$property] instanceof Traversable)) {
+                    foreach ($this->{static::$_properties[$property]['container']}[$property] as $k => $v) {
+                        if (((is_array($v) && is_array($value)) || (is_object($v) && $v instanceof ArrayAccess && is_object($value) && $value instanceof ArrayAccess)) && $v[static::$_properties[$property]['collectionRemoveByValue']] === $value[static::$_properties[$property]['collectionRemoveByValue']]) {
+                            unset($this->{static::$_properties[$property]['container']}[$property][$k]);
+                        } elseif(is_object($v) && is_object($value) &&  $v->{static::$_properties[$property]['collectionRemoveByValue']} === $value->{static::$_properties[$property]['collectionRemoveByValue']}) {
+                            unset($this->{static::$_properties[$property]['container']}[$property][$k]);
                         }
                     }
                 }
@@ -264,16 +284,26 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             }
             if (empty(static::$_properties[$property]['collectionRemoveByValue'])) {
                 unset($this->{$property}[$value]);
-            } else {
-                if (is_array($this->$property)) {
-                    if (false !== ($k = array_search($value, $this->$property, true))) {
-                        unset($this->{$property}[$k]);
-                    }
-                } elseif (is_object($this->$property) && $this->$property instanceof Traversable) {
+            } elseif (static::$_properties[$property]['collectionRemoveByValue'] === true) { 
+                if (is_object($this->$property) && !($this->$property instanceof Traversable)) {
+                    $trace = debug_backtrace();
+                    throw new \Exception('Trying to remove by value from collection that is not Traversable on property: '.get_class($this).'::$'.$property .
+                        ' in ' . $trace[0]['file'] .
+                        ' on line ' . $trace[0]['line']);
+                } else {
                     foreach ($this->$property as $k => $v) {
                         if ($v === $value) {
                             unset($this->{$property}[$k]);
-                            break;
+                        }
+                    }
+                }
+            } else {
+                if (is_array($this->$property) || (is_object($this->$property) && $this->$property instanceof Traversable)) {
+                    foreach ($this->$property as $k => $v) {
+                        if (((is_array($v) && is_array($value)) || (is_object($v) && $v instanceof ArrayAccess && is_object($value) && $value instanceof ArrayAccess)) && $v[static::$_properties[$property]['collectionRemoveByValue']] === $value[static::$_properties[$property]['collectionRemoveByValue']]) {
+                            unset($this->{$property}[$k]);
+                        } elseif(is_object($v) && is_object($value) &&  $v->{static::$_properties[$property]['collectionRemoveByValue']} === $value->{static::$_properties[$property]['collectionRemoveByValue']}) {
+                            unset($this->{$property}[$k]);
                         }
                     }
                 }
