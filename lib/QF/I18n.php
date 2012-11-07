@@ -13,6 +13,7 @@ class I18n
     protected $currentLanguage = null;
     protected $defaultLanguage = null;
     
+    protected $translationDir = '';
     protected $moduleDir = '';
     
     protected $data = array();
@@ -23,17 +24,18 @@ class I18n
      * @param string $translationDir the path to the translation files
      * @param string $language the target language
      */
-    function __construct($translationDir, $moduleDir, $languages, $currentLanguage, $defaultLanguage)
+    function __construct($translationDir, $moduleDir, $languages, $defaultLanguage)
     {
         $this->languages = $languages;
-        $this->currentLanguage = $currentLanguage;
+        $this->translationDir = $translationDir;
         $this->defaultLanguage = $defaultLanguage;
+        $this->currentLanguage = $this->defaultLanguage;
         
         $this->moduleDir = rtrim($moduleDir, '/');
         
         $i18n = &$this->data;
-        if (file_exists($translationDir . '/' .$language . '.php')) {
-            include($translationDir . '/' .$language . '.php');
+        if (file_exists($this->translationDir . '/' .$this->currentLanguage . '.php')) {
+            include($this->translationDir . '/' .$this->currentLanguage . '.php');
         }
         $this->translations['default'] = new Translation(!empty($this->data['default']) ? $this->data['default'] : array());
     }
@@ -71,7 +73,18 @@ class I18n
     
     public function setCurrentLanguage($currentLanguage)
     {
+        if ($currentLanguage == $this->currentLanguage) {
+            return;
+        }
         $this->currentLanguage = $currentLanguage;
+        $this->translations = array();
+        $this->data = array();
+        
+        $i18n = &$this->data;
+        if (file_exists($this->translationDir . '/' .$this->currentLanguage . '.php')) {
+            include($this->translationDir . '/' .$this->currentLanguage . '.php');
+        }
+        $this->translations['default'] = new Translation(!empty($this->data['default']) ? $this->data['default'] : array());
     }
     
     public function setDefaultLanguage($defaultLanguage)

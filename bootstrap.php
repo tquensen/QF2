@@ -73,7 +73,7 @@ $c['user'] = $c->share(function ($c) {
 //i18n
 $c['i18n'] = $c->share(function ($c) {  
     $config = $c['config'];
-    return new QF\I18n($config['i18n_path'], $config['module_path'], $config['languages'], $config['current_language'], $config['default_language']);
+    return new QF\I18n($config['i18n_path'], $config['module_path'], $config['languages'], $config['default_language']);
 });
 
 //default translations
