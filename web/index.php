@@ -11,7 +11,7 @@ if ((isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'localhost') || (
     define('QF_ENV', 'prod');
 }
 
-require_once __DIR__.'/bootstrap.php';
+require_once __DIR__.'/../bootstrap.php';
 
 try {
     
@@ -51,6 +51,6 @@ try {
     } catch (Exception $e) {
         //seems like the error was inside the template or error page
         //display a fallback page
-        require(__DIR__.'/templates/error.php');  
+        require(__DIR__.'/../templates/error.php');  
     }     
 }
