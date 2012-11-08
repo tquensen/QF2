@@ -1,0 +1,50 @@
+Module:
+    Assets:
+        templatepath/THEME/public/modules/MODULE/
+        templatepath/default/public/modules/MODULE/
+        modulepath/MODULE/public/
+
+    Views:
+        explicit format given:
+            templatepath/THEME/modules/MODULE/LANGUAGE/VIEW.FORMAT.php
+            templatepath/default/modules/MODULE/LANGUAGE/VIEW.FORMAT.php
+            modulepath/MODULE/views/LANGUAGE/VIEW.FORMAT.php
+            templatepath/THEME/modules/MODULE/VIEW.FORMAT.php
+            templatepath/default/modules/MODULE/VIEW.FORMAT.php
+            modulepath/MODULE/views/VIEW.FORMAT.php
+        else:
+            templatepath/THEME/modules/MODULE/LANGUAGE/VIEW.php
+            templatepath/THEME/modules/MODULE/LANGUAGE/VIEW.DEFAULTFORMAT.php
+            templatepath/default/modules/MODULE/LANGUAGE/VIEW.php
+            templatepath/default/modules/MODULE/LANGUAGE/VIEW.DEFAULTFORMAT.php
+            modulepath/MODULE/views/LANGUAGE/VIEW.php
+            modulepath/MODULE/views/LANGUAGE/VIEW.DEFAULTFORMAT.php
+            templatepath/THEME/modules/MODULE/VIEW.php
+            templatepath/THEME/modules/MODULE/VIEW.DEFAULTFORMAT.php
+            templatepath/default/modules/MODULE/VIEW.php
+            templatepath/default/modules/MODULE/VIEW.DEFAULTFORMAT.php
+            modulepath/MODULE/views/VIEW.php
+            modulepath/MODULE/views/VIEW.DEFAULTFORMAT.php
+    
+    Templates:
+        (TEMPLATENAME = 'default' if not specified)
+        explicit format given:
+            templatepath/THEME/LANGUAGE/TEMPLATENAME.FORMAT.php
+            templatepath/default/LANGUAGE/TEMPLATENAME.FORMAT.php
+            templatepath/THEME/LANGUAGE/default.FORMAT.php
+            templatepath/default/LANGUAGE/default.FORMAT.php
+            templatepath/THEME/TEMPLATENAME.FORMAT.php
+            templatepath/default/TEMPLATENAME.FORMAT.php
+            templatepath/THEME/default.FORMAT.php
+            templatepath/default/default.FORMAT.php
+        else:
+            templatepath/THEME/LANGUAGE/TEMPLATENAME.php
+            templatepath/default/LANGUAGE/TEMPLATENAME.php
+            templatepath/THEME/LANGUAGE/TEMPLATENAME.DEFAULTFORMAT.php
+            templatepath/default/LANGUAGE/TEMPLATENAME.DEFAULTFORMAT.php
+            templatepath/THEME/TEMPLATENAME.php
+            templatepath/default/TEMPLATENAME.php
+            templatepath/THEME/TEMPLATENAME.DEFAULTFORMAT.php
+            templatepath/default/TEMPLATENAME.DEFAULTFORMAT.php
+        
+            
