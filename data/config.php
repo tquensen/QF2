@@ -8,6 +8,7 @@ $config['default_format'] = 'html';
 
 $config['template_path'] = __DIR__.'/../templates';
 $config['module_path'] = __DIR__.'/../modules';
+$config['web_path'] = __DIR__.'/../web';
 $config['i18n_path'] = __DIR__.'/i18n';
 
 $config['home_route'] = 'home';

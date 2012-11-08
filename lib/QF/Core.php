@@ -27,6 +27,7 @@ class Core
     
     protected $templatePath = null;
     protected $modulePath = null;
+    protected $webPath = null;
     
     public function __construct($parameter, $routes)
     {       
@@ -35,6 +36,7 @@ class Core
         
         $this->templatePath = __DIR__.'../../templates';
         $this->modulePath = __DIR__.'../../modules';
+        $this->webPath = __DIR__.'../../web';
         
         if (isset($_REQUEST['REQUEST_METHOD'])) {
             $this->requestMethod = strtoupper($_REQUEST['REQUEST_METHOD']);
@@ -337,19 +339,19 @@ class Core
         }
         if ($module) {
             if ($theme && file_exists($this->templatePath . '/' . $themeString . 'public/modules/'.$module.'/'.$file)) {
-                return $baseurl . 'templates/' . $themeString . 'modules/'.$module.'/'.$file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/templates/' . $themeString . 'modules/'.$module.'/public/'.$file) : '');
+                return $baseurl . 'templates/' . $themeString . 'modules/'.$module.'/'.$file . ($cacheBuster ? '?'. filemtime($this->templatePath . '/' . $themeString . 'public/modules/'.$module.'/'.$file) : '');
             } elseif (file_exists($this->templatePath . '/default/public/modules/'.$module.'/'.$file)) {
-                return $baseurl . 'templates/modules/'.$module.'/'.$file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/templates/modules/'.$module.'/public/'.$file) : '');
+                return $baseurl . 'templates/modules/'.$module.'/'.$file . ($cacheBuster ? '?'. filemtime($this->templatePath . '/default/public/modules/'.$module.'/'.$file) : '');
             } elseif (file_exists($this->modulePath . '/'.$module.'/public/'.$file)) {
-                return $baseurl . 'modules/'.$module.'/'.$file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/modules/'.$module.'/public/'.$file) : '');
+                return $baseurl . 'modules/'.$module.'/'.$file . ($cacheBuster ? '?'. filemtime($this->modulePath . '/'.$module.'/public/'.$file) : '');
             } else {
                 return $baseurl . 'modules/'.$module.'/'.$file;
             }
         } else {
             if ($theme && file_exists($this->templatePath . '/' . $themeString . 'public/'.$file)) {
-                return $baseurl . 'templates/' . $themeString . $file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/templates/' . $themeString . 'public/'.$file) : '');
+                return $baseurl . 'templates/' . $themeString . $file . ($cacheBuster ? '?'. filemtime($this->templatePath . '/' . $themeString . 'public/'.$file) : '');
             } elseif (file_exists($this->templatePath . '/default/public/'.$file)) {
-                return $baseurl . 'templates/'.$file . ($cacheBuster ? '?'. filemtime(\QF_BASEPATH . '/templates/public/'.$file) : '');
+                return $baseurl . 'templates/default/'.$file . ($cacheBuster ? '?'. filemtime($this->templatePath . '/default/public/'.$file) : '');
             } else {
                 return $baseurl . $file;
             }
@@ -583,7 +585,13 @@ class Core
     {
         return $this->modulePath;
     }
+    
+    public function getWebPath()
+    {
+        return $this->webPath;
+    }
 
+    
     public function getRequestHash($includeI18n = false)
     {
         return md5(serialize(array($this->currentRoute, $this->currentRouteParameter, $this->requestMethod, $includeI18n && !empty($this->c['i18n']) ? $this->c['i18n']->getCurrentLanguage() : '')));
@@ -679,6 +687,12 @@ class Core
         $this->modulePath = $modulePath;
     }
     
+    public function setWebPath($webPath)
+    {
+        $this->webPath = $webPath;
+    }
+
+        
     protected function generateRoutePattern($routeData, $language) {
         if (is_array($routeData['url'])) {
             if ($language && isset($routeData['url'][$language])) {

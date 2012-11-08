@@ -5,7 +5,7 @@ use \QF\Controller;
 
 class Example extends Controller
 {
-    public function exampleTask($parameter)
+    public function exampleTask($parameter, $c)
     {
         var_dump($parameter);
     }

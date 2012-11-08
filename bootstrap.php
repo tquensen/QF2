@@ -47,6 +47,7 @@ $c['core'] = $c->share(function ($c) {
     if (!empty($config['static_url'])) { $qf->setStaticUrl($config['static_url']); }
     if (!empty($config['template_path'])) { $qf->setTemplatePath($config['template_path']); }
     if (!empty($config['module_path'])) { $qf->setModulePath($config['module_path']); }
+    if (!empty($config['web_path'])) { $qf->setWebPath($config['web_path']); }
     
     //i18n (optional)
     $qf->setI18n($c['i18n']);

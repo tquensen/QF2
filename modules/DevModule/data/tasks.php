@@ -24,3 +24,8 @@ $tasks['dev.uninstall'] = array(
     ),
     'assign' => array('entity', 'from', 'to')
 );
+
+$tasks['assets.link'] = array(
+    'class' => '\\DevModule\\Task\\Assets',
+    'task' => 'link'
+);
