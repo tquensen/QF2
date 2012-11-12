@@ -351,7 +351,7 @@ class Repository
         $stmt->execute(array_values((array) $values));
         
         $entities = array();
-        $entities['a'] = $this->build($stmt, $entity);
+        $entities['a'] = $this->build($stmt, $entityClasses['a']);
         
         foreach ($relations as $rel) {
             if (empty($rel[0]) || !isset($entityClasses[$rel[0]])) {
@@ -415,7 +415,7 @@ class Repository
                 $entities[$rel[2]] = $repository->load($condition, $values, !empty($options['order']) ? $options['order'] : null);
                 
                 foreach ($entities[$rel[0]] as $fromEntity) {
-                    foreach ($entities[$rel[3]] as $toEntity) {
+                    foreach ($entities[$rel[2]] as $toEntity) {
                         if ($fromEntity->{$relData[1]} == $toEntity->{$relData[2]}) {
                             if (!empty($relData[3])) {
                                 $fromEntity->set($rel[1], $toEntity);
@@ -491,6 +491,239 @@ class Repository
         }
         
         return $returnData; 
+    }
+    
+    /**
+     * @param array|string $conditions the where conditions
+     * @param array $values values for ?-placeholders in the conditions
+     * @param string $order an order by clause (id ASC, foo DESC)
+     * @param int $limit
+     * @param int $offset
+     * @return \PDOStatement $statement the pdo statement
+     */
+    public function buildQuery($conditions = array(), $values = array(), $order = null, $limit = null, $offset = null)
+    {
+        $entityClass = $this->getEntityClass();
+        $query = 'SELECT '.implode(', ', $entityClass::getColumns()).' FROM '.$entityClass::getTableName();
+        $where = array();
+        foreach ((array) $conditions as $k => $v) {
+            if (is_numeric($k)) {
+                $where[] = ' '.$v;
+            } else {
+                $where[] = ' '.$k.'='.$this->getDB()->quote($v);
+            }
+        }
+        if ($where) {
+            $query .= ' WHERE'.implode(' AND ', $where);
+        }
+        if ($order) {
+            $query .= ' ORDER BY '.$order;
+        }
+        if ($limit || $offset) {
+            $query .= ' LIMIT '.(int)$limit.((int)$offset ? ' OFFSET '.(int)$offset : '');
+        }
+        $stmt = $this->getDB()->prepare($query);
+        $stmt->execute(array_values((array) $values));
+          
+        return $stmt;
+    }
+   
+    /**
+     * $relations is an array of arrays as followed:
+     *  array(fromAlias, relationProperty, toAlias, options = array())
+     *      options is an array with the following optional keys:
+     *          'select' => true|false if the entites should be selected
+     *          'conditions' => array|string additional where conditions to filter for
+     *          'values' => array values for ?-placeholders in the conditions
+     *          'count' => false|string fetch only the number of related entries, not the entries themself
+     * 
+     *      if count is set, the count of related entities will be saved in the property of the from-object defined by count
+     *      (example: 'count' => 'fooCount' will save the number of related entries in $fromObject->fooCount)
+     * 
+     * @param array $relations the relations
+     * @param array|string $conditions the where conditions
+     * @param array $values values for ?-placeholders in the conditions
+     * @param string $order an order by clause (id ASC, foo DESC)
+     * @param int $limit
+     * @param int $offset
+     * @return array the resulting entities 
+     */
+    public function buildWithRelations($relations = array(), $conditions = array(), $values = array(), $order = null, $limit = null, $offset = null, $entityClass = null)
+    {
+        $entityClasses = array();
+        $entityIdentifiers = array();
+        $entityRepositories = array();
+        $entityClasses['a'] = $entityClass ?: $this->getEntityClass();
+        
+        if (!is_subclass_of($entityClasses['a'], '\\QF\\DB\\Entity')) {
+            throw new \InvalidArgumentException('$entity must be an \\QF\\DB\\Entity instance or classname');
+        }
+        
+        $entityIdentifiers['a'] = $entityClasses['a']::getIdentifier();
+        $entityRepositories['a'] = $entityClasses['a']::getRepository($this->getDB());
+        
+        $placeholders = array();
+        $query = 'SELECT '.implode(', ', $entityClasses['a']::getColumns('a'));
+        
+        $needPreQuery = false;
+        
+        foreach ($relations as $k => $rel) {
+                if (empty($rel[0]) || !isset($entityClasses[$rel[0]])) {
+                    throw new \Exception('unknown fromAlias '.$rel[0]);
+                }
+                if (empty($rel[2])) {
+                    throw new \Exception('missing toAlias');
+                }
+
+                if (!is_subclass_of($entityClasses[$rel[0]], '\\QF\\DB\\Entity')) {
+                    throw new \InvalidArgumentException('$entity must be an \\QF\\DB\\Entity instance or classname');
+                }
+
+                if (empty($rel[1]) || !$relData = $entityClasses[$rel[0]]::getRelation($rel[1])) {
+                    throw new \Exception('unknown relation '.$rel[0].'.'.$rel[1]);
+                }
+
+                $entityClasses[$rel[2]] = $relData[0];
+                $entityIdentifiers[$rel[2]] = $entityClasses[$rel[2]]::getIdentifier();
+                $entityRepositories[$rel[2]] = $entityClasses[$rel[2]]::getRepository($this->getDB());
+                
+                $relations[$k][4] = $entityClasses[$rel[2]]::getRelation($rel[1]);
+                
+                if (!empty($rel[3]['select'])) {
+                    $query .= ', '.implode(', ', $entityClasses[$rel[2]]::getColumns($rel[2]));
+                } elseif (!empty($rel[3]['count'])) {
+                    $query .= ', COUNT(DISTICT('.$rel[2].'.'.$entityClasses[$rel[2]]::getIdentifier().')) '.$rel[0].'_'.$rel[3]['count'];
+                }
+        }
+        
+        $query .= ' FROM '.$entityClasses['a']::getTableName().' a ';
+        
+        $relQuery = array();
+        foreach ($relations as $rel) {
+            $currentRelQuery = '';
+            if (!empty($rel[4][3]) && $rel[4][3] !== true) {
+                $needPreQuery = true;
+                $currentRelQuery .= ' LEFT JOIN '.$rel[4][3].' '.$rel[0].'_'.$rel[2].' ON '.$rel[0].'.'.$entityClasses[$rel[0]]::getIdentifier().' = '.$rel[0].'_'.$rel[2].'.'.$rel[4][1].' LEFT JOIN '.$entityClasses[$rel[2]]::getTableName().' '.$rel[2].' ON '.$rel[0].'_'.$rel[2].'.'.$rel[4][2].' = '.$entityClasses[$rel[2]]::getIdentifier();
+            } else {
+                if (empty($rel[4][3])) {
+                    $needPreQuery = true;
+                }
+                $currentRelQuery .= ' LEFT JOIN '.$entityClasses[$rel[2]]::getTableName().' '.$rel[2].' ON '.$rel[0].'.'.$rel[4][1].' = '.$rel[2].'.'.$rel[4][2];
+            }
+            if (!empty($rel[3]['conditions'])) {
+                $where = array();
+                foreach ((array) $rel[3]['conditions'] as $k => $v) {
+                    if (is_numeric($k)) {
+                        $where[] = ' '.$v;
+                    } else {
+                        $where[] = ' '.$rel[2].'.'.$k.'='.$this->getDB()->quote($v);
+                    }
+                }
+                if ($where) {
+                    $currentRelQuery .= ' AND'.implode(' AND ', $where);
+                }
+            }
+            if (!empty($rel[3]['values'])) {
+                $placeholders = array_merge($placeholders, (array) $rel[3]['values']);
+            }
+            $relQuery[] = $currentRelQuery;
+        }
+        
+        $query .= implode(' ', $relQuery);
+        
+        $where = array();
+        foreach ((array) $conditions as $k => $v) {
+            if (is_numeric($k)) {
+                $where[] = ' '.$v;
+            } else {
+                $where[] = ' a.'.$k.'='.$this->getDB()->quote($v);
+            }
+        }
+        
+
+        if ($needPreQuery && ($limit || $offset)) {
+            $preQuery = 'SELECT a.'.$entityClasses['a']::getIdentifier().' FROM'.$entityClasses['a']::getTableName().' a ';
+            
+            if ($where) {
+                $preQuery .= ' WHERE'.implode(' AND ', $where);
+            }
+            if ($limit || $offset) {
+                $preQuery .= ' LIMIT '.(int)$limit.((int)$offset ? ' OFFSET '.(int)$offset : '');
+            }
+            
+            $preStmt = $this->getDB()->prepare($preQuery);
+            $preStmt->execute(array_values((array) $values));
+            $inIds = $preStmt->fetchAll(\PDO::FETCH_COLUMN);
+            $placeholders = array_merge($placeholders, (array) $inIds);
+            array_unshift($where, 'a.'.$entityClasses['a']::getIdentifier().' IN ('.implode(',', array_fill(0, count($inIds), '?')).') ');
+        }
+        
+        if ($where) {
+            $query .= ' WHERE'.implode(' AND ', $where);
+        }
+        $placeholders = array_merge($placeholders, (array) $values);  
+        
+        
+        if ($order) {
+            $query .= ' ORDER BY a.'.$order.' ';
+        }
+        
+        if (!$needPreQuery && ($limit || $offset)) {
+            $query .= ' LIMIT '.(int)$limit.((int)$offset ? ' OFFSET '.(int)$offset : '');
+        }
+        
+        
+        
+        $stmt = $this->getDB()->prepare($query);
+        $stmt->execute(array_values((array) $placeholders));
+        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $returnData = array();
+        $relationTemp = array();
+        
+        foreach ($results as $row) {
+            foreach ($entityClasses as $prefix => $entityClass) {
+                if (!empty($row[$prefix.'_'.$entityIdentifiers[$prefix]]) && empty($returnData[$prefix][$row[$prefix.'_'.$entityIdentifiers[$prefix]]])) {
+                    $returnData[$prefix][$row[$prefix.'_'.$entityIdentifiers[$prefix]]] = $entityRepositories[$prefix]->create($this->filter($row, $prefix), false);
+                }
+            }
+
+            foreach ($relations as $rel) {
+                if (!empty($relationTemp[$rel[0].'_'.$row[$rel[0].'_'.$entityIdentifiers[$rel[0]]].'|'.$rel[2].'_'.$row[$rel[2].'_'.$entityIdentifiers[$rel[2]]]])) {
+                    continue;
+                }
+                if (isset($rel[4][3]) && $rel[4][3] !== true) {
+                    if (!empty($row[$rel[0].'_'.$entityIdentifiers[$rel[0]]]) && !empty($row[$rel[2].'_'.$entityIdentifiers[$rel[2]]]) && !empty($row[$rel[4][3].'_'.$rel[4][1]]) && !empty($row[$rel[4][3].'_'.$rel[4][2]]) && ($row[$rel[0].'_'.$entityIdentifiers[$rel[0]]] == $row[$rel[4][3].'_'.$rel[4][1]]) && ($row[$rel[2].'_'.$entityIdentifiers[$rel[2]]] == $row[$rel[4][3].'_'.$rel[4][2]])) {
+                        $relationTemp[$rel[0].'_'.$row[$rel[0].'_'.$entityIdentifiers[$rel[0]]].'|'.$rel[2].'_'.$row[$rel[2].'_'.$entityIdentifiers[$rel[2]]]] = true;
+                        $returnData[$rel[0]][$row[$rel[0].'_'.$entityIdentifiers[$rel[0]]]]->add($rel[1], $returnData[$rel[1]][$row[$rel[2].'_'.$entityIdentifiers[$rel[2]]]]);
+                    }
+                } else {   
+                    if (!empty($row[$rel[0].'_'.$rel[4][1]]) && !empty($row[$rel[2].'_'.$rel[4][2]]) && ($row[$rel[0].'_'.$rel[4][1]] == $row[$rel[2].'_'.$rel[4][2]])) {
+                        $relationTemp[$rel[0].'_'.$row[$rel[0].'_'.$entityIdentifiers[$rel[0]]].'|'.$rel[2].'_'.$row[$rel[2].'_'.$entityIdentifiers[$rel[2]]]] = true;
+                        if (!empty($rel[3][3])) {
+                            $returnData[$rel[0]][$row[$rel[0].'_'.$entityIdentifiers[$rel[0]]]]->set($rel[1], $returnData[$rel[1]][$row[$rel[2].'_'.$entityIdentifiers[$rel[2]]]]);
+                        } else {
+                            $returnData[$rel[0]][$row[$rel[0].'_'.$entityIdentifiers[$rel[0]]]]->add($rel[1], $returnData[$rel[1]][$row[$rel[2].'_'.$entityIdentifiers[$rel[2]]]]);
+                        }
+                    }
+                }
+            
+            }
+            
+        }
+        
+        return $returnData['a'];
+        
+    }
+    
+    public static function filter($data, $prefix)
+    {
+        $return = array();
+        foreach ($data as $key => $entry) {
+            if (strpos($key, $prefix.'_') === 0) {
+                $return[substr($key, strlen($prefix+1))] = $entry;
+            }
+        }
+        return $return;
     }
     
     public static function get($db, $entityClass = null)
