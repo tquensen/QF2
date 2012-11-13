@@ -324,7 +324,7 @@ class Core
     /**
      * builds an url to a public file (js, css, images, ...)
      *
-     * @param string $file path to the file (relative from {baseurl}/public/ or modules/{module}/public/)
+     * @param string $file path to the file (relative from {templatepath}/{currenttheme or default}/public/ or modulepath/{module}/public/)
      * @param string $module the module containing the file
      * @param bool $cacheBuster add the last modified time as parameter to the url to prevent caching if ressource has changed
      * @return string returns the url to the file including base_url (if available)

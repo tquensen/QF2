@@ -309,6 +309,8 @@ class Repository
      *          'order' => string the order of the related entries
      *          'count' => false|string fetch only the number of related entries, not the entries themself
      * 
+     *      the fromAlias of the initial entity is 'a'
+     * 
      *      if count is set, the count of related entities will be saved in the property of the from-object defined by count
      *      (example: 'count' => 'fooCount' will save the number of related entries in $fromObject->fooCount)
      * 
@@ -492,43 +494,16 @@ class Repository
         
         return $returnData; 
     }
-    
-    /**
-     * @param array|string $conditions the where conditions
-     * @param array $values values for ?-placeholders in the conditions
-     * @param string $order an order by clause (id ASC, foo DESC)
-     * @param int $limit
-     * @param int $offset
-     * @return \PDOStatement $statement the pdo statement
-     */
-    public function buildQuery($conditions = array(), $values = array(), $order = null, $limit = null, $offset = null)
-    {
-        $entityClass = $this->getEntityClass();
-        $query = 'SELECT '.implode(', ', $entityClass::getColumns()).' FROM '.$entityClass::getTableName();
-        $where = array();
-        foreach ((array) $conditions as $k => $v) {
-            if (is_numeric($k)) {
-                $where[] = ' '.$v;
-            } else {
-                $where[] = ' '.$k.'='.$this->getDB()->quote($v);
-            }
-        }
-        if ($where) {
-            $query .= ' WHERE'.implode(' AND ', $where);
-        }
-        if ($order) {
-            $query .= ' ORDER BY '.$order;
-        }
-        if ($limit || $offset) {
-            $query .= ' LIMIT '.(int)$limit.((int)$offset ? ' OFFSET '.(int)$offset : '');
-        }
-        $stmt = $this->getDB()->prepare($query);
-        $stmt->execute(array_values((array) $values));
-          
-        return $stmt;
-    }
    
     /**
+     * alternative method to load entities with relations (this method uses one Query with JOINS)
+     *      differences to loadWithRelations:
+     *      - performance may vary based on number of fetched relations
+     *      - cross-table conditions (e.g. a.foo = b.bar)
+     *      - option to select certain referenced tables
+     *      - no ORDER BY for related entities
+     *      - the prefix/alias must be used in any conditions
+     * 
      * $relations is an array of arrays as followed:
      *  array(fromAlias, relationProperty, toAlias, options = array())
      *      options is an array with the following optional keys:
@@ -536,6 +511,8 @@ class Repository
      *          'conditions' => array|string additional where conditions to filter for
      *          'values' => array values for ?-placeholders in the conditions
      *          'count' => false|string fetch only the number of related entries, not the entries themself
+     * 
+     *      the fromAlias of the initial entity is 'a'
      * 
      *      if count is set, the count of related entities will be saved in the property of the from-object defined by count
      *      (example: 'count' => 'fooCount' will save the number of related entries in $fromObject->fooCount)
@@ -548,12 +525,12 @@ class Repository
      * @param int $offset
      * @return array the resulting entities 
      */
-    public function buildWithRelations($relations = array(), $conditions = array(), $values = array(), $order = null, $limit = null, $offset = null, $entityClass = null)
+    public function loadWithRelationsAlt($relations = array(), $conditions = array(), $values = array(), $order = null, $limit = null, $offset = null)
     {
         $entityClasses = array();
         $entityIdentifiers = array();
         $entityRepositories = array();
-        $entityClasses['a'] = $entityClass ?: $this->getEntityClass();
+        $entityClasses['a'] = $this->getEntityClass();
         
         if (!is_subclass_of($entityClasses['a'], '\\QF\\DB\\Entity')) {
             throw new \InvalidArgumentException('$entity must be an \\QF\\DB\\Entity instance or classname');
@@ -616,7 +593,7 @@ class Repository
                     if (is_numeric($k)) {
                         $where[] = ' '.$v;
                     } else {
-                        $where[] = ' '.$rel[2].'.'.$k.'='.$this->getDB()->quote($v);
+                        $where[] = ' '.$k.'='.$this->getDB()->quote($v);
                     }
                 }
                 if ($where) {
@@ -636,7 +613,7 @@ class Repository
             if (is_numeric($k)) {
                 $where[] = ' '.$v;
             } else {
-                $where[] = ' a.'.$k.'='.$this->getDB()->quote($v);
+                $where[] = ' '.$k.'='.$this->getDB()->quote($v);
             }
         }
         
