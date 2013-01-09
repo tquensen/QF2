@@ -1,7 +1,7 @@
 <?php
 namespace QF\Form\Validator;
 
-class CombineOr extends Validator
+class Email extends Validator
 {
 	public function validate($value)
 	{
