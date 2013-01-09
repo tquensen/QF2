@@ -17,7 +17,7 @@ class User
         if (isset($_SESSION['_QF_USER'])) {
             $this->role = $_SESSION['_QF_USER']['role'];
             $this->user = $_SESSION['_QF_USER']['user'];
-            $this->attributes = $_SESSION['_QF_USER']['attributes'];
+            $this->attributes = isset($_SESSION['_QF_USER']['attributes']) ? $_SESSION['_QF_USER']['attributes'] : array();
         }
     }
     

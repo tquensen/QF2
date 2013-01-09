@@ -577,7 +577,7 @@ abstract class Entity extends \QF\Entity
                     } elseif (!empty($data['relationMultiple'])) {
                         $rel[3] = false;
                     }
-                    $rels[] = $rel;
+                    $rels[$prop] = $rel;
                 }
             }
             static::$relations[static::$collectionName] = $rels;
@@ -597,7 +597,7 @@ abstract class Entity extends \QF\Entity
                     }elseif (!empty($data['relationMultiple'])) {
                         $rel[3] = false;
                     }
-                    $rels[] = $rel;
+                    $rels[$prop] = $rel;
                 }
             }
             static::$relations[static::$collectionName] = $rels;
