@@ -25,7 +25,7 @@ class Repository
             
             $this->entityClass = $entityClass;
         }
-        if (!is_subclass_of($this->getEntityClass(), '\\Mongo\\Entity')) {
+        if (!is_subclass_of($this->getEntityClass(), '\\QF\\Mongo\\Entity')) {
             throw new \InvalidArgumentException('$entityClass must be an \\Mongo\\Entity instance or classname');
         }
     }
