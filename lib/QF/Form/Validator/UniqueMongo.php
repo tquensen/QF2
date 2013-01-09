@@ -1,16 +1,11 @@
 <?php
 namespace QF\Form\Validator;
 
-class Unique extends Validator
+class UniqueMongo extends Validator
 {
 
     public function validate($value)
     {
-        if ($this->getOption('values'))
-		{
-			return (!in_array($value, $this->getOption('values')));
-		}
-
         $entity = $this->getForm()->getEntity();
         
         if ($entity && $this->getOption('property')) {
@@ -23,7 +18,7 @@ class Unique extends Validator
         {
             try
             {
-                $found = $entity->getRepository($entity->getDB())->loadOne($property, $value);
+                $found = $entity->getRepository($entity->getDB())->findOne($property, $value);
                 if (!$found || $found->{$found->getIdentifier()} == $entity->{$entity->getIdentifier()}) {
                     return true;
                 }

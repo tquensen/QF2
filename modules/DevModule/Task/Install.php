@@ -22,7 +22,7 @@ class Install extends Controller
         
         $className = $parameter['entity'];
         
-        if ($parameter['mode'] == 'install') {
+        if ($parameter['type'] == 'install') {
             try {
                 $status = $className::install($db, $parameter['from'], $parameter['to']);
                 if ($status !== true && $status !== null) {
@@ -33,7 +33,7 @@ class Install extends Controller
             } catch (Exception $e) {
                 return 'An error occurred: ' . $e->getMessage();
             }
-        } elseif ($parameter['mode'] == 'uninstall') {
+        } elseif ($parameter['type'] == 'uninstall') {
             try {
                 $status = $className::uninstall($db, $parameter['from'], $parameter['to']);
                 if ($status !== true && $status !== null) {
