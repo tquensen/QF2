@@ -49,7 +49,7 @@ abstract class Entity extends \QF\Entity
     {
         if (preg_match('/^(count|load|link|unlink)(.+)$/', $method, $matches)) {
             $action = $matches[1];
-            $property = lcfirst($matches[2]);
+            $property = _uncamelcase($matches[2]);
             if (static::getRelation($property)) {
                 if ($action == 'load') {
                     return $this->loadRelated($property, isset($args[0]) ? $args[0] : array(), isset($args[1]) ? $args[1] : array(), isset($args[2]) ? $args[2] : null, isset($args[3]) ? $args[3] : null);

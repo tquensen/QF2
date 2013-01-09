@@ -459,7 +459,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     {
         if (preg_match('/^(get|set|clear|unset|has|is|add|remove)(.+)$/', $method, $matches)) {
             $action = $matches[1];
-            $property = lcfirst($matches[2]);
+            $property = _uncamelcase($matches[2]);
             if ($action == 'set' || $action == 'add' || $action == 'remove') {
                 return $this->$action($property, isset($args[0]) ? $args[0] : null);
             } elseif ($action == 'unset') {
@@ -474,5 +474,10 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                 ' in ' . $trace[0]['file'] .
                 ' on line ' . $trace[0]['line']);
         }
+    }
+    
+    protected function _uncamelcase($word)
+    {
+        return strtolower(preg_replace('~(?<=\\w)([A-Z])~', '_$1', $word));
     }
 }

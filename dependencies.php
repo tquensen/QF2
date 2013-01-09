@@ -62,11 +62,13 @@ $c['t'] = $c->share(function ($c) {
 //init database
 /* PDO
 $c['db'] = $c->share(function ($c) {
-    return new QF\DB\DB($c['cfg_db']['default']);
+    $config = $c['config']; 
+    return new QF\DB\DB($config['db']['default']);
 });
 */   
 /* mongoDB
 $c['db'] = $c->share(function ($c) {
-    return new QF\Mongo\DB($c['cfg_db']['mongo']);
+    $config = $c['config'];
+    return new QF\Mongo\DB($config['db']['mongo']);
 });
 */
