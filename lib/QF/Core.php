@@ -29,9 +29,8 @@ class Core
     protected $modulePath = null;
     protected $webPath = null;
     
-    public function __construct($parameter, $routes)
+    public function __construct($routes)
     {       
-        $this->parameter = $parameter;
         $this->routes = $routes;
         
         $this->templatePath = __DIR__.'../../templates';
