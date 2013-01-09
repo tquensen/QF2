@@ -26,7 +26,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     );
     
     public function get($property) {
-        $method = 'get'.ucfirst($property);
+        $method = 'get'.$this->_camelcase($property);
         if (method_exists($this, $method)) {
             return $this->$method();
         }
@@ -55,7 +55,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             return $this->clear($property);
         }
         
-        $method = 'set'.ucfirst($property);
+        $method = 'set'.$this->_camelcase($property);
         if (method_exists($this, $method)) {
             return $this->$method($value);
         }
@@ -118,7 +118,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             }
         }
         
-        $method = 'add'.ucfirst($property);
+        $method = 'add'.$this->_camelcase($property);
         if (method_exists($this, $method)) {
             return $this->$method($value);
         }
@@ -227,7 +227,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
             }
         }
          
-        $method = 'remove'.ucfirst($property);
+        $method = 'remove'.$this->_camelcase($property);
         if (method_exists($this, $method)) {
             return $this->$method($value);
         }
@@ -317,11 +317,11 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     }
     
     public function clear($property) {
-        $method = 'unset'.ucfirst($property);
+        $method = 'unset'.$this->_camelcase($property);
         if (method_exists($this, $method)) {
             return $this->$method();
         }
-        $method = 'clear'.ucfirst($property);
+        $method = 'clear'.$this->_camelcase($property);
         if (method_exists($this, $method)) {
             return $this->$method();
         }
@@ -350,7 +350,11 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     }
     
     public function is($property) {
-        $method = 'is'.ucfirst($property);
+        $method = 'is'.$this->_camelcase($property);
+        if (method_exists($this, $method)) {
+            return $this->$method();
+        }
+        $method = 'has'.$this->_camelcase($property);
         if (method_exists($this, $method)) {
             return $this->$method();
         }
@@ -479,5 +483,10 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     protected function _uncamelcase($word)
     {
         return strtolower(preg_replace('~(?<=\\w)([A-Z])~', '_$1', $word));
+    }
+    
+    protected function _camelcase($word)
+    {
+        return str_replace(" ", "", ucwords(strtr($word, "_-", "  ")));
     }
 }
