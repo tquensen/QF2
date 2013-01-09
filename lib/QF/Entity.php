@@ -463,7 +463,7 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
     {
         if (preg_match('/^(get|set|clear|unset|has|is|add|remove)(.+)$/', $method, $matches)) {
             $action = $matches[1];
-            $property = _uncamelcase($matches[2]);
+            $property = $this->_uncamelcase($matches[2]);
             if ($action == 'set' || $action == 'add' || $action == 'remove') {
                 return $this->$action($property, isset($args[0]) ? $args[0] : null);
             } elseif ($action == 'unset') {
