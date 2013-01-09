@@ -351,7 +351,7 @@ class Repository
                 continue;
             }
             
-            if (isset($relData[3]) && $relData[3] === false && $relationInfo[2] == '_id') {
+            if (isset($relData[3]) && $relData[3] === false && $relData[2] == '_id') {
                 foreach ($entities[$rel[0]] as $fromEntity) {
                     $fromValues = array_merge($fromValues, (array) $fromEntity->{$relData[1]});
                 }
@@ -361,21 +361,21 @@ class Repository
                 }
             }
                     
-            $query = array_merge(array($relationInfo[2] => array('$in' =>  array_values($fromValues))), (array) (!empty($options['query']) ? $options['query'] : array())); 
+            $query = array_merge(array($relData[2] => array('$in' =>  array_values($fromValues))), (array) (!empty($options['query']) ? $options['query'] : array())); 
             
             
-            $entities[$rel[3]] = $repository->find($query, !empty($options['sort']) ? $options['sort'] : array());
+            $entities[$rel[2]] = $repository->find($query, !empty($options['sort']) ? $options['sort'] : array());
                 
             foreach ($entities[$rel[0]] as $fromEntity) {
-                foreach ($entities[$rel[3]] as $toEntity) {
+                foreach ($entities[$rel[2]] as $toEntity) {
                     if (!empty($relData[3])) {
                         if ($fromEntity->{$relData[1]} == $toEntity->{$relData[2]}) {
                             $fromEntity->set($rel[1], $toEntity);
                         }
                     } elseif(isset($relData[3])) {
-                        if ($relationInfo[1] == '_id' && in_array($fromEntity->{$relationInfo[1]}, (array) $toEntity->{$relationInfo[2]})) {
+                        if ($relData[1] == '_id' && in_array($fromEntity->{$relData[1]}, (array) $toEntity->{$relData[2]})) {
                             $fromEntity->add($rel[1], $toEntity);
-                        } elseif(in_array($toEntity->{$relationInfo[2]}, (array) $fromEntity->{$relationInfo[1]})) {
+                        } elseif(in_array($toEntity->{$relData[2]}, (array) $fromEntity->{$relData[1]})) {
                             $fromEntity->add($rel[1], $toEntity);
                         }
                     } else {
