@@ -33,7 +33,7 @@ class Form
 
     public function getFormToken()
     {
-        if (empty($this->options['useFormToken']) || empty($this->getOption('formTokenName'))) {
+        if (empty($this->options['useFormToken']) || empty($this->options['formTokenName'])) {
             return false;
         }
         $token = md5(time().rand(10000, 99999));
