@@ -14,6 +14,9 @@ if ((isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'localhost') || (
 require_once __DIR__.'/../bootstrap.php';
 
 try {
+    //session for user handling
+    session_name('qf_session');
+    session_start();
     
     $route = isset($_GET['route']) ? $_GET['route'] : '';
     $language = isset($_GET['language']) ? $_GET['language'] : '';
@@ -24,9 +27,6 @@ try {
     $c['core']->website_title = $c['t']->website_title;
     $c['core']->meta_description = $c['t']->meta_description;    
 
-    //session for user handling
-    session_name('qf_session');
-    session_start();
         
     //throws 404 QF\Exception\HttpException for invalid routes
     $routeData = $c['core']->parseRoute($route);

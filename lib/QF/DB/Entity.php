@@ -459,7 +459,7 @@ abstract class Entity extends \QF\Entity
         return static::$columns[static::$tableName];
     }
     
-    public static function getRelation($rel)
+    public static function getRelation($relation)
     {
         if (!isset(static::$relations[static::$tableName])) {
             $rels = array();          
@@ -476,7 +476,7 @@ abstract class Entity extends \QF\Entity
             }
             static::$relations[static::$tableName] = $rels;
         }
-        return !empty(static::$relations[static::$tableName][$rel]) ? static::$relations[static::$tableName][$rel] : false;
+        return !empty(static::$relations[static::$tableName][$relation]) ? static::$relations[static::$tableName][$relation] : false;
     }
     
     public static function getRelations()
