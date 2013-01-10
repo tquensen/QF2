@@ -548,7 +548,7 @@ class Repository
     /**
      * @param string $sb the database connection to use
      * @param string|Entity $entityClass
-     * @return Mongo_Repository
+     * @return \QF\Mongo\Repository
      */
     public static function get($db, $entityClass = null)
     {

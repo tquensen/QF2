@@ -133,9 +133,9 @@ class User
         return $token;
     }
 
-    public function checkFormToken($name = true)
+    public function checkFormToken($name = 'form_token')
     {
-        $token = !empty($_REQUEST[$name !== true ?: 'form_token']) ? $_REQUEST[$name !== true ?: 'form_token'] : false;
+        $token = !empty($_REQUEST[$name]) ? $_REQUEST[$name] : false;
         if (!empty($token) && !empty($_SESSION['_QF_FORM_TOKEN'][$token]) && $_SESSION['_QF_FORM_TOKEN'][$token] == $name) {
             unset($_SESSION['_QF_FORM_TOKEN'][$token]);
             return true;

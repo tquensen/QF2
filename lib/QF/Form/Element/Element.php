@@ -55,7 +55,7 @@ class Element
             if ($this->defaultValue !== null) {
                 $this->value = $this->defaultValue;
             } else {
-                if ($this->getOption('useModel') !== false && $entity = $this->getForm()->getEntity()) {
+                if ($this->getOption('useEntity') !== false && $entity = $this->getForm()->getEntity()) {
                     $property = $this->getOption('entityProperty') ? $this->getOption('entityProperty') : $this->name;
                     $this->value = isset($entity->$property) ? $entity->$property : null;
                 }
