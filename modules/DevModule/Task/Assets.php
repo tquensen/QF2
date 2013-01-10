@@ -24,12 +24,12 @@ class Assets extends Controller
         }
 
         foreach (scandir($modulePath) as $module) {
-            if (!is_dir($module) || $module == '.' || $module == '..') {
+            if (!is_dir($modulePath.'/'.$module) || $module == '.' || $module == '..') {
                 continue;
             }
             
             foreach (scandir($modulePath.'/'.$module) as $folder) {
-                if (!is_dir($folder) || $folder == '.' || $folder == '..') {
+                if (!is_dir($modulePath.'/'.$module.'/'.$folder) || $folder == '.' || $folder == '..') {
                     continue;
                 }
                 
@@ -40,7 +40,7 @@ class Assets extends Controller
                     }
                 } else {
                     foreach (scandir($modulePath.'/'.$module.'/'.$folder) as $subfolder) {
-                        if (!is_dir($subfolder) || $subfolder == '.' || $subfolder == '..') {
+                        if (!is_dir($modulePath.'/'.$module.'/'.$folder.'/'.$subfolder) || $subfolder == '.' || $subfolder == '..') {
                             continue;
                         }
 
@@ -59,12 +59,12 @@ class Assets extends Controller
         }
         
         foreach (scandir($templatePath) as $theme) {
-            if (!is_dir($theme) || $theme == '.' || $theme == '..') {
+            if (!is_dir($templatePath.'/'.$theme) || $theme == '.' || $theme == '..') {
                 continue;
             }
             
             foreach (scandir($templatePath.'/'.$theme) as $folder) {
-                if (!is_dir($folder) || $folder == '.' || $folder == '..') {
+                if (!is_dir($templatePath.'/'.$theme.'/'.$folder) || $folder == '.' || $folder == '..') {
                     continue;
                 }
                 
@@ -75,7 +75,7 @@ class Assets extends Controller
                     }
                 } else {
                     foreach (scandir($templatePath.'/'.$theme.'/'.$folder) as $subfolder) {
-                        if (!is_dir($subfolder) || $subfolder == '.' || $subfolder == '..') {
+                        if (!is_dir($templatePath.'/'.$theme.'/'.$folder.'/'.$subfolder) || $subfolder == '.' || $subfolder == '..') {
                             continue;
                         }
 
