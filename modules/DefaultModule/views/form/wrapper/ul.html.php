@@ -1,11 +1,11 @@
 <?php $inList = false; ?>
 <?php foreach ($form->getElements() as $currentElement): ?>
     <?php if ($currentElement->getType() == 'hidden') { continue; }; ?>
-    <?php if (in_array($currentElement->getType(), array('fieldset', 'fieldsetend')) && $inList): $inList = false; ?>
+    <?php if ((in_array($currentElement->getType(), array('fieldset', 'fieldsetend')) || ($currentElement->getType() == 'custom' && $currentElement->useWrapper == false)) && $inList): $inList = false; ?>
         </ul>
     <?php endif; ?>
 
-    <?php if (!in_array($currentElement->getType(), array('fieldset', 'fieldsetend'))): ?>
+    <?php if (!in_array($currentElement->getType(), array('fieldset', 'fieldsetend')) && ($currentElement->getType() != 'custom' || $currentElement->useWrapper == true)): ?>
     <?php if (!$inList): $inList = true; ?>
         <ul>
     <?php endif; ?>
@@ -16,7 +16,7 @@
 <?php if ($currentElement->info):?><span class="formInfo"><?php echo htmlspecialchars($currentElement->info)?></span><?php endif; ?>
 <?php if (!$currentElement->isValid() && !$currentElement->globalErrors):?><span class="formError"><?php echo htmlspecialchars($currentElement->errorMessage)?></span><?php endif; ?>
 
-    <?php if (!in_array($currentElement->getType(), array('fieldset', 'fieldsetend'))): ?>
+    <?php if (!in_array($currentElement->getType(), array('fieldset', 'fieldsetend')) && ($currentElement->getType() != 'custom' || $currentElement->useWrapper == true)): ?>
     </li>
     <?php endif; ?>
 
