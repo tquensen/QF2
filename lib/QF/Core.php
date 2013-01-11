@@ -406,7 +406,12 @@ class Core
         extract($parameter, \EXTR_OVERWRITE);
         $qf = $this;
         ob_start();
-        require($_file);
+        try {
+            require($_file);
+        } Catch (\Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
         return ob_get_clean();
     }
 
@@ -491,7 +496,12 @@ class Core
         extract($parameter, \EXTR_OVERWRITE);
         $qf = $this;
         ob_start();
-        require($_file);
+        try {
+            require($_file);
+        } Catch (\Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
         return ob_get_clean();
     }
     

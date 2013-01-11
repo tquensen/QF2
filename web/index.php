@@ -31,12 +31,13 @@ try {
     //throws 404 QF\Exception\HttpException for invalid routes
     $routeData = $c['core']->parseRoute($route);
     
-    //redirect 301 if default language is present in url
+    //redirect 301 if default or invalid language is present in url
     /*
-    if ($language && $language ==  $c['i18n']->getDefaultLanguage()) {
+    if ($language && ($language ==  $c['i18n']->getDefaultLanguage() || !in_array($language, $c['i18n']->getLanguages()))) {
         $c['core']->redirectRoute($routeData['route'], $routeData['parameter'], 301);
     }
     */
+    
     $pageContent = $c['core']->callRoute($routeData['route'], $routeData['parameter'], true);
     echo $c['core']->parseTemplate($pageContent);
 
