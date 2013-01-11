@@ -165,9 +165,9 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                         $this->{static::$_properties[$property]['container']}[$property][$k] = $value;
                         $found = true;
                     }
-                    if (!$found) {
-                        $this->{static::$_properties[$property]['container']}[$property][] = $value;
-                    }
+                }
+                if (!$found) {
+                    $this->{static::$_properties[$property]['container']}[$property][] = $value;
                 }
             } else {
                 if (is_array($value) || (is_object($value) && $value instanceof ArrayAccess)) {
@@ -195,10 +195,10 @@ abstract class Entity implements ArrayAccess, Serializable, IteratorAggregate
                         $this->{$property}[$k] = $value;
                         $found = true;
                     }
-                    if (!$found) {
-                        $this->{$property}[] = $value;
-                    }
                 } 
+                if (!$found) {
+                    $this->{$property}[] = $value;
+                }
             } else {
                 if (is_array($value) || (is_object($value) && $value instanceof ArrayAccess)) {
                     $this->{$property}[$value[static::$_properties[$property]['collectionUnique']]] = $value;

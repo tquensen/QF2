@@ -170,6 +170,8 @@ class Element
             $element['options'] = array();
             $element['options']['defaultValue'] = $this->defaultValue;
             $element['options']['label'] = $this->label;
+            $element['options']['attributes'] = $this->attributes;
+            $element['options']['class'] = $this->class;
         } else {
             $element['options'] = $this->options;
         }

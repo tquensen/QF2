@@ -171,7 +171,7 @@ abstract class Entity extends \QF\Entity
             throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
         }
         
-        $repository = $relationInfo[0]::GetRepository($this->getDB());
+        $repository = $relationInfo[0]::getRepository($this->getDB());
             
         if (!empty($relationInfo[3])) {
             $query = array_merge(array($relationInfo[2] => $this->{$relationInfo[1]}), (array) $query);            
@@ -204,7 +204,7 @@ abstract class Entity extends \QF\Entity
             throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
         }
         
-        $repository = $relationInfo[0]::GetRepository($this->getDB());
+        $repository = $relationInfo[0]::getRepository($this->getDB());
             
         if (!empty($relationInfo[3])) {
             $query = array_merge(array($relationInfo[2] => $this->{$relationInfo[1]}), (array) $query);            
@@ -347,7 +347,7 @@ abstract class Entity extends \QF\Entity
         }
         if (!empty($relationInfo[3])) {
             
-            $repository = $relationInfo[0]::GetRepository($this->getDB());
+            $repository = $relationInfo[0]::getRepository($this->getDB());
                 
             if ($relationInfo[1] == '_id') {
                 if (!$this->{$relationInfo[1]} || $save === null) {
@@ -411,7 +411,7 @@ abstract class Entity extends \QF\Entity
                     $this->{$relationInfo[1]} = null;
                     return $save !== null ? $this->save($save) : true;
                 } else {
-                    $repository = $relationInfo[0]::GetRepository($this->getDB());
+                    $repository = $relationInfo[0]::getRepository($this->getDB());
                     $related = $repository->find(array($relationInfo[2] => $this->{$relationInfo[1]}));
                     foreach ($related as $rel) {
                         if ($multiple) {
@@ -434,7 +434,7 @@ abstract class Entity extends \QF\Entity
                 return true;
             } else {
                 if (!is_object($related) || !($related instanceof Entity)) {
-                    $repository = $relationInfo[0]::GetRepository($this->getDB());
+                    $repository = $relationInfo[0]::getRepository($this->getDB());
                     $related = $repository->findOne($related);
                 }
                 if (!$related) {
