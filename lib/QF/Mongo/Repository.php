@@ -455,8 +455,8 @@ class Repository
             }
             return $this->getCollection()->remove($query);
         } else {
-            foreach($this->find($query, array(), $justOne ? 1 : null, null) as $model) {
-                $model->remove($safe);
+            foreach($this->find($query, array(), $justOne ? 1 : null, null) as $entity) {
+                $entity->delete($safe);
             } 
             return true;
         }
