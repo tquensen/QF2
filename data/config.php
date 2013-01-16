@@ -3,7 +3,7 @@ $config['parameter']['website_title'] = 'QF Website';
 $config['parameter']['meta_description'] = 'Default meta description.';
 
 $config['theme'] = ''; //no theme
-$config['template'] = '';
+$config['template'] = ''; //empty string/null = 'default' template; false for no template
 $config['default_format'] = 'html';
 
 $config['template_path'] = __DIR__.'/../templates';

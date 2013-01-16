@@ -446,7 +446,7 @@ class Core
             }
         }
 
-        if ($_templateName === false) {
+        if ($this->template === false) {
             return $content;
         }
 
