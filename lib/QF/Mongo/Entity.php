@@ -520,23 +520,57 @@ abstract class Entity extends \QF\Entity
             return false;
         }
     }
-
-    public function preSave(\MongoDB $db)
+    
+    /**
+     * called before the entity is saved or updated in the db
+     * return false (or throw exception) to abort
+     * 
+     * @param \MongoDB $db
+     * @param bool $update if this save is an update (true) or an insert(false)
+     */
+    public function preSave(\MongoDB $db, $update)
     {
 
     }
 
+    /**
+     * called before the entity gets removed from db
+     * return false (or throw exception) to abort
+     * 
+     * @param \MongoDB $db
+     */
     public function preRemove(\MongoDB $db)
     {
         
     }
-
-    public function postCreate()
+    
+    /**
+     * called after the entity was inserted or updated in the db
+     * 
+     * @param \MongoDB $db
+     * @param bool $update if this save is an update (true) or an insert(false)
+     */
+    public function postSave(\MongoDB $db, $update)
     {
-
+        
+    }
+    
+    /**
+     * called after the entity was removed from db
+     * 
+     * @param \MongoDB $db
+     */
+    public function postRemove(\MongoDB $db)
+    {
+        
     }
 
-    public function postLoad()
+    /**
+     * called after the entity was loaded from db
+     * 
+     * @param \MongoDB $db
+     */
+    public function postLoad(\MongoDB $db)
     {
 
     }

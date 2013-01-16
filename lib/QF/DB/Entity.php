@@ -403,22 +403,56 @@ abstract class Entity extends \QF\Entity
         }
     }
 
-    public function preSave(\PDO $db)
+    /**
+     * called before the entity is saved or updated in the db
+     * return false (or throw exception) to abort
+     * 
+     * @param \PDO $db
+     * @param bool $update if this save is an update (true) or an insert(false)
+     */
+    public function preSave(\PDO $db, $update)
     {
 
     }
 
+    /**
+     * called before the entity gets removed from db
+     * return false (or throw exception) to abort
+     * 
+     * @param \PDO $db
+     */
     public function preRemove(\PDO $db)
     {
         
     }
-
-    public function postCreate()
+    
+    /**
+     * called after the entity was inserted or updated in the db
+     * 
+     * @param \PDO $db
+     * @param bool $update if this save is an update (true) or an insert(false)
+     */
+    public function postSave(\PDO $db, $update)
     {
-
+        
+    }
+    
+    /**
+     * called after the entity was removed from db
+     * 
+     * @param \PDO $db
+     */
+    public function postRemove(\PDO $db)
+    {
+        
     }
 
-    public function postLoad()
+    /**
+     * called after the entity was loaded from db
+     * 
+     * @param \PDO $db
+     */
+    public function postLoad(\PDO $db)
     {
 
     }

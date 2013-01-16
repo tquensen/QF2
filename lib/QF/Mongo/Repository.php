@@ -83,13 +83,12 @@ class Repository
             foreach ($data as $k => $v) {
                 $entity->$k = $v;
             }
-            $entity->postCreate();
         } else {
             foreach ($data as $k => $v) {
                 $entity->$k = $v;
                 $entity->setDatabaseProperty($k, $v);
             }
-            $entity->postLoad();
+            $entity->postLoad($this->getDB());
         }
         return $entity;
     }
@@ -474,7 +473,7 @@ class Repository
         $entityClass = get_class($entity);
         
         try {
-            if ($entity->preSave($this->getDB()) === false) {
+            if ($entity->preSave($this->getDB(), !$entity->isNew()) === false) {
                 return false;
             }
 
@@ -493,6 +492,7 @@ class Repository
                     foreach ($insert as $key => $value) {
                         $entity->setDatabaseProperty($key, $value);
                     }
+                    $entity->postSave($this->getDB(), false);
                     return true;
                 }
                 return false;
@@ -522,6 +522,7 @@ class Repository
                             $entity->setDatabaseProperty($key, null);
                         }
                     }
+                    $entity->postSave($this->getDB(), true);
                     return true;
                 }
                 return false;
@@ -550,6 +551,7 @@ class Repository
             $status = $this->getCollection()->remove(array('_id' => $entity->_id), array('safe' => $safe !== null ? $safe : false));
             if ($status) {
                 $entity->clearDatabaseProperties();
+                $entity->postRemove($this->getDB());
                 return true;
             }
             return false;

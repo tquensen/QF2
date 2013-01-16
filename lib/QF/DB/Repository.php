@@ -65,13 +65,12 @@ class Repository
             foreach ($data as $k => $v) {
                 $entity->$k = $v;
             }
-            $entity->postCreate();
         } else {
             foreach ($data as $k => $v) {
                 $entity->$k = $v;
                 $entity->setDatabaseProperty($k, $v);
             }
-            $entity->postLoad();
+            $entity->postLoad($this->getDB());
         }
         return $entity;
     }
@@ -81,7 +80,7 @@ class Repository
         $entityClass = get_class($entity);
         try
         {
-            if ($entity->preSave($this->getDB()) === false) {
+            if ($entity->preSave($this->getDB(), !$this->isNew()) === false) {
                 return false;
             }
             if ($entity->isNew()) {
@@ -111,6 +110,12 @@ class Repository
                 {
                     $entity->setDatabaseProperty($column, $entity->$column);
                 } 
+                
+                if ($result) {
+                    $entity->postSave($this->getDB(), false);
+                }
+                
+                return (bool) $result;
 
             } else {
                 $update = false;
@@ -145,13 +150,18 @@ class Repository
                         $entity->setDatabaseProperty($column, $entity->$column);
                     }
                 }
+                
+                if ($result) {
+                    $entity->postSave($this->getDB(), true);
+                }
+                
+                return (bool) $result;
             }
             
         } catch (Exception $e) {
             throw $e;
         }
 
-		return (bool) $result;
 	}
     
     public function remove($entity)
@@ -173,6 +183,10 @@ class Repository
                 $query = $this->getDB()->prepare('DELETE FROM '.$entityClass::getTableName().' WHERE '.$entityClass::getIdentifier().' = ? LIMIT 1');
                 $result = $query->execute(array($entity->{$entityClass::getIdentifier()}));
                 $entity->clearDatabaseProperties();
+                
+                if ($result) {
+                    $entity->postRemove($this->getDB());
+                }
             }
             else
             {
