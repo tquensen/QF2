@@ -284,7 +284,7 @@ class Core
      * @param string $title the link text
      * @return string the url to the route including base_url (if available) and parameter
      */
-    public function getLink($title, $url, $method = null, $attrs = array(), $tokenName = null, $confirm = null, $postData = array())
+    public function getLink($title, $url, $method = null, $attrs = array(), $tokenName = null, $confirm = null, $postData = array(), $formOptions = array())
     {
         if (!$url) {
             return $title;
@@ -301,14 +301,14 @@ class Core
             }
             return '<a href="'.htmlspecialchars($url).'"'.($attributes).($confirm ? ' onclick="return confirm(\''.htmlspecialchars($confirm).'\')"' : '').'>'.$title.'</a>';
         } else {
-            $form = new \QF\Form\Form(array(
+            $form = new \QF\Form\Form(array_merge(array(
                 'name' => md5($url).'Form',
                 'action' => $url,
                 'method' => strtoupper($method),
                 'class' => 'inlineForm',
                 'wrapper' => 'plain',
                 'formTokenName' => $tokenName ?: 'form_token'
-            ));
+            ), $formOptions));
             if ($confirm) {
                 $form->setOption('attributes', array('onsubmit' => 'return confirm(\''.htmlspecialchars($confirm).'\')'));
             }

@@ -2,7 +2,7 @@
         <input type="hidden" name="REQUEST_METHOD" id="<?php echo htmlspecialchars($form->getName() . '__REQUEST_METHOD') ?>" value="<?php echo htmlspecialchars(strtoupper($form->getOption('method'))) ?>" />
 <?php endif; ?>
 <?php if (($formToken = $form->getFormToken()) && ($formTokenName = $form->getOption('formTokenName'))): ?>
-        <input type="hidden" name="<?php echo htmlspecialchars($formTokenName) ?>" id="<?php echo htmlspecialchars($formTokenName) ?>" value="<?php echo htmlspecialchars($formToken) ?>" />
+        <input type="hidden" name="<?php echo htmlspecialchars($formTokenName) ?>" id="<?php echo htmlspecialchars($form->getName().'__'.$formTokenName) ?>" value="<?php echo htmlspecialchars($formToken) ?>" />
 <?php endif; ?>
 <?php foreach ($form->getElements() as $element): ?>
     <?php if ($element->getType() != 'hidden') { continue; }; ?>
