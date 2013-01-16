@@ -174,10 +174,10 @@ class Core
         if ($setAsMainRoute) {
             $this->currentRoute = $route;
             $this->currentRouteParameter = $parameter;
-            if (!empty($parameter['_format'])) {
+            if (array_key_exists('_format', $parameter)) {
                 $this->format = $parameter['_format'];
             }
-            if (!empty($parameter['_template'])) {
+            if (array_key_exists('_template', $parameter)) {
                 $this->template = $parameter['_template'];
             }
         }
