@@ -293,6 +293,29 @@ class Repository
      * @param array $relations the relations
      * @param array $query The fields for which to search.
      * @param array $sort The fields by which to sort.
+     * @return mixed Returns the first entity found or false
+     */
+    public function findOneWithRelations($relations = array(), $query = array(), $sort = array())
+    {
+        $results = $this->findWithRelations($relations, $query, $sort, 1);
+        return reset($results);
+    }
+    
+    /**
+     * $relations is an array of arrays as followed:
+     *  array(fromAlias, relationProperty, toAlias, options = array())
+     *      options is an array with the following optional keys:
+     *          'query' => array additional query to filter
+     *          'sort' => array sorting of the related entries
+     *          'count' => false|string fetch only the number of related entries, not the entries themself
+     * 
+     *      if count=true, the count of related entities will be saved in the property of the from-object defined by count
+     *      (example: 'count' => 'fooCount' will save the number of related entries in $fromObject->fooCount)
+     *      
+     * 
+     * @param array $relations the relations
+     * @param array $query The fields for which to search.
+     * @param array $sort The fields by which to sort.
      * @param int $limit The number of results to return.
      * @param int $skip The number of results to skip.
      * @return array Returns an array or a cursor for the search results.

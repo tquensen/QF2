@@ -318,6 +318,32 @@ class Repository
      * @param array|string $conditions the where conditions
      * @param array $values values for ?-placeholders in the conditions
      * @param string $order an order by clause (id ASC, foo DESC)
+     * @return mixed the first entity found or false
+     */
+    public function loadOneWithRelations($relations = array(), $conditions = array(), $values = array(), $order = null)
+    {
+        $results = $this->loadWithRelations($relations, $conditions, $values, $order, 1);
+        return reset($results);
+    }
+    
+    /**
+     * $relations is an array of arrays as followed:
+     *  array(fromAlias, relationProperty, toAlias, options = array())
+     *      options is an array with the following optional keys:
+     *          'conditions' => array|string additional where conditions to filter for
+     *          'values' => array values for ?-placeholders in the conditions
+     *          'order' => string the order of the related entries
+     *          'count' => false|string fetch only the number of related entries, not the entries themself
+     * 
+     *      the fromAlias of the initial entity is 'a'
+     * 
+     *      if count is set, the count of related entities will be saved in the property of the from-object defined by count
+     *      (example: 'count' => 'fooCount' will save the number of related entries in $fromObject->fooCount)
+     * 
+     * @param array $relations the relations
+     * @param array|string $conditions the where conditions
+     * @param array $values values for ?-placeholders in the conditions
+     * @param string $order an order by clause (id ASC, foo DESC)
      * @param int $limit
      * @param int $offset
      * @return array
@@ -495,6 +521,40 @@ class Repository
         return $returnData; 
     }
    
+    /**
+     * alternative method to load entities with relations (this method uses one Query with JOINS)
+     *      differences to loadWithRelations:
+     *      - performance may vary based on number of fetched relations
+     *      - cross-table conditions (e.g. a.foo = b.bar)
+     *      - option to select certain referenced tables
+     *      - no ORDER BY for related entities
+     *      - the prefix/alias must be used in any conditions
+     * 
+     * $relations is an array of arrays as followed:
+     *  array(fromAlias, relationProperty, toAlias, options = array())
+     *      options is an array with the following optional keys:
+     *          'select' => true|false if the entites should be selected
+     *          'conditions' => array|string additional where conditions to filter for
+     *          'values' => array values for ?-placeholders in the conditions
+     *          'count' => false|string fetch only the number of related entries, not the entries themself
+     * 
+     *      the fromAlias of the initial entity is 'a'
+     * 
+     *      if count is set, the count of related entities will be saved in the property of the from-object defined by count
+     *      (example: 'count' => 'fooCount' will save the number of related entries in $fromObject->fooCount)
+     * 
+     * @param array $relations the relations
+     * @param array|string $conditions the where conditions
+     * @param array $values values for ?-placeholders in the conditions
+     * @param string $order an order by clause (id ASC, foo DESC)
+     * @return mixed the first entity found or false
+     */
+    public function loadOneWithRelationsAlt($relations = array(), $conditions = array(), $values = array(), $order = null)
+    {
+        $results = $this->loadWithRelationsAlt($relations, $conditions, $values, $order, 1);
+        return reset($results);
+    }
+    
     /**
      * alternative method to load entities with relations (this method uses one Query with JOINS)
      *      differences to loadWithRelations:
