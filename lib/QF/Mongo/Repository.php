@@ -291,12 +291,20 @@ class Repository
      *      
      * 
      * @param array $relations the relations
-     * @param array $query The fields for which to search.
+     * @param array $query The fields for which to search or the _id as string or MongoId
      * @param array $sort The fields by which to sort.
      * @return mixed Returns the first entity found or false
      */
     public function findOneWithRelations($relations = array(), $query = array(), $sort = array())
     {
+        $entityClass = $this->getEntityClass();
+        
+        if (is_string($query)) {
+            $query = array('_id' => $entityClass::isAutoId() ? new \MongoId($query) : $query);
+        } elseif ($query instanceof \MongoId) {
+            $query = array('_id' => $query);
+        }
+        
         $results = $this->findWithRelations($relations, $query, $sort, 1);
         return reset($results);
     }
