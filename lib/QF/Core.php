@@ -370,7 +370,7 @@ class Core
     public function parse($module, $view, $parameter = array())
     {
         $_theme = $this->theme;
-        $_themeString = $_theme ? 'themes/'.$_theme . '/' : '';
+        $_themeString = $_theme ? $_theme . '/' : '';
         $_format = isset($parameter['_format']) ? $parameter['_format'] : $this->format;
         $_formatString = $_format ? '.' . $_format : '';
         $_lang = !empty($this->i18n) ? $this->i18n->getCurrentLanguage() : false;
