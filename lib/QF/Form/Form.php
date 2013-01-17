@@ -272,6 +272,7 @@ class Form
         $form['wasSubmitted'] = $this->wasSubmitted();
         if ($this->getOption('useFormToken')) {
             $form['auth']['formToken'] = $this->getFormToken();
+            $form['auth']['formTokenNane'] = $this->getOption('formTokenName');
         }
 
 
