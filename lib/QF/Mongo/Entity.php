@@ -216,7 +216,7 @@ abstract class Entity extends \QF\Entity
             } else {
                 $query[$relationInfo[2]] = $this->{$relationInfo[1]};
             }            
-            $return = $repository->count($query, $sort, $limit, $skip);
+            $return = $repository->count($query);
         }
         
         if ($saveAs) {
