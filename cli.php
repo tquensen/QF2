@@ -16,7 +16,7 @@ try {
     
     $taskData = $c['cli']->parseArgs($argv);    
     $output = $c['cli']->callTask($taskData['class'], $taskData['task'], $taskData['parameter'], $c);
-    echo $output ? $output : '[no output]'."\n";
+    echo $output ? $output."\n" : '[no output]'."\n";
     
 } catch (Exception $e) {
     echo $e;

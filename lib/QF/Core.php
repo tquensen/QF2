@@ -123,6 +123,9 @@ class Core
     public function redirect($url, $code = 302)
     {
         header('Location: ' . $url, true, $code);
+        if (session_status() == \PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
         exit;
     }
 

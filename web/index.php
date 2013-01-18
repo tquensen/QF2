@@ -53,5 +53,9 @@ try {
         //seems like the error was inside the template or error page
         //display a fallback page
         require(__DIR__.'/../templates/error.php');  
-    }     
+    }   
+    
+    if (session_status() == \PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
 }
