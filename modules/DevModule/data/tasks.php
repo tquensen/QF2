@@ -1,6 +1,6 @@
 <?php
 $tasks['dev.install'] = array(
-    'class' => '\\DevModule\\Task\\Install',
+    'class' => '\\DevModule\\Task\\Installer',
     'task' => 'install',
     'parameter' => array(
         'entity' => false,
@@ -13,7 +13,7 @@ $tasks['dev.install'] = array(
 );
 
 $tasks['dev.uninstall'] = array(
-    'class' => '\\DevModule\\Task\\Install',
+    'class' => '\\DevModule\\Task\\Installer',
     'task' => 'install',
     'parameter' => array(
         'entity' => false,

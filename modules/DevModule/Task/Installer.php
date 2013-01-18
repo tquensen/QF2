@@ -3,7 +3,7 @@ namespace DevModule\Task;
 
 use \QF\Controller;
 
-class Install extends Controller
+class Installer extends Controller
 {
     public function install($parameter, $c)
     {
