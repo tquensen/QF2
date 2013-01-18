@@ -249,7 +249,7 @@ class Repository
      */
     public function findAll($sort = array(), $build = true)
     {
-        return $this->find(array(), array(), $sort, null, null, $build);
+        return $this->find(array(), $sort, null, null, $build);
     }
 
     /**
