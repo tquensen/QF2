@@ -13,10 +13,12 @@ if ((isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] === 'localhost') || (
 
 require_once __DIR__.'/../bootstrap.php';
 
+//session for user handling
+session_name('qf_session');
+session_start();
+
 try {
-    //session for user handling
-    session_name('qf_session');
-    session_start();
+    
     
     $route = isset($_GET['route']) ? $_GET['route'] : '';
     $language = isset($_GET['language']) ? $_GET['language'] : '';
@@ -54,8 +56,9 @@ try {
         //display a fallback page
         require(__DIR__.'/../templates/error.php');  
     }   
-    
-    if (session_status() == \PHP_SESSION_ACTIVE) {
-        session_write_close();
-    }
+ 
+}
+
+if (session_status() == \PHP_SESSION_ACTIVE) {
+    session_write_close();
 }
