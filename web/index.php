@@ -59,6 +59,6 @@ try {
  
 }
 
-if (session_status() == \PHP_SESSION_ACTIVE) {
+if (session_name()) {
     session_write_close();
 }

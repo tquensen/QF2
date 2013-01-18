@@ -101,9 +101,11 @@ abstract class Entity extends \QF\Entity
     {
         $data = unserialize($serialized);
         $this->__construct();
+        $this->_unserializing = true;
         foreach ($data['p'] as $k => $v) {
-            $this->$k = $v;
+            $this->set($k, $v);
         }
+        $this->_unserializing = false;
         $this->_databaseProperties = $data['dbp'];
     }
     
