@@ -1,0 +1,95 @@
+{
+    "hash": "523f33251edb5ecc8d91c757a10a6dfa",
+    "packages": [
+        {
+            "name": "pimple/pimple",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "git://github.com/fabpot/Pimple.git",
+                "reference": "94a46d638debccc5fe88ea293b39462f1a30e2c2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fabpot/Pimple/zipball/94a46d638debccc5fe88ea293b39462f1a30e2c2",
+                "reference": "94a46d638debccc5fe88ea293b39462f1a30e2c2",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "time": "2013-02-05 08:06:03",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Pimple": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                }
+            ],
+            "description": "Pimple is a simple Dependency Injection Container for PHP 5.3",
+            "homepage": "http://pimple.sensiolabs.org",
+            "keywords": [
+                "dependency injection",
+                "container"
+            ]
+        },
+        {
+            "name": "qf/qf2",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tquensen/QF2Core",
+                "reference": "b396fa448712e1bd46f933f2ef33c20241614764"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tquensen/QF2Core/zipball/b396fa448712e1bd46f933f2ef33c20241614764",
+                "reference": "b396fa448712e1bd46f933f2ef33c20241614764",
+                "shasum": ""
+            },
+            "time": "2013-02-07 10:47:37",
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "QF": "lib/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Thomas Quensen",
+                    "email": "tquensen@gmail.com"
+                }
+            ],
+            "description": "QF vendor classes",
+            "support": {
+                "source": "https://github.com/tquensen/QF2Core/tree/master",
+                "issues": "https://github.com/tquensen/QF2Core/issues"
+            }
+        }
+    ],
+    "packages-dev": [
+
+    ],
+    "aliases": [
+
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "pimple/pimple": 20,
+        "qf/qf2": 20
+    }
+}

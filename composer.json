@@ -1,0 +1,20 @@
+{
+    "name": "qf/qf2full",
+    "description": "QF2 Base Package",
+    "authors": [
+        {
+            "name": "Thomas Quensen",
+            "email": "tquensen@gmail.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/tquensen/QF2Core"
+        }
+    ],    
+    "require": {
+        "pimple/pimple": "1.0.*@dev",
+        "qf/qf2": "dev-master"
+    }
+}

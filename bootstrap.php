@@ -6,16 +6,10 @@ error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', QF_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
 
-//initialize PSR-0 compatible autooader
-require_once(__DIR__.'/lib/Symfony/Component/ClassLoader/UniversalClassLoader.php');
-$loader = new Symfony\Component\ClassLoader\UniversalClassLoader();
-//autoload all namespaced classes inside the lib and modules folder
-$loader->registerNamespace('QF', __DIR__.'/lib');
-$loader->registerNamespaceFallbacks(array(__DIR__.'/lib', __DIR__.'/modules'));
-//autoload all classes with PEAR-like class names inside the lib folder
-$loader->registerPrefix('Pimple', __DIR__.'/lib/Pimple');
-$loader->registerPrefixFallbacks(array(__DIR__.'/lib'));
-$loader->register();
+//initialize composer autooader
+$loader = require __DIR__.'vendor/autoload.php';
+$loader->add('', array(__DIR__.'/lib', __DIR__.'/modules'));
+
 
 //require_once(__DIR__.'/lib/functions.php');
 
