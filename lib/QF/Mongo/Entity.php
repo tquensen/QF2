@@ -134,7 +134,7 @@ abstract class Entity extends \QF\Entity
     
     /**
      *
-     * @return MongoCollection
+     * @return \MongoCollection
      */
     public function getCollection($db = null)
     {
@@ -147,8 +147,8 @@ abstract class Entity extends \QF\Entity
     public function increment($property, $value, $save = null)
     {
         $this->set($property, $this->get($property) + $value);
-        if ($save !== null) {
-            $status = $this->getRgetCollection()->update(array('_id' => $this->_id), array('$inc' => array($property => $value)), array('safe' => $save));
+        if ($save !== false) {
+            $status = $this->getCollection()->update(array('_id' => $this->_id), array('$inc' => array($property => $value)), $save !== null ? array('w' => $w) : array());
             if ($status) {
                 $this->setDatabaseProperty($property, $this->$property);
                 return true;
@@ -222,7 +222,7 @@ abstract class Entity extends \QF\Entity
         }
         
         if ($saveAs) {
-            $this->$saveAs = $return;
+            $this->set($saveAs, $return);
         }
         return $return;
     }
@@ -231,10 +231,10 @@ abstract class Entity extends \QF\Entity
      *
      * @param string $relation the relation name
      * @param Mongo_Model|mixed $related either a Mongo\Model object, a Mongo\Model->_id-value or an array with multiple Mongo\Models
-     * @param mixed $save set to null to prevent a save() call, otherwise call save($save)
+     * @param mixed $save set to false to prevent a save() call, otherwise call save($save)
      * @return bool
      */
-    public function linkRelated($relation, $related, $save = true)
+    public function linkRelated($relation, $related, $save = null)
     {
         if (!$relationInfo = static::getRelation($relation)) {
             throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
@@ -256,28 +256,28 @@ abstract class Entity extends \QF\Entity
             if ($relationInfo[1] == '_id') {
                 if (!$this->{$relationInfo[1]}) {
                     if (!static::isAutoId()) {
-                        throw new \Exception('Counld not link realted '.$relationInfo[0].' - '.$relationInfo[1].' not set!');
+                        throw new \Exception('Could not link related '.$relationInfo[0].' - '.$relationInfo[1].' not set!');
                     }
                     $this->{$relationInfo[1]} = new \MongoId();
-                    if ($save !== null) {
+                    if ($save !== false) {
                         $this->save($save);
                     }
                 }
                 
                 $related->{$relationInfo[2]} = $this->{$relationInfo[1]};
-                return $save !== null ? $related->save($save) : true;
+                return $save !== false ? $related->save($save) : true;
             } elseif ($relationInfo[2] == '_id') {
                 if (!$related->{$relationInfo[2]}) {
                     if (!$relationInfo[0]::isAutoId()) {
                         throw new \Exception('Counld not link realted '.$relationInfo[0].' - '.$relationInfo[2].' not set!');
                     }
                     $related->{$relationInfo[2]} = new \MongoId();
-                    if ($save !== null) {
+                    if ($save !== false) {
                         $related->save($save);
                     }
                 }
                 $this->{$relationInfo[1]} = $related->{$relationInfo[2]};
-                return $save !== null ? $this->save($save) : true;
+                return $save !== false ? $this->save($save) : true;
             }
         } else {
             if ($relationInfo[1] == '_id' && !$this->{$relationInfo[1]}) {
@@ -285,7 +285,7 @@ abstract class Entity extends \QF\Entity
                     throw new \Exception('Couldnt not link realted '.$relationInfo[0].' - '.$relationInfo[1].' not set!');
                 }
                 $this->{$relationInfo[1]} = new \MongoId();
-                if ($save !== null) {
+                if ($save !== false) {
                     $this->save($save);
                 }
             } elseif ($relationInfo[2] == '_id' && !$related->{$relationInfo[2]}) {
@@ -293,7 +293,7 @@ abstract class Entity extends \QF\Entity
                     throw new \Exception('Couldnt not link realted '.$relationInfo[0].' - '.$relationInfo[2].' not set!');
                 }
                 $related->{$relationInfo[2]} = new \MongoId();
-                if ($save !== null) {
+                if ($save !== false) {
                     $related->save($save);
                 }
             }
@@ -311,7 +311,7 @@ abstract class Entity extends \QF\Entity
                 } else {
                     $related->{$relationInfo[2]} = $this->{$relationInfo[1]};                    
                 }
-                return $save !== null ? $related->save($save) : true;
+                return $save !== false ? $related->save($save) : true;
             } else {
                 if ($multiple) {
                     $rels = (array) $this->{$relationInfo[1]};
@@ -321,9 +321,9 @@ abstract class Entity extends \QF\Entity
                         $this->{$relationInfo[1]} = $rels;
                     }
                 } else {
-                    $this->{$relationInfo[1]} == $related->{$relationInfo[2]};
+                    $this->{$relationInfo[1]} = $related->{$relationInfo[2]};
                 }
-                return $save !== null ? $this->save($save) : true;
+                return $save !== false ? $this->save($save) : true;
             }
         }
     }
@@ -333,10 +333,10 @@ abstract class Entity extends \QF\Entity
      * @param string $relation the relation name
      * @param \Mongo\Entity|mixed $related true to unlink all objects or either a \Mongo\Entity object, a \Mongo\Entity->_id-value  or an array with multiple \Mongo\Entity
      * @param boolean $delete true to delete the related entry, false to only remove the relation (default false) 
-     * @param mixed $save set to null to prevent a save() call, otherwise call save($save)
+     * @param mixed $save set to false to prevent a save() call, otherwise call save($save)
      * @return bool
      */
-    public function unlinkRelated($relation, $related = true, $delete = false, $save = true)
+    public function unlinkRelated($relation, $related = true, $delete = false, $save = null)
     {
         if (!$relationInfo = static::getRelation($relation)) {
             throw new \Exception('Unknown relation "'.$relation.'" for model '.get_class($this));
@@ -352,12 +352,12 @@ abstract class Entity extends \QF\Entity
             $repository = $relationInfo[0]::getRepository($this->getDB());
                 
             if ($relationInfo[1] == '_id') {
-                if (!$this->{$relationInfo[1]} || $save === null) {
+                if (!$this->{$relationInfo[1]} || $save === false) {
                     return true;
                 }
                 
                 $query = array($relationInfo[2] => $this->{$relationInfo[1]});
-                $options = $save !== null ? array('safe' => $save) : array();
+                $options = $save !== false && $save !== null ? array('w' => $save) : array();
                 if ($related !== true) {
                     if (!is_object($related) || !($related instanceof Entity)) {
                         $query['_id'] = $related;
@@ -382,13 +382,13 @@ abstract class Entity extends \QF\Entity
                 
                 if ($delete) {
                     $query = array($relationInfo[2] => $this->{$relationInfo[1]});
-                    $options = $save !== null ? array('safe' => $save) : array();
+                    $options = $save !== false && $save !== null ? array('w' => $save) : array();
                     if (!$repository->getCollection()->remove($query, $options)) {
                         return false;
                     }    
                 }
                 $this->{$relationInfo[1]} = null;
-                return $save !== null ? $this->save($save) : true;
+                return $save !== false ? $this->save($save) : true;
             }
         } else {
             if (isset($relationInfo[3]) && $relationInfo[3] === false) {
@@ -399,19 +399,19 @@ abstract class Entity extends \QF\Entity
                     if ($delete) {
                         $repository = $relationInfo[0]::getRepository($this->getDB());
                         
-                        $options = $save !== null ? array('safe' => $save) : array();
+
                         if ($multiple) {
-                            $status = (bool) $repository->getCollection()->remove(array($relationInfo[2] => array('$in' => $this->{$relationInfo[1]})), $options);
+                            $status = (bool) $repository->removeBy(array($relationInfo[2] => array('$in' => $this->{$relationInfo[1]})), false, $save);
                         } else {
-                            $status = (bool) $repository->getCollection()->remove(array($relationInfo[2] => $this->{$relationInfo[1]}), $options);
+                            $status = (bool) $repository->removeBy(array($relationInfo[2] => $this->{$relationInfo[1]}), false, $save);
                         }
                         
                         if (!$status) {
                             return false;
                         }                       
                     }
-                    $this->{$relationInfo[1]} = null;
-                    return $save !== null ? $this->save($save) : true;
+                    $this->clear($relationInfo[1]);
+                    return $save !== false ? $this->save($save) : true;
                 } else {
                     $repository = $relationInfo[0]::getRepository($this->getDB());
                     $related = $repository->find(array($relationInfo[2] => $this->{$relationInfo[1]}));
@@ -424,11 +424,11 @@ abstract class Entity extends \QF\Entity
                             }
                             $rel->{$relationInfo[2]} = $rels;
                         } else {
-                            $rel->{$relationInfo[2]} = null;
+                            $rel->clear($relationInfo[2]);
                         }
-                        if ($delete && !$rel->{$relationInfo[2]} && $save !== null) {
+                        if ($delete && !$rel->{$relationInfo[2]} && $save !== false) {
                             $rel->remove($save);
-                        } elseif ($save !== null) {
+                        } elseif ($save !== false) {
                             $rel->save($save);
                         }
                     }
@@ -454,13 +454,13 @@ abstract class Entity extends \QF\Entity
                         }
                         $related->{$relationInfo[2]} = $rels;
                     } elseif($related->{$relationInfo[2]} == $this->{$relationInfo[1]}) {
-                        $related->{$relationInfo[2]} = null;
+                        $related->clear($relationInfo[2]);
                     } else {
                         return false;
                     }
-                    if ($delete && !$related->{$relationInfo[2]} && $save !== null) {
+                    if ($delete && !$related->{$relationInfo[2]} && $save !== false) {
                         $related->remove($save);
-                    } elseif ($save !== null) {
+                    } elseif ($save !== false) {
                         return $related->save($save);
                     } else {
                         return true;
@@ -474,14 +474,14 @@ abstract class Entity extends \QF\Entity
                         }
                         $this->{$relationInfo[1]} = $rels;
                     } elseif($related->{$relationInfo[2]} == $this->{$relationInfo[1]}) {
-                        $this->{$relationInfo[1]} = null;
+                        $this->clear($relationInfo[1]);
                     } else {
                         return false;
                     }
-                    if ($delete && $save !== null) {
+                    if ($delete && $save !== false) {
                         $related->remove($save);
                     } 
-                    return $save !== null ? $this->save($save) : true;
+                    return $save !== false ? $this->save($save) : true;
                 }
             }
         }
@@ -489,16 +489,16 @@ abstract class Entity extends \QF\Entity
 
     /**
      *
-     * @param bool|integer $safe @see php.net/manual/en/mongocollection.update.php
+     * @param bool|integer|string $w set to null to use conenction default value / @see http://php.net/manual/en/mongo.writeconcerns.php
      * @return bool Returns if the update was successfully sent to the database.
      */
-    public function save($safe = true, $db = null)
+    public function save($w = null, $db = null)
     {
         if (!$db) {
             $db = $this->getDB();
         }
         try {
-            return static::getRepository($db)->save($this, $safe);
+            return static::getRepository($db)->save($this, $w);
         } catch (\Exception $e) {
             throw $e;
             return false;
@@ -507,16 +507,16 @@ abstract class Entity extends \QF\Entity
 
     /**
      *
-     * @param bool|integer $safe @see php.net/manual/en/mongocollection.remove.php
-     * @return mixed If "safe" is set, returns an associative array with the status of the remove ("ok"), the number of items removed ("n"), and any error that may have occured ("err"). Otherwise, returns TRUE if the remove was successfully sent, FALSE otherwise.
+     * @param bool|integer|string $w set to null to use conenction default value / @see http://php.net/manual/en/mongo.writeconcerns.php
+     * @return mixed If "w" is not 0, returns an associative array with the status of the remove ("ok"), the number of items removed ("n"), and any error that may have occured ("err"). Otherwise, returns TRUE if the remove was successfully sent, FALSE otherwise.
      */
-    public function delete($safe = true, $db = null)
+    public function delete($w = true, $db = null)
     {
         if (!$db) {
             $db = $this->getDB();
         }
         try {
-            return static::getRepository($db)->remove($this, $safe);
+            return static::getRepository($db)->remove($this, $w);
         } catch (\Exception $e) {
             throw $e;
             return false;
@@ -657,12 +657,12 @@ abstract class Entity extends \QF\Entity
         $collection = static::getRepository($db)->getCollection();
         switch ($installedVersion) {
             case 0:
-                $collection->ensureIndex(array('slug' => 1), array('safe' => true, 'unique' => true));
+                $collection->ensureIndex(array('slug' => 1), array('unique' => true));
             case 1:
                 if ($targetVersion && $targetVersion <= 1) break;
             /* //for every new version add your code below (including the lines "case NEW_VERSION:" and "if ($targetVersion && $targetVersion <= NEW_VERSION) break;")
 
-                $collection->ensureIndex(array('name' => 1), array('safe' => true));
+                $collection->ensureIndex(array('name' => 1), array());
 
             case 2:
                 if ($targetVersion && $targetVersion <= 2) break;

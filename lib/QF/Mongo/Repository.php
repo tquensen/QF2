@@ -439,24 +439,24 @@ class Repository
      *
      * @param array $query The fields for which to filter.
      * @param bool $justOne Remove at most one record matching this criteria.
-     * @param bool|integer $safe @see php.net/manual/en/mongocollection.remove.php
+     * @param bool|integer|string $w set to null to use conenction default value / @see http://php.net/manual/en/mongo.writeconcerns.php
      * @param bool $raw true to remove the entries directly, false (default) to call remove() on each model 
      * @return bool if $raw is true, returns the status of the query. If $raw is false, it returns always true
      */
-    public function removeBy($query = array(), $justOne = false, $safe = true, $raw = false)
+    public function removeBy($query = array(), $justOne = false, $w = null, $raw = false)
     {
         if ($raw) {
             $options = array();
             if ($justOne) {
                 $options['justOne'] = true;
             }
-            if ($safe) {
-                $options['safe'] = $safe;
+            if ($w !== null) {
+                $options['w'] = $w;
             }
             return $this->getCollection()->remove($query);
         } else {
             foreach($this->find($query, array(), $justOne ? 1 : null, null) as $entity) {
-                $entity->delete($safe);
+                $entity->delete($w);
             } 
             return true;
         }
@@ -465,10 +465,10 @@ class Repository
     /**
      *
      * @param Entity $entity the model to save
-     * @param bool|integer $safe @see php.net/manual/en/mongocollection.update.php
+     * @param bool|integer|string $w set to null to use conenction default value / @see http://php.net/manual/en/mongo.writeconcerns.php
      * @return bool returns if the update was successfully sent to the database.
      */
-    public function save(Entity $entity, $safe = true)
+    public function save(Entity $entity, $w = true)
     {
         $entityClass = get_class($entity);
         
@@ -484,7 +484,7 @@ class Repository
                         $insert[$column] = $entity->$column;
                     }
                 }
-                $status = $this->getCollection()->insert($insert, array('safe' => $safe));
+                $status = $this->getCollection()->insert($insert, $w !== null ? array('w' => $w) : array());
                 if ($status) {
                     if ($entityClass::isAutoId()) {
                         $entity->_id = $insert['_id'];
@@ -510,7 +510,7 @@ class Repository
                 if (!count($query)) {
                     return true;
                 }
-                $status = $this->getCollection()->update(array('_id' => $entity->_id), $query, array('safe' => $safe));
+                $status = $this->getCollection()->update(array('_id' => $entity->_id), $query, $w !== null ? array('w' => $w) : array());
                 if ($status) {
                     if (!empty($query['$set'])) {
                         foreach ($query['$set'] as $key => $value) {
@@ -536,10 +536,10 @@ class Repository
     /**
      *
      * @param Entity $entity the model to remove
-     * @param bool|integer $safe @see php.net/manual/en/mongocollection.remove.php
-     * @return mixed If "safe" is set, returns an associative array with the status of the remove ("ok"), the number of items removed ("n"), and any error that may have occured ("err"). Otherwise, returns TRUE if the remove was successfully sent, FALSE otherwise.
+     * @param bool|integer|string $w set to null to use conenction default value / @see http://php.net/manual/en/mongo.writeconcerns.php
+     * @return mixed If "w" is not 0, returns an associative array with the status of the remove ("ok"), the number of items removed ("n"), and any error that may have occured ("err"). Otherwise, returns TRUE if the remove was successfully sent, FALSE otherwise.
      */
-    public function remove(Entity $entity, $safe = true)
+    public function remove(Entity $entity, $w = true)
     {
         if (!$entity->_id) {
             return false;
@@ -548,7 +548,7 @@ class Repository
             if ($entity->preRemove($this->getDB()) === false) {
                 return false;
             }
-            $status = $this->getCollection()->remove(array('_id' => $entity->_id), array('safe' => $safe !== null ? $safe : false));
+            $status = $this->getCollection()->remove(array('_id' => $entity->_id), $w !== null ? array('w' => $w) : array());
             if ($status) {
                 $entity->clearDatabaseProperties();
                 $entity->postRemove($this->getDB());

@@ -84,12 +84,12 @@ class MongoFoo extends Entity
         $collection = static::getRepository($db)->getCollection();
         switch ($installedVersion) {
             case 0:
-                $collection->ensureIndex(array('bar_id' => 1), array('safe' => true, 'unique' => false));
+                $collection->ensureIndex(array('bar_id' => 1), array('w' => 1, 'unique' => false));
             case 1:
                 if ($targetVersion && $targetVersion <= 1) break;
             /* //for every new version add your code below (including the lines "case NEW_VERSION:" and "if ($targetVersion && $targetVersion <= NEW_VERSION) break;")
 
-                $collection->ensureIndex(array('name' => 1), array('safe' => true));
+                $collection->ensureIndex(array('name' => 1), array('w' => 1));
 
             case 2:
                 if ($targetVersion && $targetVersion <= 2) break;

@@ -19,10 +19,10 @@ class DB
     {
         if ($this->connection === null) {
 
-            if (!empty($this->settings['server'])) {
-                $mongo = new \Mongo($this->settings['server'], !empty($this->settings['options']) ? $this->settings['options'] : array());
+            if (!empty($this->settings['server']) || !empty($this->settings['options'])) {
+                $mongo = new \MongoClient(!empty($this->settings['server']) ? $this->settings['server'] : 'mongodb://localhost:27017', !empty($this->settings['options']) ? $this->settings['options'] : array());
             } else {
-                $mongo = new \Mongo();
+                $mongo = new \MongoClient();
             }
             $database = !empty($this->settings['database']) ? $this->settings['database'] : 'default';
             $this->connection = $mongo->$database;
