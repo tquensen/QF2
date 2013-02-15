@@ -1,5 +1,5 @@
 {
-    "name": "qf/qf2full",
+    "name": "tqn/qf2full",
     "description": "QF2 Base Package",
     "authors": [
         {
@@ -15,6 +15,6 @@
     ],    
     "require": {
         "pimple/pimple": "1.0.*@dev",
-        "qf/qf2": "dev-master"
+        "tqn/qf2": "dev-master"
     }
 }

@@ -1,25 +1,47 @@
 <?php
-$tasks['dev.install'] = array(
+$tasks['db.install'] = array(
     'class' => '\\DevModule\\Task\\Installer',
     'task' => 'install',
     'parameter' => array(
         'entity' => false,
         'from' => 0,
         'to' => 0,
-        'type' => 'install',
         'storageKey' => 'db' //how to access the db connection ($c['db'])
     ),
     'assign' => array('entity', 'from', 'to')
 );
 
-$tasks['dev.uninstall'] = array(
+$tasks['db.uninstall'] = array(
     'class' => '\\DevModule\\Task\\Installer',
-    'task' => 'install',
+    'task' => 'uninstall',
     'parameter' => array(
         'entity' => false,
         'from' => 0,
         'to' => 0,
-        'type' => 'uninstall',
+        'storageKey' => 'db' //how to access the db connection ($c['db'])
+    ),
+    'assign' => array('entity', 'from', 'to')
+);
+
+$tasks['mongo.install'] = array(
+    'class' => '\\DevModule\\Task\\Installer',
+    'task' => 'installMongo',
+    'parameter' => array(
+        'entity' => false,
+        'from' => 0,
+        'to' => 0,
+        'storageKey' => 'db' //how to access the db connection ($c['db'])
+    ),
+    'assign' => array('entity', 'from', 'to')
+);
+
+$tasks['mongo.uninstall'] = array(
+    'class' => '\\DevModule\\Task\\Installer',
+    'task' => 'uninstall',
+    'parameter' => array(
+        'entity' => false,
+        'from' => 0,
+        'to' => 0,
         'storageKey' => 'db' //how to access the db connection ($c['db'])
     ),
     'assign' => array('entity', 'from', 'to')

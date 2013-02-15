@@ -5,6 +5,7 @@ use QF\DB\Entity;
 
 class Foo extends Entity
 {
+    protected static $maxDatabaseVersion = 1;
     protected static $tableName = 'example_foo';
     protected static $autoIncrement = true;
     protected static $identifier = 'id';
@@ -81,9 +82,11 @@ class Foo extends Entity
      */
     public static function install($db, $installedVersion = 0, $targetVersion = 0)
     {
-        switch ($installedVersion) {
-            case 0:
-                $sql = "CREATE TABLE ".static::getTableName()." (
+        return false; //'no installation configured for this Entity';
+        
+        if ($installedVersion <= 0 && $targetVersion >= 1) {
+            //VERSION 0->1
+            $sql = "CREATE TABLE ".static::getTableName()." (
                       ".static::getIdentifier()." INT(11) ".(static::isAutoIncrement() ? "AUTO_INCREMENT" : "").",
                           
                       title VARCHAR(255) NOT NULL,
@@ -96,19 +99,25 @@ class Foo extends Entity
 					) ENGINE=INNODB DEFAULT CHARSET=utf8";
 
                 $db->query($sql);
-            case 1:
-                if ($targetVersion && $targetVersion <= 1) break;
-            /* //for every new version add your code below (including the lines "case NEW_VERSION:" and "if ($targetVersion && $targetVersion <= NEW_VERSION) break;")
-
-                $sql = "ALTER TABLE ".static::getTableName()."
+        }
+        
+        /*
+        if ($installedVersion <= 1 && $targetVersion >= 2) {
+            //VERSION 1->2
+            $sql = "ALTER TABLE ".static::getTableName()."
 					  ADD something VARCHAR(255)";
 
-                $db->query($sql);
-
-            case 2:
-                if ($targetVersion && $targetVersion <= 2) break;
-             */
+            $db->query($sql);
         }
+        */
+        
+        //for every new Version, copy&paste this IF block and set MAX_VERSION to the new version
+        /*
+        if ($installedVersion <= MAX_VERSION - 1 && $targetVersion >= MAX_VERSION) {
+            //VERSION MAX_VERSION-1->MAX_VERSION
+        }
+        */
+
         return true;
     }
 
@@ -117,19 +126,29 @@ class Foo extends Entity
      */
     public static function uninstall($db, $installedVersion = 0, $targetVersion = 0)
     {
-        SWITCH ($installedVersion) {
-            case 0:
-            /* //for every new version add your code directly below "case 0:", beginning with "case NEW_VERSION:" and "if ($targetVersion >= NEW_VERSION) break;"
-            case 2:
-                if ($targetVersion >= 2) break;
-                $sql = "ALTER TABLE ".static::getTableName()." DROP something";
-                $db->query($sql);
-             */
-            case 1:
-                if ($targetVersion >= 1) break;
-                $sql = "DROP TABLE ".static::getTableName()."";
-                $db->query($sql);
+        return false; //'no installation configured for this Entity';
+        
+        //for every new Version, copy&paste this IF block and set MAX_VERSION to the new version
+        /*
+        if ($installedVersion >= MAX_VERSION && $targetVersion <= MAX_VERSION - 1) {
+            //VERSION MAX_VERSION->MAX_VERSION-1
         }
+        */
+        
+        /*
+        if ($installedVersion >= 2 && $targetVersion <= 1) {
+            //VERSION 2->1
+            $sql = "ALTER TABLE ".static::getTableName()." DROP something";
+            $db->query($sql);
+        }
+        */
+        
+        if ($installedVersion >= 1 && $targetVersion <= 0) {
+            //VERSION 1->0
+            $sql = "DROP TABLE ".static::getTableName()."";
+            $db->query($sql);
+        }
+        
         return true;
     }
 }
