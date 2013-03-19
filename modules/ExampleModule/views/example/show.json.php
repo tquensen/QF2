@@ -7,7 +7,7 @@ $json = array_merge(
         'success' => true,
         'url' => $qf->getUrl('example.show', array('id' => $entity->id))
     ),
-    $model->toArray() //be careful if the model has also a 'success' or 'url' property
+    $entity->toArray() //be careful if the model has also a 'success' or 'url' property
 );
 */
 

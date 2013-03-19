@@ -5,14 +5,15 @@ use \QF\Controller;
 
 class Assets extends Controller
 {
-    public function link($parameter, $c)
+    public function link($parameter, $cli)
     {
-
-        /* @var $qf \QF\Core */
-        $qf = $c['core'];
-        $modulePath = $qf->getModulePath();
-        $templatePath = $qf->getTemplatePath();
-        $webPath = $qf->getWebPath();
+        $c = $cli->getContainer();
+        
+        /* @var $qf \QF\ViewHelper */
+        $view = $c['view'];
+        $modulePath = $view->getModulePath();
+        $templatePath = $view->getTemplatePath();
+        $webPath = $view->getWebPath();
         
         if (!file_exists($webPath.'/modules')) {
             echo 'Created directory '.$webPath.'/modules'."\n";

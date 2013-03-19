@@ -12,7 +12,7 @@
     </li>
     <?php endforeach; ?>
 </ol>
-<?php echo $qf->parse('DefaultModule', 'utils/pager', $pager->getForView()); ?>
+<?php echo $view->parse('DefaultModule', 'utils/pager', $pager->getForView()); ?>
 <?php else: ?>
     <p><?php echo $t->indexNoEntities; ?></p>
 <?php endif; ?>

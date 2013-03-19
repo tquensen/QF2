@@ -15,7 +15,7 @@ try {
     $c['core']->setFormat('plain'); //use the plain format for views  
     
     $taskData = $c['cli']->parseArgs($argv);    
-    $output = $c['cli']->callTask($taskData['class'], $taskData['task'], $taskData['parameter'], $c);
+    $output = $c['cli']->callTask($taskData['class'], $taskData['task'], $taskData['parameter']);
     echo $output ? $output."\n" : '[no output]'."\n";
     
 } catch (Exception $e) {

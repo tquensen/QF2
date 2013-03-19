@@ -5,8 +5,9 @@ use \QF\Controller;
 
 class Example extends Controller
 {
-    public function exampleTask($parameter, $c)
+    public function exampleTask($parameter, $cli)
     {
+        $c = $cli->getContainer();
         var_dump($parameter);
     }
 }

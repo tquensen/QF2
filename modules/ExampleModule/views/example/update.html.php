@@ -6,5 +6,5 @@
         </a>
     </p>
 <?php else:
-    echo $qf->parse('DefaultModule', 'form/form', array('form' => $form));
+    echo $view->parse('DefaultModule', 'form/form', array('form' => $form));
 endif;
