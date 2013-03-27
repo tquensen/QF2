@@ -20,14 +20,14 @@ $c['core'] = $c->share(function ($c) {
     //i18n (optional)
     $qf->setI18n($c['i18n']);
     
-    //security/user/session (optional if no routes require rights)
+    //security/user/session
     $qf->setSecurity($c['security']);
     
     return $qf;
 });
 
 //initialize QF\ViewManager class
-$c['core'] = $c->share(function ($c) {
+$c['view'] = $c->share(function ($c) {
     $config = $c['config'];
     
     $view = new QF\ViewManager();
@@ -49,6 +49,12 @@ $c['core'] = $c->share(function ($c) {
     $view->setI18n($c['i18n']);
     
     return $view;
+});
+
+//event dispatcher
+$c['event'] = $c->share(function ($c) {  
+    $config = $c['config'];
+    return new QF\EventDispatcher($c, !empty($config['events']) ? $config['events'] : array());
 });
 
 $c['cli'] = $c->share(function ($c) {
@@ -90,5 +96,14 @@ $c['db'] = $c->share(function ($c) {
 $c['db'] = $c->share(function ($c) {
     $config = $c['config'];
     return new QF\Mongo\DB($config['db']['mongo']);
+});
+*/
+
+
+//example for an event listener
+/*
+$c['listener.foo'] = $c->share(function ($c) {
+    $config = $c['config']; //if configuration is required
+    return new \Foo\EventListener($config['foo.something']);
 });
 */
