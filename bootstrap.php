@@ -10,11 +10,14 @@ ini_set('log_errors', '1');
 $loader = require __DIR__.'vendor/autoload.php';
 $loader->add('', array(__DIR__.'/lib', __DIR__.'/modules'));
 
-
 //require_once(__DIR__.'/lib/functions.php');
 
-//load config
-require __DIR__.'/data/config.php';
-
 //define and initialize dependencies
-require __DIR__.'/dependencies.php';
+$c = new Pimple();
+
+//load module specific dependencies
+//require $config['module_path'] . '/ExampleModule/data/dependencies.php';
+
+require __DIR__.'/data/dependencies.php';
+
+

@@ -1,20 +1,80 @@
 <?php
 
-$c = new Pimple();
-$c['config'] = $config;
+//load config
+$c['config'] = $c->share(function ($c) {
+    $config = array();
+    
+    //load application config
+    require __DIR__.'/config.php';
+    
+    //add module config files
+    //require $config['module_path'] . '/ExampleModule/data/config.php';
+    
+    //load environment specific config
+    if (file_exists(__DIR__.'/config_'.QF_ENV.'.php')) {
+        require __DIR__.'/config_'.QF_ENV.'.php';
+    }
+    
+    return $config;
+});
+
+//load cli tasks
+$c['tasks'] = $c->share(function ($c) {
+    $tasks = array();
+
+    //add module task files
+    //require $c['config']['module_path'] . '/ExampleModule/data/tasks.php';
+    
+    //load development Tasks on CLI access
+    if (QF_CLI === true) {
+        require $c['config']['module_path'] . '/DevModule/data/tasks.php';
+    }
+
+    //load application tasks
+    require __DIR__.'/tasks.php';
+    
+    return $tasks;
+});
+
+//load routes
+$c['routes'] = $c->share(function ($c) {
+    $routes = array();
+    
+    //load error routes
+    require $c['config']['module_path'] . '/DefaultModule/data/errorRoutes.php';
+
+    //load routes from Example module
+    require $c['config']['module_path'] . '/ExampleModule/data/routes.php';
+    
+    //load application routes
+    require __DIR__.'/routes.php';
+    
+    return $routes;
+});
+
+//load evcent configuration
+$c['events'] = $c->share(function ($c) {
+    $events = array();
+    
+    //load module event config
+    //require $c['config']['module_path'] . '/ExampleModule/data/events.php';
+    
+    //load application events
+    require __DIR__.'/events.php';
+    
+    return $events;
+});
 
 //initialize QF\Core class
 $c['core'] = $c->share(function ($c) {
     $config = $c['config'];
-
-    $routes = array();
-    require __DIR__.'/data/routes.php';
     
-    $qf = new QF\Core($routes);
+    $qf = new QF\Core();
     
     $qf->setContainer($c);
     
-    $qf->setRoutes($routes);
+    $qf->setRoutes($c['routes']);
+    
     if (!empty($config['home_route'])) { $qf->setHomeRoute($config['home_route']); }
     
     //i18n (optional)
@@ -53,15 +113,11 @@ $c['view'] = $c->share(function ($c) {
 
 //event dispatcher
 $c['event'] = $c->share(function ($c) {  
-    $config = $c['config'];
-    return new QF\EventDispatcher($c, !empty($config['events']) ? $config['events'] : array());
+    return new QF\EventDispatcher($c, $c['events']);
 });
 
 $c['cli'] = $c->share(function ($c) {
-    $config = $c['config'];
-    
-    $tasks = array();
-    require __DIR__.'/data/tasks.php';
+    $tasks = $c['tasks'];
     
     $cli = new QF\Cli($tasks);
     
