@@ -15,9 +15,11 @@ $loader->add('', array(__DIR__.'/lib', __DIR__.'/modules'));
 //define and initialize dependencies
 $c = new Pimple();
 
-//load module specific dependencies
-//require $config['module_path'] . '/ExampleModule/data/dependencies.php';
+$c['modules'] = array(
+    'DevModule' => __DIR__.'/modules/DevModule',
+    'ExampleModule' => __DIR__.'/modules/ExampleModule',
+    'DefaultModule' => __DIR__.'/modules/DefaultModule',
+);
 
 require __DIR__.'/data/dependencies.php';
-
 

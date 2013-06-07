@@ -1,14 +1,26 @@
 <?php
 
+foreach ($c['modules'] as $module => $path) {
+    if (file_exists($path.'/data/dependencies.php')) {
+        require $path.'/data/dependencies.php';
+    }
+}
+
 //load config
 $c['config'] = $c->share(function ($c) {
     $config = array();
+
+    foreach ($c['modules'] as $module => $path) {
+        if (file_exists($path.'/data/config.php')) {
+            require $path.'/data/config.php';
+        }
+        if (file_exists($path.'/data/config_'.QF_ENV.'.php')) {
+            require $path.'/data/config'.QF_ENV.'.php';
+        }
+    }
     
     //load application config
     require __DIR__.'/config.php';
-    
-    //add module config files
-    //require $config['module_path'] . '/ExampleModule/data/config.php';
     
     //load environment specific config
     if (file_exists(__DIR__.'/config_'.QF_ENV.'.php')) {
@@ -22,14 +34,11 @@ $c['config'] = $c->share(function ($c) {
 $c['tasks'] = $c->share(function ($c) {
     $tasks = array();
 
-    //add module task files
-    //require $c['config']['module_path'] . '/ExampleModule/data/tasks.php';
-    
-    //load development Tasks on CLI access
-    if (QF_CLI === true) {
-        require $c['config']['module_path'] . '/DevModule/data/tasks.php';
+    foreach ($c['modules'] as $module => $path) {
+        if (file_exists($path.'/data/tasks.php')) {
+            require $path.'/data/tasks.php';
+        }
     }
-
     //load application tasks
     require __DIR__.'/tasks.php';
     
@@ -40,11 +49,11 @@ $c['tasks'] = $c->share(function ($c) {
 $c['routes'] = $c->share(function ($c) {
     $routes = array();
     
-    //load error routes
-    require $c['config']['module_path'] . '/DefaultModule/data/errorRoutes.php';
-
-    //load routes from Example module
-    require $c['config']['module_path'] . '/ExampleModule/data/routes.php';
+    foreach ($c['modules'] as $module => $path) {
+        if (file_exists($path.'/data/routes.php')) {
+            require $path.'/data/routes.php';
+        }
+    }
     
     //load application routes
     require __DIR__.'/routes.php';
@@ -52,12 +61,15 @@ $c['routes'] = $c->share(function ($c) {
     return $routes;
 });
 
-//load evcent configuration
+//load event configuration
 $c['events'] = $c->share(function ($c) {
     $events = array();
     
-    //load module event config
-    //require $c['config']['module_path'] . '/ExampleModule/data/events.php';
+    foreach ($c['modules'] as $module => $path) {
+        if (file_exists($path.'/data/events.php')) {
+            require $path.'/data/events.php';
+        }
+    }
     
     //load application events
     require __DIR__.'/events.php';
@@ -102,9 +114,10 @@ $c['view'] = $c->share(function ($c) {
     if (!empty($config['base_url_i18n'])) { $view->setBaseUrlI18n($config['base_url_i18n']); }
     if (!empty($config['static_url'])) { $view->setStaticUrl($config['static_url']); }
     if (!empty($config['template_path'])) { $view->setTemplatePath($config['template_path']); }
-    if (!empty($config['module_path'])) { $view->setModulePath($config['module_path']); }
     if (!empty($config['web_path'])) { $view->setWebPath($config['web_path']); }
-    
+
+    $view->setModules($c['modules']);
+
     //i18n (optional)
     $view->setI18n($c['i18n']);
     
@@ -133,7 +146,18 @@ $c['security'] = $c->share(function ($c) {
 //i18n
 $c['i18n'] = $c->share(function ($c) {  
     $config = $c['config'];
-    return new QF\I18n($config['i18n_path'], $config['module_path'], $config['languages'], $config['default_language']);
+    
+    $translationDirectories = array();
+    
+    foreach ($c['modules'] as $module => $path) {
+        if (file_exists($path.'/data/i18n')) {
+            $translationDirectories[] = $path.'/data/i18n';
+        }
+    }
+    
+    $translationDirectories[] = __DIR__.'/i18n';
+    
+    return new QF\I18n($translationDirectories, $config['languages'], $config['default_language']);
 });
 
 //default translations
@@ -163,3 +187,4 @@ $c['listener.foo'] = $c->share(function ($c) {
     return new \Foo\EventListener($config['foo.something']);
 });
 */
+

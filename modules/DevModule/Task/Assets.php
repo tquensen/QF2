@@ -11,7 +11,7 @@ class Assets extends Controller
         
         /* @var $qf \QF\ViewHelper */
         $view = $c['view'];
-        $modulePath = $view->getModulePath();
+        $modules = $view->getModules();
         $templatePath = $view->getTemplatePath();
         $webPath = $view->getWebPath();
         
@@ -24,39 +24,16 @@ class Assets extends Controller
             mkdir($webPath.'/templates');
         }
 
-        foreach (scandir($modulePath) as $module) {
-            if (!is_dir($modulePath.'/'.$module) || $module == '.' || $module == '..') {
+        foreach ($modules as $module => $path) {
+            if (!is_dir($path)) {
                 continue;
             }
             
-            foreach (scandir($modulePath.'/'.$module) as $folder) {
-                if (!is_dir($modulePath.'/'.$module.'/'.$folder) || $folder == '.' || $folder == '..') {
-                    continue;
-                }
-                
-                if ($folder == 'public') {
-                    if (!file_exists($webPath.'/modules/'.$module)) {
-                        symlink($modulePath.'/'.$module.'/'.$folder, $webPath.'/modules/'.$module);
-                        echo 'Created symlink '.$webPath.'/modules/'.$module . ' pointing to '.$modulePath.'/'.$module.'/'.$folder."\n";
-                    }
-                } else {
-                    foreach (scandir($modulePath.'/'.$module.'/'.$folder) as $subfolder) {
-                        if (!is_dir($modulePath.'/'.$module.'/'.$folder.'/'.$subfolder) || $subfolder == '.' || $subfolder == '..') {
-                            continue;
-                        }
-
-                        if ($subfolder == 'public') {
-                            if (!file_exists($webPath.'/modules/'.$module.'/'.$folder)) {
-                                if (!file_exists($webPath.'/modules/'.$module)) {
-                                    mkdir($webPath.'/modules/'.$module);
-                                }
-                                symlink($modulePath.'/'.$module.'/'.$folder.'/'.$subfolder, $webPath.'/modules/'.$module.'/'.$folder);
-                                echo 'Created symlink '.$webPath.'/modules/'.$module.'/'.$folder . ' pointing to '.$modulePath.'/'.$module.'/'.$folder.'/'.$subfolder."\n";
-                            }
-                        }
-                    }
-                }
+            if (file_exists($path.'/public') && !file_exists($webPath.'/modules/'.$module)) {
+                symlink($path.'/public', $webPath.'/modules/'.$module);
+                echo 'Created symlink '.$webPath.'/modules/'.$module . ' pointing to '.$path.'/public'."\n";
             }
+            
         }
         
         foreach (scandir($templatePath) as $theme) {
