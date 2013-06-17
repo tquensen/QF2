@@ -87,6 +87,8 @@ $c['core'] = $c->share(function ($c) {
     
     $qf->setRoutes($c['routes']);
     
+    $qf->setView($c['view']);
+    
     if (!empty($config['home_route'])) { $qf->setHomeRoute($config['home_route']); }
     
     //i18n (optional)
@@ -140,7 +142,14 @@ $c['cli'] = $c->share(function ($c) {
 });
 
 $c['security'] = $c->share(function ($c) {
-    return new QF\Security($c['config']['roles']);
+    $config = $c['config'];
+    
+    $security = new QF\Security($c['config']['roles']);
+    
+    if (!empty($config['security']['authenticationMode'])) { $security->setAuthenticationMode($config['security']['authenticationMode']); }
+    if (!empty($config['security']['secureDefault'])) { $security->setSecureDefault($config['security']['secureDefault']); }
+    
+    return $security;
 });
 
 //i18n

@@ -21,6 +21,9 @@ $config['roles']['GUEST'] = array('guest');
 $config['roles']['USER'] = array('user');
 $config['roles']['ADMIN'] = array('admin', 'user');
 
+$config['security']['authenticationMode'] = 'grant'; //grant = grant access if at least one authorzation check was successful
+                                                     //deny = deny access if at least one check failed
+$config['security']['secureDefault'] = false; //deny access if no authorzation is configured on the route/object/..?
 
 //i18n
 $config['languages'] = array('en', 'de');
