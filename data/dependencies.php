@@ -97,6 +97,8 @@ $c['core'] = $c->share(function ($c) {
     //security/user/session
     $qf->setSecurity($c['security']);
     
+    $qf->setEventDispatcher($c['event']);
+    
     return $qf;
 });
 
@@ -146,8 +148,10 @@ $c['security'] = $c->share(function ($c) {
     
     $security = new QF\Security($c['config']['roles']);
     
-    if (!empty($config['security']['authenticationMode'])) { $security->setAuthenticationMode($config['security']['authenticationMode']); }
     if (!empty($config['security']['secureDefault'])) { $security->setSecureDefault($config['security']['secureDefault']); }
+    
+    $event = new Event($this);
+    $c['event']->notify('security.init', $event);
     
     return $security;
 });
