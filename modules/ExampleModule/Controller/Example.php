@@ -114,6 +114,7 @@ class Example extends Controller
         if ($form->validate()) {
             $foo = $form->updateEntity();
             if ($foo->save()) {
+                $c['cache']->outdateByTag(array('view_Example_index'));
                 $success = true;
                 $message = $t->createSuccessMessage(array('title' => htmlspecialchars($foo->title)));
 
@@ -160,7 +161,7 @@ class Example extends Controller
         if ($form->validate()) {
             $foo = $form->updateEntity();
             if ($foo->save()) {
-                $c['cache']->outdateByTag('view_Example_show_'.$parameter['id']);
+                $c['cache']->outdateByTag(array('view_Example_index', 'view_Example_show_'.$parameter['id']));
                 $success = true;
                 $message = $t->updateSuccessMessage(array('title' => htmlspecialchars($foo->title)));
 
@@ -201,6 +202,7 @@ class Example extends Controller
         }
 
         if ($success) {
+            $c['cache']->outdateByTag(array('view_Example_index'));
             $c['cache']->removeByTag('view_Example_show_'.$parameter['id']);
             $message = $t->deleteSuccessMessage(array('title' => htmlspecialchars($foo->title)));
             if ($view->getFormat() === null) {
