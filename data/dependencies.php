@@ -61,6 +61,23 @@ $c['routes'] = $c->share(function ($c) {
     return $routes;
 });
 
+//load widget/slots configuration
+$c['widgets'] = $c->share(function ($c) {
+    $slots = array();
+    $widgets = array();
+    
+    foreach ($c['modules'] as $module => $path) {
+        if (file_exists($path.'/data/widgets.php')) {
+            require $path.'/data/widgets.php';
+        }
+    }
+    
+    //load application events
+    require __DIR__.'/widgets.php';
+    
+    return $slots;
+});
+
 //load event configuration
 $c['events'] = $c->share(function ($c) {
     $events = array();
@@ -86,7 +103,7 @@ $c['core'] = $c->share(function ($c) {
     $qf->setContainer($c);
     
     $qf->setRoutes($c['routes']);
-    
+    $qf->setWidgets($c['widgets']);
     $qf->setView($c['view']);
     
     if (!empty($config['home_route'])) { $qf->setHomeRoute($config['home_route']); }

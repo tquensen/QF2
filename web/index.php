@@ -42,7 +42,7 @@ try {
     }
     */
     
-    $pageContent = $c['core']->callRoute($routeData['route'], $routeData['parameter']);
+    $pageContent = $c['core']->callRoute($routeData['route'], $routeData['parameter'], true);
     echo $c['view']->parseTemplate($pageContent);
 
 } catch (Exception $e) {    

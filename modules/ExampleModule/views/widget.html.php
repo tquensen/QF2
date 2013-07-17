@@ -1,0 +1,1 @@
+<h2>Example Widget</h2>

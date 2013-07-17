@@ -35,5 +35,12 @@ class Base extends Controller
         return $view->parse('ExampleModule', 'pages/'.$parameter['page'], array('t' => $t));
     }
     
+    public function exampleWidget($parameter, $qf, $view)
+    {
+        $slotName = $parameter['slot'];
+        $slotData = $parameter['slotData'];
+        
+        return $view->parse('ExampleModule', 'widget', array('t' => $t));
+    }
     
 }
