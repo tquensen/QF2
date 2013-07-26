@@ -57,12 +57,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/tquensen/QF2Core.git",
-                "reference": "95b516ebe96b08231f48483ec20a34d44bcc84ec"
+                "reference": "2e218d1ef9aed0d0cfea392e17df7845395f96fb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tquensen/QF2Core/zipball/95b516ebe96b08231f48483ec20a34d44bcc84ec",
-                "reference": "95b516ebe96b08231f48483ec20a34d44bcc84ec",
+                "url": "https://api.github.com/repos/tquensen/QF2Core/zipball/2e218d1ef9aed0d0cfea392e17df7845395f96fb",
+                "reference": "2e218d1ef9aed0d0cfea392e17df7845395f96fb",
                 "shasum": ""
             },
             "type": "library",
@@ -82,7 +82,7 @@
                 "source": "https://github.com/tquensen/QF2Core/tree/master",
                 "issues": "https://github.com/tquensen/QF2Core/issues"
             },
-            "time": "2013-07-17 15:56:01"
+            "time": "2013-07-26 14:35:03"
         }
     ],
     "packages-dev": [

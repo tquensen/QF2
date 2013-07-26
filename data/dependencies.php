@@ -145,6 +145,42 @@ $c['view'] = $c->share(function ($c) {
     return $view;
 });
 
+//http meta/asset helper
+$c['meta'] = $c->share(function ($c) {
+    $config = $c['config'];
+    $t = $c['t'];
+    
+    $meta = new \QF\Utils\Meta();
+    
+    //set i18n title/description
+    if ($t) {
+        $meta->setWebsiteTitle($t->website_title);
+        $meta->setDescription($t->meta_description);
+    } else {
+        //or default title/description
+        $meta->setWebsiteTitle($config['meta']['website_title']);
+        $meta->setDescription($config['meta']['meta_description']);
+    }
+    
+    $cb = !empty($config['meta']['useCachebuster']);
+    
+    if (!empty($config['meta']['css'])) {
+        foreach ($config['meta']['css'] as $css) {
+            $meta->setCSS($c['view']->getAsset($css[0], isset($css[1]) ? $css[1] : null, $cb), isset($css[2]) ? $css[2] : null);
+        }
+    }
+    
+    if (!empty($config['meta']['js'])) {
+        foreach ($config['meta']['js'] as $js) {
+            $meta->setJS($c['view']->getAsset($js[0], isset($js[1]) ? $js[1] : null, $cb), isset($js[2]) ? $js[2] : null);
+        }
+    }
+    
+    if (!empty($config['meta']['titleAlign'])) { $meta->setTitleAlign($config['meta']['titleAlign']); }
+    
+    return $meta;
+});
+
 //event dispatcher
 $c['event'] = $c->share(function ($c) {  
     return new QF\EventDispatcher($c, $c['events']);

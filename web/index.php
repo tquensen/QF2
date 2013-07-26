@@ -24,11 +24,7 @@ try {
     $language = isset($_GET['language']) ? $_GET['language'] : '';
     if ($language && !empty($c['i18n'])) {
         $c['i18n']->setCurrentLanguage($language);
-        
-        //set i18n title/description as template parameter
-        $c['view']->website_title = $c['t']->website_title;
-        $c['view']->meta_description = $c['t']->meta_description; 
-    }
+    } 
        
 
         

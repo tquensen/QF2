@@ -1,6 +1,6 @@
 <?php
-$config['parameter']['website_title'] = 'QF Website';
-$config['parameter']['meta_description'] = 'Default meta description.';
+$config['meta']['website_title'] = 'QF Website';
+$config['meta']['meta_description'] = 'Default meta description.';
 
 $config['theme'] = ''; //no theme
 $config['template'] = ''; //empty string/null = 'default' template; false for no template
@@ -8,6 +8,15 @@ $config['default_format'] = 'html';
 
 $config['template_path'] = __DIR__.'/../templates';
 $config['web_path'] = __DIR__.'/../web';
+
+$config['meta']['titleAlign'] = 'rtl'; //or ltr
+$config['meta']['useCachebuster'] = true; //append ?timestamp to js/css urls)
+
+//$config['meta']['css']['myCssFile'] = array('path/filename', 'module', 'media');
+//$config['meta']['css']['myOtherCssFile'] = array('css/styles.css', null, 'screen');
+
+//$config['meta']['js']['myJsFile'] = array('path/filename', 'module', 'type (default=text/javascript)');
+//$config['meta']['js']['jquery'] = array('js/jquery.min.js');
 
 $config['home_route'] = 'home';
 $config['base_url'] = '/'; //http://example.com/;
