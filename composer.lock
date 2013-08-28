@@ -11,12 +11,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fabpot/Pimple.git",
-                "reference": "v1.0.2"
+                "reference": "ae11e57e8c2bb414b2ff93396dbbfc0eb92feb94"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fabpot/Pimple/zipball/v1.0.2",
-                "reference": "v1.0.2",
+                "url": "https://api.github.com/repos/fabpot/Pimple/zipball/ae11e57e8c2bb414b2ff93396dbbfc0eb92feb94",
+                "reference": "ae11e57e8c2bb414b2ff93396dbbfc0eb92feb94",
                 "shasum": ""
             },
             "require": {
@@ -57,12 +57,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/tquensen/QF2Core.git",
-                "reference": "2e218d1ef9aed0d0cfea392e17df7845395f96fb"
+                "reference": "13e3df5019e10cbc67babe0ef8c38f342aef8a35"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tquensen/QF2Core/zipball/2e218d1ef9aed0d0cfea392e17df7845395f96fb",
-                "reference": "2e218d1ef9aed0d0cfea392e17df7845395f96fb",
+                "url": "https://api.github.com/repos/tquensen/QF2Core/zipball/13e3df5019e10cbc67babe0ef8c38f342aef8a35",
+                "reference": "13e3df5019e10cbc67babe0ef8c38f342aef8a35",
                 "shasum": ""
             },
             "type": "library",
@@ -82,7 +82,7 @@
                 "source": "https://github.com/tquensen/QF2Core/tree/master",
                 "issues": "https://github.com/tquensen/QF2Core/issues"
             },
-            "time": "2013-07-26 14:35:03"
+            "time": "2013-08-28 11:32:47"
         }
     ],
     "packages-dev": [
