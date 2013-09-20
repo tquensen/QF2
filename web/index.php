@@ -16,6 +16,7 @@ require_once __DIR__.'/../bootstrap.php';
 //session for user handling
 session_name('qf_session');
 session_start();
+register_shutdown_function('session_write_close');
 
 try {
     
@@ -32,11 +33,11 @@ try {
     $routeData = $c['core']->parseRoute($route);
     
     //redirect 301 if default or invalid language is present in url
-    /*
+    
     if ($language && ($language ==  $c['i18n']->getDefaultLanguage() || !in_array($language, $c['i18n']->getLanguages()))) {
         $c['core']->redirectRoute($routeData['route'], $routeData['parameter'], 301);
     }
-    */
+    
     
     $pageContent = $c['core']->callRoute($routeData['route'], $routeData['parameter'], true);
     echo $c['view']->parseTemplate($pageContent);
@@ -55,8 +56,4 @@ try {
         require(__DIR__.'/../templates/error.php');  
     }   
  
-}
-
-if (session_name()) {
-    session_write_close();
 }
