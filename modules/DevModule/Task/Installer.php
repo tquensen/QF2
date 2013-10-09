@@ -6,10 +6,11 @@ use \QF\Controller;
 
 class Installer extends Controller
 {
-
-    public function install($parameter, $cli)
+    protected static $services = array();
+    
+    public function install($parameter)
     {
-        $c = $cli->getContainer();
+        $c = $this->getContainer();
         
         if (!$parameter['entity']) {
             return 'Error: no Entity given';
@@ -57,7 +58,7 @@ class Installer extends Controller
             if ($status !== true && $status !== null) {
                 return 'An error occurred: ' . $status;
             } else {
-                $res = $qb->query('SELECT version FROM _qf_version WHERE id = "'.$className::getTableName().'"');
+                $res = $db->query('SELECT version FROM _qf_version WHERE id = "'.$className::getTableName().'"');
                 $row = $res->fetch_assoc();
                 if (!empty($row['version'])) {
                     $db->query('UPDATE _qf_version SET version = "'.$to.'" WHERE id = "'.$className::getTableName().'"');
@@ -71,9 +72,9 @@ class Installer extends Controller
         }
     }
     
-    public function installMongo($parameter, $cli)
+    public function installMongo($parameter)
     {
-        $c = $cli->getContainer();
+        $c = $this->getContainer();
         
         if (!$parameter['entity']) {
             return 'Error: no Entity given';
@@ -120,9 +121,9 @@ class Installer extends Controller
         }
     }
     
-    public function uninstall($parameter, $cli)
+    public function uninstall($parameter)
     {
-        $c = $cli->getContainer();
+        $c = $this->getContainer();
         
         if (!$parameter['entity']) {
             return 'Error: no Entity given';
@@ -170,7 +171,7 @@ class Installer extends Controller
             if ($status !== true && $status !== null) {
                 return 'An error occurred: ' . $status;
             } else {
-                $res = $qb->query('SELECT version FROM _qf_version WHERE id = "'.$className::getTableName().'"');
+                $res = $db->query('SELECT version FROM _qf_version WHERE id = "'.$className::getTableName().'"');
                 $row = $res->fetch_assoc();
                 if (!empty($row['version'])) {
                     $db->query('UPDATE _qf_version SET version = "'.$to.'" WHERE id = "'.$className::getTableName().'"');
@@ -185,9 +186,9 @@ class Installer extends Controller
         
     }
     
-    public function uninstallMongo($parameter, $cli)
+    public function uninstallMongo($parameter)
     {
-        $c = $cli->getContainer();
+        $c = $this->getContainer();
         
         if (!$parameter['entity']) {
             return 'Error: no Entity given';
