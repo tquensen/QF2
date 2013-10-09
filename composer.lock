@@ -7,16 +7,16 @@
     "packages": [
         {
             "name": "pimple/pimple",
-            "version": "dev-master",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fabpot/Pimple.git",
-                "reference": "471c7d7c52ad6594e17b8ec33efdd1be592b5d83"
+                "reference": "ae11e57e8c2bb414b2ff93396dbbfc0eb92feb94"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fabpot/Pimple/zipball/471c7d7c52ad6594e17b8ec33efdd1be592b5d83",
-                "reference": "471c7d7c52ad6594e17b8ec33efdd1be592b5d83",
+                "url": "https://api.github.com/repos/fabpot/Pimple/zipball/ae11e57e8c2bb414b2ff93396dbbfc0eb92feb94",
+                "reference": "ae11e57e8c2bb414b2ff93396dbbfc0eb92feb94",
                 "shasum": ""
             },
             "require": {
@@ -25,7 +25,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.1.x-dev"
+                    "dev-master": "1.0.x-dev"
                 }
             },
             "autoload": {
@@ -49,7 +49,7 @@
                 "container",
                 "dependency injection"
             ],
-            "time": "2013-09-19 04:53:08"
+            "time": "2013-03-08 08:21:40"
         },
         {
             "name": "tqn/qf2",
@@ -57,12 +57,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/tquensen/QF2Core.git",
-                "reference": "1cbe2b411dc41acd0a71e0e46231a56440d9e97f"
+                "reference": "5faa877026e33e1faf3a4908a47e9a75cf54b555"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tquensen/QF2Core/zipball/1cbe2b411dc41acd0a71e0e46231a56440d9e97f",
-                "reference": "1cbe2b411dc41acd0a71e0e46231a56440d9e97f",
+                "url": "https://api.github.com/repos/tquensen/QF2Core/zipball/5faa877026e33e1faf3a4908a47e9a75cf54b555",
+                "reference": "5faa877026e33e1faf3a4908a47e9a75cf54b555",
                 "shasum": ""
             },
             "type": "library",
@@ -82,7 +82,7 @@
                 "source": "https://github.com/tquensen/QF2Core/tree/master",
                 "issues": "https://github.com/tquensen/QF2Core/issues"
             },
-            "time": "2013-09-20 08:30:10"
+            "time": "2013-10-09 09:13:27"
         }
     ],
     "packages-dev": [
