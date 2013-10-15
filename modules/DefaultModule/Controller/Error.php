@@ -1,12 +1,8 @@
 <?php
 namespace DefaultModule\Controller;
 
-use \QF\Controller;
-
-class Error extends Controller
-{
-    protected static $services = array('qf' => 'core', 'view', 'i18n', 'meta');
-     
+class Error
+{ 
     /**
      *
      * @var \QF\Core 
@@ -31,6 +27,47 @@ class Error extends Controller
      */
     protected $meta;
     
+    public function getQf()
+    {
+        return $this->qf;
+    }
+
+    public function getView()
+    {
+        return $this->view;
+    }
+
+    public function getI18n()
+    {
+        return $this->i18n;
+    }
+
+    public function getMeta()
+    {
+        return $this->meta;
+    }
+
+    public function setQf(\QF\Core $qf)
+    {
+        $this->qf = $qf;
+    }
+
+    public function setView(\QF\ViewManager $view)
+    {
+        $this->view = $view;
+    }
+
+    public function setI18n(\QF\I18n $i18n)
+    {
+        $this->i18n = $i18n;
+    }
+
+    public function setMeta(\QF\Utils\Meta $meta)
+    {
+        $this->meta = $meta;
+    }
+
+        
     public function error401($parameter)
     {
         header('HTTP/1.1 401 Unauthorized', true, 401);
@@ -62,7 +99,7 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $view->parse('DefaultModule', 'error/error403'.$debugStr, $parameter);
+        return $this->view->parse('DefaultModule', 'error/error403'.$debugStr, $parameter);
     }
     
     public function error404($parameter)
@@ -79,7 +116,7 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $view->parse('DefaultModule', 'error/error404'.$debugStr, $parameter);
+        return $this->view->parse('DefaultModule', 'error/error404'.$debugStr, $parameter);
     }
     
     public function error500($parameter)
@@ -96,6 +133,6 @@ class Error extends Controller
         
         $debugStr = defined('\\QF_DEBUG') && \QF_DEBUG ? 'debug' : '';
         $parameter['t'] = $t;
-        return $view->parse('DefaultModule', 'error/error500'.$debugStr, $parameter);
+        return $this->view->parse('DefaultModule', 'error/error500'.$debugStr, $parameter);
     }
 }

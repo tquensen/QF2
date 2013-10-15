@@ -2,12 +2,24 @@
 
 namespace DevModule\Task;
 
-use \QF\Controller;
-
-class Installer extends Controller
+class Installer
 {
-    protected static $services = array();
+    /**
+     *
+     * @var \Pimple
+     */
+    protected $container;
     
+    public function getContainer()
+    {
+        return $this->container;
+    }
+
+    public function setContainer(\Pimple $container)
+    {
+        $this->container = $container;
+    }
+
     public function install($parameter)
     {
         $c = $this->getContainer();

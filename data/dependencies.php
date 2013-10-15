@@ -203,7 +203,7 @@ $c['security'] = $c->share(function ($c) {
     
     if (!empty($config['security']['secureDefault'])) { $security->setSecureDefault($config['security']['secureDefault']); }
     
-    $event = new Event($this);
+    $event = new Event($security);
     $c['event']->notify('security.init', $event);
     
     return $security;

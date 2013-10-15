@@ -1,18 +1,25 @@
 <?php
 namespace DevModule\Task;
 
-use \QF\Controller;
-
-class Assets extends Controller
+class Assets
 {
-    protected static $services = array('view');
-    
+
     /**
      *
      * @var \QF\ViewManager 
      */
     protected $view;
     
+    public function getView()
+    {
+        return $this->view;
+    }
+
+    public function setView(\QF\ViewManager $view)
+    {
+        $this->view = $view;
+    }
+
     public function link($parameter)
     {
         $modules = $this->view->getModules();

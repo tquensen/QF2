@@ -1,14 +1,11 @@
 <?php
 namespace ExampleModule\Controller;
 
-use \QF\Controller,
-    \QF\Exception\HttpException;
+use \QF\Exception\HttpException;
 
 
-class Base extends Controller
+class Base
 {
-    protected static $services = array('qf' => 'core', 'view', 'i18n', 'meta');
-     
     /**
      *
      * @var \QF\Core 
@@ -33,13 +30,54 @@ class Base extends Controller
      */
     protected $meta;
     
-    public function home($parameter)
+    public function getQf()
+    {
+        return $this->qf;
+    }
+
+    public function getView()
+    {
+        return $this->view;
+    }
+
+    public function getI18n()
+    {
+        return $this->i18n;
+    }
+
+    public function getMeta()
+    {
+        return $this->meta;
+    }
+
+    public function setQf(\QF\Core $qf)
+    {
+        $this->qf = $qf;
+    }
+
+    public function setView(\QF\ViewManager $view)
+    {
+        $this->view = $view;
+    }
+
+    public function setI18n(\QF\I18n $i18n)
+    {
+        $this->i18n = $i18n;
+    }
+
+    public function setMeta(\QF\Utils\Meta $meta)
+    {
+        $this->meta = $meta;
+    }
+
+        
+    public function homeAction($parameter)
     {
         $t = $this->i18n->get('ExampleModule');
         return $this->view->parse('ExampleModule', 'home', array('t' => $t));
     }
     
-    public function staticPage($parameter)
+    public function staticPageAction($parameter)
     {
         if (empty($parameter['page']) || !preg_match('/[\w\-\+]/i', $parameter['page'])) {
             throw new HttpException('invalid page '.$parameter['page'], 404);

@@ -1,6 +1,6 @@
 <?php
 $tasks['db.install'] = array(
-    'class' => '\\DevModule\\Task\\Installer',
+    'service' => 'devmodule.task.installer',
     'task' => 'install',
     'parameter' => array(
         'entity' => false,
@@ -12,7 +12,7 @@ $tasks['db.install'] = array(
 );
 
 $tasks['db.uninstall'] = array(
-    'class' => '\\DevModule\\Task\\Installer',
+    'service' => 'devmodule.task.installer',
     'task' => 'uninstall',
     'parameter' => array(
         'entity' => false,
@@ -24,7 +24,7 @@ $tasks['db.uninstall'] = array(
 );
 
 $tasks['mongo.install'] = array(
-    'class' => '\\DevModule\\Task\\Installer',
+    'service' => 'devmodule.task.installer',
     'task' => 'installMongo',
     'parameter' => array(
         'entity' => false,
@@ -36,7 +36,7 @@ $tasks['mongo.install'] = array(
 );
 
 $tasks['mongo.uninstall'] = array(
-    'class' => '\\DevModule\\Task\\Installer',
+    'service' => 'devmodule.task.installer',
     'task' => 'uninstall',
     'parameter' => array(
         'entity' => false,
@@ -48,6 +48,6 @@ $tasks['mongo.uninstall'] = array(
 );
 
 $tasks['assets.link'] = array(
-    'class' => '\\DevModule\\Task\\Assets',
+    'service' => 'devmodule.task.assets',
     'task' => 'link'
 );

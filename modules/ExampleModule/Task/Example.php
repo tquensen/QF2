@@ -1,13 +1,26 @@
 <?php
 namespace ExampleModule\Task;
 
-use \QF\Controller;
-
-class Example extends Controller
+class Example
 {
-    public function exampleTask($parameter, $cli)
+    /**
+     *
+     * @var \QF\Cli
+     */
+    protected $cli;
+    
+    public function getCli()
     {
-        $c = $cli->getContainer();
+        return $this->cli;
+    }
+
+    public function setCli(\QF\Cli $cli)
+    {
+        $this->cli = $cli;
+    }
+
+    public function exampleTask($parameter)
+    {
         var_dump($parameter);
     }
 }

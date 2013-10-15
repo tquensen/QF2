@@ -1,17 +1,12 @@
 <?php
 namespace ExampleModule\Controller;
 
-use \QF\Controller,
-    \QF\Exception\HttpException,
+use \QF\Exception\HttpException,
     \ExampleModule\Entity\Foo,
-    \ExampleModule\Form;
+    \ExampleModule\Form\ExampleForm;
 
-
-class Example extends Controller
+class Example
 {
-    //if your controller extends \QF\Controller, you can create a static array $services to autoload services from the DI container array(parameter => servicekey), if no string-arraykey is given, the parameter = servicekey)
-    protected static $services = array('qf' => 'core', 'view', 'i18n', 'meta', 'db');
-     
     /**
      *
      * @var \QF\Core 
@@ -42,20 +37,85 @@ class Example extends Controller
      */
     protected $db;
     
+    /**
+     *
+     * @var \QF\Security
+     */
+    protected $security;
+    
+    public function getQf()
+    {
+        return $this->qf;
+    }
+
+    public function getView()
+    {
+        return $this->view;
+    }
+
+    public function getI18n()
+    {
+        return $this->i18n;
+    }
+
+    public function getMeta()
+    {
+        return $this->meta;
+    }
+
+    public function getDb()
+    {
+        return $this->db;
+    }
+    
+    public function getSecurity()
+    {
+        return $this->security;
+    }
+
+    public function setQf(\QF\Core $qf)
+    {
+        $this->qf = $qf;
+    }
+
+    public function setView(\QF\ViewManager $view)
+    {
+        $this->view = $view;
+    }
+
+    public function setI18n(\QF\I18n $i18n)
+    {
+        $this->i18n = $i18n;
+    }
+
+    public function setMeta(\QF\Utils\Meta $meta)
+    {
+        $this->meta = $meta;
+    }
+
+    public function setDb(\QF\DB\DB $db)
+    {
+        $this->db = $db;
+    }
+
+    public function setSecurity(\QF\Security $security)
+    {
+        $this->security = $security;
+    }
+        
     //default index, show, create, update, delete actions
     
-    public function index($parameter)
+    public function indexAction($parameter)
     {   
-        $c = $this->getContainer();
+        /*
         $cacheKey = 'view_'.$this->qf->getRequestHash(true); //unique hash for current route (url+request method+current language)
-        
-        
-        if ($cachedData = $c['cache']->get($cacheKey)) {
+        if ($cachedData = $this->cache->get($cacheKey)) {
             $this->meta->setTitle($cachedData['pageTitle']);
             $this->meta->setDescription($cachedData['metaDescription']);
 
             return $cachedData['response'];
         }
+        */
         
         $t = $this->i18n->get('ExampleModule');
 
@@ -80,28 +140,31 @@ class Example extends Controller
         );
 
         $response = $this->view->parse('ExampleModule', 'example/index', array('t' => $t, 'entities' => $entities, 'pager' => $pager));
+        
+        /*
         $cache = array(
             'response' => $response,
             'pageTitle' => $pageTitle,
             'metaDescription' => $metaDescription
         );
         
-        $c['cache']->set($cacheKey, $cache, 60*60, false, array('view', 'view_Example', 'view_Example_index', 'view_Example_index_page_'.$currentPage));
-            
+        $this->cache->set($cacheKey, $cache, 60*60, false, array('view', 'view_Example', 'view_Example_index', 'view_Example_index_page_'.$currentPage));
+        */
+        
         return $response;
     }
     
-    public function show($parameter)
+    public function showAction($parameter)
     {
-        $c = $this->getContainer();
+        /*
         $cacheKey = 'view_'.$this->qf->getRequestHash(true); //unique hash for current route (url+request method)
-        
-        if ($cachedData = $c['cache']->get($cacheKey)) {
+        if ($cachedData = $this->cache->get($cacheKey)) {
             $this->meta->setTitle($cachedData['pageTitle']);
             $this->meta->setDescription($cachedData['metaDescription']);
 
             return $cachedData['response'];
         }
+       */
         
         $t = $this->i18n->get('ExampleModule');
 
@@ -117,6 +180,8 @@ class Example extends Controller
         $this->meta->setDescription($metaDescription);
         
         $response = $this->view->parse('ExampleModule', 'example/show', array('t' => $t, 'entity' => $foo));
+        
+        /*
         $cache = array(
             'response' => $response,
             'pageTitle' => $pageTitle,
@@ -124,13 +189,13 @@ class Example extends Controller
         );
             
         $c['cache']->set($cacheKey, $cache, 60*60, false, array('view', 'view_Example', 'view_Example_show', 'view_Example_show_'.$parameter['id']));   
+        */
         
         return $response;
     }
     
-    public function create($parameter)
+    public function createAction($parameter)
     {
-        $c = $this->getContainer();
         $t = $this->i18n->get('ExampleModule');
         
         $this->meta->setTitle($t->createTitle);
@@ -147,12 +212,12 @@ class Example extends Controller
         if ($form->validate()) {
             $foo = $form->updateEntity();
             if ($foo->save()) {
-                $c['cache']->outdateByTag(array('view_Example_index'));
+                //$this->cache->outdateByTag(array('view_Example_index'));
                 $success = true;
                 $message = $t->createSuccessMessage(array('title' => htmlspecialchars($foo->title)));
 
                 if ($this->view->getFormat() === null) {
-                    //$this->registry->helper->messages->add($message, 'success');
+                    //$this->messages->add($message, 'success');
                     return $this->qf->redirect($this->qf->getUrl('example.show', array('id' => $foo->id)));
                 }
                 
@@ -170,9 +235,8 @@ class Example extends Controller
         return $this->view->parse('ExampleModule', 'example/create', $viewData);
     }
     
-    public function update($parameter)
+    public function updateAction($parameter)
     {
-        $c = $this->getContainer();
         $t = $this->i18n->get('ExampleModule');
         
         $foo = Foo::getRepository($this->db->get())->loadOne('id', $parameter['id']);
@@ -194,12 +258,12 @@ class Example extends Controller
         if ($form->validate()) {
             $foo = $form->updateEntity();
             if ($foo->save()) {
-                $c['cache']->outdateByTag(array('view_Example_index', 'view_Example_show_'.$parameter['id']));
+                //$this->cache->outdateByTag(array('view_Example_index', 'view_Example_show_'.$parameter['id']));
                 $success = true;
                 $message = $t->updateSuccessMessage(array('title' => htmlspecialchars($foo->title)));
 
                 if ($this->view->getFormat() === null) {
-                    //$this->registry->helper->messages->add($message, 'success');
+                    //$this->messages->add($message, 'success');
                     return $this->qf->redirect($this->qf->getUrl('example.show', array('id' => $foo->id)));
                 }
                 
@@ -217,9 +281,8 @@ class Example extends Controller
         return $this->view->parse('ExampleModule', 'example/update', $viewData);
     }
     
-    public function delete($parameter)
+    public function deleteAction($parameter)
     {
-        $c = $this->getContainer();
         $t = $this->i18n->get('ExampleModule');
         
         $foo = Foo::getRepository($this->db->get())->loadOne('id', $parameter['id']);
@@ -227,15 +290,15 @@ class Example extends Controller
             throw new HttpException('Foo with id '.$parameter['id'].' not found.', 404);
         }
         
-        if ($c['security']->checkFormToken('deleteExampleToken')) {
+        if ($this->security->checkFormToken('deleteExampleToken')) {
             $success = $foo->delete();
         } else {
             $success = false;
         }
 
         if ($success) {
-            $c['cache']->outdateByTag(array('view_Example_index'));
-            $c['cache']->removeByTag('view_Example_show_'.$parameter['id']);
+            //$this->cache->outdateByTag(array('view_Example_index'));
+            //$this->cache->removeByTag('view_Example_show_'.$parameter['id']);
             $message = $t->deleteSuccessMessage(array('title' => htmlspecialchars($foo->title)));
             if ($this->view->getFormat() === null) {
                 return $this->qf->redirect('example.index');

@@ -13,5 +13,4 @@ $tasks['example'] = array(
     ),
     'assign' => array('bar', 'baz')
 );
-*/
-
+ */

@@ -1,7 +1,7 @@
 <?php
 //define your widgets here, add them to a module-internal slot or let them be added in the "global/app" widget config
 $widgets['example.widget'] = array(
-    'controller' => '\\ExampleModule\\Controller\\Base',
+    'service' => 'examplemodule.controller.base',
     'action' => 'exampleWidget',
     'parameter' => array('something' => 'value'),
 );
