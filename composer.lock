@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "b435d8a0777afa8b96a37442f0276386",
+    "hash": "f49bed2d28c2867f1a2dc5994c55e844",
     "packages": [
         {
             "name": "pimple/pimple",
-            "version": "v1.0.2",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fabpot/Pimple.git",
-                "reference": "ae11e57e8c2bb414b2ff93396dbbfc0eb92feb94"
+                "reference": "471c7d7c52ad6594e17b8ec33efdd1be592b5d83"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fabpot/Pimple/zipball/ae11e57e8c2bb414b2ff93396dbbfc0eb92feb94",
-                "reference": "ae11e57e8c2bb414b2ff93396dbbfc0eb92feb94",
+                "url": "https://api.github.com/repos/fabpot/Pimple/zipball/471c7d7c52ad6594e17b8ec33efdd1be592b5d83",
+                "reference": "471c7d7c52ad6594e17b8ec33efdd1be592b5d83",
                 "shasum": ""
             },
             "require": {
@@ -25,7 +25,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0.x-dev"
+                    "dev-master": "1.1.x-dev"
                 }
             },
             "autoload": {
@@ -49,7 +49,7 @@
                 "container",
                 "dependency injection"
             ],
-            "time": "2013-03-08 08:21:40"
+            "time": "2013-09-19 04:53:08"
         },
         {
             "name": "tqn/qf2",
@@ -57,18 +57,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/tquensen/QF2Core.git",
-                "reference": "a9b04672906bb5ca06240748f6c9617364318e37"
+                "reference": "849138925b7722385a806a1f52ad10366f10dd7e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tquensen/QF2Core/zipball/a9b04672906bb5ca06240748f6c9617364318e37",
-                "reference": "a9b04672906bb5ca06240748f6c9617364318e37",
+                "url": "https://api.github.com/repos/tquensen/QF2Core/zipball/849138925b7722385a806a1f52ad10366f10dd7e",
+                "reference": "849138925b7722385a806a1f52ad10366f10dd7e",
                 "shasum": ""
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "QF": "lib/"
+                "psr-4": {
+                    "QF\\": ""
                 }
             },
             "authors": [
@@ -82,7 +82,7 @@
                 "source": "https://github.com/tquensen/QF2Core/tree/master",
                 "issues": "https://github.com/tquensen/QF2Core/issues"
             },
-            "time": "2013-10-15 09:16:48"
+            "time": "2014-01-15 15:32:41"
         }
     ],
     "packages-dev": [
@@ -93,7 +93,6 @@
     ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "pimple/pimple": 20,
         "tqn/qf2": 20
     },
     "platform": [

@@ -14,7 +14,7 @@
         }
     ],    
     "require": {
-        "pimple/pimple": "1.0.*@dev",
+        "pimple/pimple": "1.*",
         "tqn/qf2": "dev-master"
     }
 }
