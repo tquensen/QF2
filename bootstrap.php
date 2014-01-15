@@ -6,9 +6,12 @@ error_reporting(E_ALL | E_STRICT);
 ini_set('display_errors', QF_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
 
-//initialize composer autooader
+//initialize composer autoloader
 $loader = require __DIR__.'vendor/autoload.php';
-$loader->add('', array(__DIR__.'/lib', __DIR__.'/modules'));
+//$loader->addPsr4('SomeVendor\\Namespace\\', __DIR__.'/lib/SomeVendor/Namespace');
+//$loader->addPsr4('MyVendor\\MyModule\\', __DIR__.'/modules/MyModule');
+//$loader->addPsr4('MyVendor\\', __DIR__.'/modules/MyModule/lib');
+$loader->addPsr4('', array(__DIR__.'/lib', __DIR__.'/modules'));
 
 //require_once(__DIR__.'/lib/functions.php');
 
