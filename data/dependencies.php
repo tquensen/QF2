@@ -7,7 +7,7 @@ foreach ($c['modules'] as $module => $path) {
 }
 
 //load config
-$c['config'] = $c->share(function ($c) {
+$c['config'] = function ($c) {
     $config = array();
 
     foreach ($c['modules'] as $module => $path) {
@@ -28,10 +28,10 @@ $c['config'] = $c->share(function ($c) {
     }
     
     return $config;
-});
+};
 
 //load cli tasks
-$c['tasks'] = $c->share(function ($c) {
+$c['tasks'] = function ($c) {
     $tasks = array();
 
     foreach ($c['modules'] as $module => $path) {
@@ -43,10 +43,10 @@ $c['tasks'] = $c->share(function ($c) {
     require __DIR__.'/tasks.php';
     
     return $tasks;
-});
+};
 
 //load routes
-$c['routes'] = $c->share(function ($c) {
+$c['routes'] = function ($c) {
     $routes = array();
     
     foreach ($c['modules'] as $module => $path) {
@@ -59,10 +59,10 @@ $c['routes'] = $c->share(function ($c) {
     require __DIR__.'/routes.php';
     
     return $routes;
-});
+};
 
 //load widget/slots configuration
-$c['widgets'] = $c->share(function ($c) {
+$c['widgets'] =function ($c) {
     $slots = array();
     $widgets = array();
     
@@ -76,10 +76,10 @@ $c['widgets'] = $c->share(function ($c) {
     require __DIR__.'/widgets.php';
     
     return $slots;
-});
+};
 
 //load event configuration
-$c['events'] = $c->share(function ($c) {
+$c['events'] = function ($c) {
     $events = array();
     
     foreach ($c['modules'] as $module => $path) {
@@ -92,10 +92,10 @@ $c['events'] = $c->share(function ($c) {
     require __DIR__.'/events.php';
     
     return $events;
-});
+};
 
 //initialize QF\Core class
-$c['core'] = $c->share(function ($c) {
+$c['core'] = function ($c) {
     $config = $c['config'];
     
     $qf = new QF\Core();
@@ -117,10 +117,10 @@ $c['core'] = $c->share(function ($c) {
     $qf->setEventDispatcher($c['event']);
     
     return $qf;
-});
+};
 
 //initialize QF\ViewManager class
-$c['view'] = $c->share(function ($c) {
+$c['view'] = function ($c) {
     $config = $c['config'];
     
     $view = new QF\ViewManager();
@@ -143,10 +143,10 @@ $c['view'] = $c->share(function ($c) {
     $view->setI18n($c['i18n']);
     
     return $view;
-});
+};
 
 //http meta/asset helper
-$c['meta'] = $c->share(function ($c) {
+$c['meta'] = function ($c) {
     $config = $c['config'];
     $t = $c['t'];
     
@@ -179,14 +179,14 @@ $c['meta'] = $c->share(function ($c) {
     if (!empty($config['meta']['titleAlign'])) { $meta->setTitleAlign($config['meta']['titleAlign']); }
     
     return $meta;
-});
+};
 
 //event dispatcher
-$c['event'] = $c->share(function ($c) {  
+$c['event'] = function ($c) {  
     return new QF\EventDispatcher($c, $c['events']);
-});
+};
 
-$c['cli'] = $c->share(function ($c) {
+$c['cli'] = function ($c) {
     $tasks = $c['tasks'];
     
     $cli = new QF\Cli($tasks);
@@ -194,9 +194,9 @@ $c['cli'] = $c->share(function ($c) {
     $cli->setContainer($c);
     
     return $cli;
-});
+};
 
-$c['security'] = $c->share(function ($c) {
+$c['security'] = function ($c) {
     $config = $c['config'];
     
     $security = new QF\Security($c['config']['roles']);
@@ -207,10 +207,10 @@ $c['security'] = $c->share(function ($c) {
     $c['event']->notify('security.init', $event);
     
     return $security;
-});
+};
 
 //i18n
-$c['i18n'] = $c->share(function ($c) {  
+$c['i18n'] = function ($c) {  
     $config = $c['config'];
     
     $translationDirectories = array();
@@ -224,33 +224,33 @@ $c['i18n'] = $c->share(function ($c) {
     $translationDirectories[] = __DIR__.'/i18n';
     
     return new QF\I18n($translationDirectories, $config['languages'], $config['default_language']);
-});
+};
 
 //default translations
-$c['t'] = $c->share(function ($c) {    
+$c['t'] = function ($c) {    
     return $c['i18n']->get();
-});
+};
 
 //init database
 /* PDO
-$c['db'] = $c->share(function ($c) {
+$c['db'] = function ($c) {
     $config = $c['config']; 
     return new QF\DB\DB($config['db']['default']);
-});
+};
 */   
 /* mongoDB
-$c['db'] = $c->share(function ($c) {
+$c['db'] = function ($c) {
     $config = $c['config'];
     return new QF\Mongo\DB($config['db']['mongo']);
-});
+};
 */
 
 
 //example for an event listener
 /*
-$c['listener.foo'] = $c->share(function ($c) {
+$c['listener.foo'] = $function ($c) {
     $config = $c['config']; //if configuration is required
     return new \Foo\EventListener($config['foo.something']);
-});
+};
 */
 

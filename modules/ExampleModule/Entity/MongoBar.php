@@ -3,6 +3,37 @@ namespace ExampleModule\Entity;
 
 use QF\Mongo\Entity;
 
+/**
+ * @property \MongoId $_id the _id
+ * 
+ * @method \MongoId getId() get _id
+ * @method null setId(mixed $_id) set _id
+ * @method bool isId() check if _id is set
+ * @method null clearId() clears/unsets _id
+ *
+ * @property string $title the title
+ * 
+ * @method string getTitle() get title
+ * @method null setTitle(mixed $title) set title
+ * @method bool isTitle() check if title is set
+ * @method null clearTitle() clears/unsets title
+ * 
+ * @property array $foo related foos
+ * 
+ * @method array getFoos() get foos
+ * @method null setFoos(mixed $foos) set foos
+ * @method bool hasFoos() check if foos are set
+ * @method null clearFoos() clears/unsets foos
+ * 
+ * @method null addFoo(mixed $foo) adds a $foo to foos collection
+ * @method null removeFoo(mixed $foo) removes a $foo from foos collection
+ * 
+ * @method int countFoos($condition = null, $values = array(), $saveAs = null) returns number of related foos
+ * @method array loadFoos($condition = null, $values = array(), $order = null, $limit = null, $offset = null) loads related foos
+ * @method null linkFoos($foo = null, $load = true, $rawUpdate = false) links related $foos
+ * @method null unlinkFoos($foo = true, $delete = false, $rawDelete = false) unlinks related $foos
+ *
+ */
 class MongoBar extends Entity
 {
     protected static $maxDatabaseVersion = 1;

@@ -3,6 +3,42 @@ namespace ExampleModule\Entity;
 
 use QF\DB\Entity;
 
+/**
+ * @property int $id the id
+ * 
+ * @method int getId() get id
+ * @method null setId(mixed $_id) set id
+ * @method bool isId() check if_id is set
+ * @method null clearId() clears/unsets id
+ *
+ * @property string $title the title
+ * 
+ * @method string getTitle() get title
+ * @method null setTitle(mixed $title) set title
+ * @method bool isTitle() check if title is set
+ * @method null clearTitle() clears/unsets title
+ * 
+ * @property string $description the description
+ * 
+ * @method string getDescription() get description
+ * @method null setDescription(mixed $description) set description
+ * @method bool isDescription() check if description is set
+ * @method null clearDescription() clears/unsets description
+ * 
+ * @property int $bar_id the bar_id
+ * 
+ * @method int getBarId() get bar_id
+ * @method null setBarId(int $bar_id) set bar_id
+ * @method bool isBarId() check if bar_id is set
+ * @method null clearBarId() clears/unsets bar_id
+ * 
+ * @property array $bar related bar
+ * 
+ * @method array getBar() get bars
+ * @method null setBar(mixed $bars) set bars
+ * @method bool hasBar() check if bars are set
+ * @method null clearBar() clears/unsets bars
+ */
 class Foo extends Entity
 {
     protected static $maxDatabaseVersion = 1;

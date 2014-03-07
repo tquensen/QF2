@@ -1,7 +1,7 @@
 <?php
 //define module specific services (controller, tasks, eventlisteners, ..)
 
-$c['defaultmodule.controller.error'] = $c->share(function ($c) {
+$c['defaultmodule.controller.error'] = function ($c) {
     $controller = new \DefaultModule\Controller\Error();
     $controller->setQf($c['core']);
     $controller->setView($c['view']);
@@ -9,4 +9,4 @@ $c['defaultmodule.controller.error'] = $c->share(function ($c) {
     $controller->setMeta($c['meta']);
     
     return $controller;
-});
+};

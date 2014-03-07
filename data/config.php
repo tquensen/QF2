@@ -26,11 +26,11 @@ $config['base_url'] = '/'; //http://example.com/;
 
 //user roles
 // $config['roles']['ROLE_NAME'] = array('list','of','rights')
-$config['roles']['GUEST'] = array('guest');
-$config['roles']['USER'] = array('user');
-$config['roles']['ADMIN'] = array('admin', 'user');
+$config['roles']['GUEST'] = array('guest', 'all');
+$config['roles']['USER'] = array('user', 'all');
+$config['roles']['ADMIN'] = array('admin', 'user', 'all');
 
-$config['security']['secureDefault'] = false; //deny access if no authorzation is configured on the route/object/..?
+$config['security']['secureDefault'] = false; //deny access if no 'rights' are configured on the route?
 
 //i18n
 $config['languages'] = array('en', 'de');
