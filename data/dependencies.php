@@ -239,7 +239,7 @@ $c['db'] = function ($c) {
 };
 */   
 /* mongoDB
-$c['db'] = function ($c) {
+$c['mongodb'] = function ($c) {
     $config = $c['config'];
     return new QF\Mongo\DB($config['db']['mongo']);
 };
