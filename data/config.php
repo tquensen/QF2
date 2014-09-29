@@ -41,9 +41,23 @@ $config['current_language'] = $config['default_language'];
 
 //database
 $config['db']['default'] = array(
-    'driver' => 'mysql:host=localhost;dbname=qfdb', //A valid PDO dsn. @see http://de3.php.net/manual/de/pdo.construct.php
+    'driver' => 'mysql:host=localhost;dbname=qfdb', //A valid PDO dsn. @see http://php.net/manual/de/pdo.construct.php
     'username' => 'root', //The user name for the DSN string. This parameter is optional for some PDO drivers.
     'password' => '', //The password for the DSN string. This parameter is optional for some PDO drivers.
     'options' => array() //A key=>value array of driver-specific connection options. (optional)
 );
 
+//database (mongodb)
+$config['mongo']['default'] = array(
+    'server' => 'mongodb://localhost:27017', //@see http://php.net/manual/de/mongoclient.construct.php
+    'database' => 'qfdb',
+    'options' => array( //A key=>value array of driver-specific connection options. (optional)
+        'connect' => true,
+        'w' => 1,
+        
+        //'wTimeoutMS' => 10000
+        //'socketTimeoutMS' => 30000,
+        //'connectTimeoutMS' => 60000
+    ),
+    'driverOptions' => array()
+);

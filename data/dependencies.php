@@ -62,7 +62,7 @@ $c['routes'] = function ($c) {
 };
 
 //load widget/slots configuration
-$c['widgets'] =function ($c) {
+$c['widgets'] = function ($c) {
     $slots = array();
     $widgets = array();
     
@@ -124,8 +124,6 @@ $c['view'] = function ($c) {
     $config = $c['config'];
     
     $view = new QF\ViewManager();
-    
-    $view->setContainer($c);
     
     if (!empty($config['theme'])) { $view->setTheme($config['theme']); }
     if (!empty($config['template'])) { $view->setTemplate($config['template']); }
@@ -235,13 +233,13 @@ $c['t'] = function ($c) {
 /* PDO
 $c['db'] = function ($c) {
     $config = $c['config']; 
-    return new QF\DB\DB($config['db']['default']);
+    return new QF\DB\DB($config['db']);
 };
 */   
 /* mongoDB
 $c['mongodb'] = function ($c) {
     $config = $c['config'];
-    return new QF\Mongo\DB($config['db']['mongo']);
+    return new QF\Mongo\DB($config['mongo']);
 };
 */
 
